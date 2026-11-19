@@ -219,7 +219,7 @@ textarea{min-height:90px;font:12px var(--mono)}
 <div id="toasts"></div>
 <div id="modal"><div class="card" id="mcard"></div></div>
 <script>
-const VER='v13・11/19 17:50';
+const VER='v14・11/19 19:55';
 'use strict';
 /* =====================================================================
    RESET 系統 v4
@@ -464,7 +464,7 @@ function reward(t,key,base,stat,kind){let m=1;if(kind==='quest'&&skl('grit')&&st
  if(crit){sfx('crit');toast(`<b>CRITICAL!</b> 經驗值 ×2　+${xp} XP`,'crit')}else{sfx('done');toast(`<b>+${xp} XP</b>　+${gold-loot} G　${STATS[stat].n} +1`)}
  if(loot)toast(`<b>寶箱掉落！</b> +${loot} G`,'crit');return r}
 function undo(r){S.xp-=r.xp;S.gold-=r.gold;const st=STATS[r.stat]?r.stat:'SPI';S.stats[st]=Math.max(0,(S.stats[st]||0)-1);
- if(r.kind==='side')S.sideCount--;else S.questCount--;if(r.crit)S.crits--;bossInfo();if(!S.boss.dead)S.boss.dmg=Math.max(0,S.boss.dmg-(r.dmg||r.xp))}
+ if(r.kind==='side')S.sideCount--;else if(r.kind==='quest')S.questCount--;if(r.crit)S.crits--;bossInfo();if(!S.boss.dead)S.boss.dmg=Math.max(0,S.boss.dmg-(r.dmg||r.xp))}
 function settle(t,was){if(!was&&cleared(t)){if(t===today())setTimeout(()=>toast(`<b>[系統]</b> 今日任務達成，連續 ${streak()} 天 🔥`),500);
  else setTimeout(()=>toast(`<b>[系統]</b> ${t.slice(5).replace('-','/')} 補登通關`),500)}}
 function doLevel(q,t,i){const was=cleared(t),L=dayLog(t);const r=reward(t,q.id+'L'+i,Math.round(q.xp*ELV[i][1]),q.stat,'quest');r.lv=i;r.amt=q.amt?q.amt[i]:1;L.done[q.id]=r;settle(t,was);after()}
@@ -796,6 +796,36 @@ function restoreData(o){const d=new Date(o.lastBackup||Date.now());
  [['取消','btn'],['還原','btn red',()=>{try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}load();save();render();toast('<b>還原成功</b>')}]])}
 function askBackup(){if(bkDays()<7||S.bkAsk===today()||Object.keys(S.log).length<3)return false;S.bkAsk=today();save();
  modal(`<h2>[每週備份]</h2><div class="bigt" style="font-size:22px">${S.lastBackup?bkDays()+' 天沒備份了':'還沒備份過'}</div><p class="muted" style="line-height:1.7">資料只存在這個 app 裡，刪掉 app 或換手機就會不見。按一下存到 iCloud 雲碟就安全了，10 秒搞定。</p>`,[['晚點','btn'],['💾 現在備份','btn pri',()=>backupFile()]]);return true}
+/* ---------- 額外修練（自己加的，系統判定加分） ---------- */
+const XKW=[['STR',/跑|晨跑|慢跑|重訓|健身|訓練|游泳|騎|腳踏車|走路|散步|爬山|伸展|瑜珈|拳|柔術|摔|空擊|伏地挺身|深蹲|棒式|跳繩|核心|打球|籃球|足球|羽球|運動/],
+ ['VIT',/冷水澡|早睡|早起|喝水|蔬菜|水果|曬太陽|午睡|自煮|煮飯|健康|不喝含糖|戒糖|飲食/],
+ ['INT',/讀|閱讀|書|西文|西班牙|英文|單字|課|作業|複習|預習|考試|報告|podcast|紀錄片|學|研究|專題|寫程式|程式/],
+ ['SPI',/冥想|日記|感謝|感恩|呼吸|聊天|家人|朋友|陪|幫忙|志工|禱告|反思|復盤|寫字|心情/],
+ ['DIS',/整理|打掃|洗碗|洗衣|倒垃圾|拖延|戒|斷捨離|不滑|不吃|不喝|關手機|早出門|準時|規劃|計畫|記帳/]];
+const XCAP=80;
+function judgeExtra(tx){let stat='SPI';for(const[k,re]of XKW)if(re.test(tx)){stat=k;break}
+ let min=null,why='';const m=tx.match(/(\d+(?:\.\d+)?)\s*(分鐘|分|min)/i),h=tx.match(/(\d+(?:\.\d+)?)\s*(小時|hr|h(?![a-z]))/i),km=tx.match(/(\d+(?:\.\d+)?)\s*(公里|km|k(?![a-z]))/i),rp=tx.match(/(\d+)\s*(下|次|組|頁)/);
+ if(h){min=parseFloat(h[1])*60;why=`${h[1]} 小時`}else if(m){min=parseFloat(m[1]);why=`${m[1]} 分鐘`}
+ else if(km){min=parseFloat(km[1])*6;why=`${km[1]} 公里（約 ${Math.round(min)} 分鐘）`}else if(rp){const n=+rp[1];min=rp[2]==='組'?n*3:rp[2]==='頁'?n*2:n/5;why=`${n} ${rp[2]}`}
+ if(min==null&&/冷水澡/.test(tx)){min=8;why='冷水澡，額外給一點'}
+ let base=min==null?10:Math.max(8,Math.min(40,Math.round(8+min*.5)));if(min==null)why='沒寫時間或數量，給基本分';
+ return{stat,base,why}}
+const extraUsed=t=>(dayLog(t).extra||[]).reduce((a,e)=>a+(e.base||0),0);
+function vExtra(D){const L=dayLog(D),X=L.extra||[],left=Math.max(0,XCAP-extraUsed(D));
+ let h=`<div class="panel"><div class="ptitle" style="color:var(--green)">[額外修練]<span>今天還能加 ${left} 基礎分</span></div>
+ <div class="row"><input id="xtxt" placeholder="做了什麼？例：晨跑 5 公里、閱讀 30 分鐘" style="flex:1"><button class="btn sm cy" id="xJudge">判定</button></div>`;
+ if(X.length)h+=X.map((e,i)=>`<div class="item"><span class="nm">${esc(e.text)}<div class="muted" style="font-size:12px">${STATS[e.stat].n}・${esc(e.why)}</div></span><span class="xp" style="color:var(--green)">${e.r?'+'+e.r.xp:'+0'}</span><button class="jdel" data-xdel="${i}">✕</button></div>`).join('');
+ else h+=`<p class="muted" style="margin:8px 0 0;font-size:12px">任務以外多做的事寫在這，系統會照類型跟時間判斷加多少分。</p>`;
+ return h+'</div>'}
+function openExtra(D,tx){if(!tx)return toast('先寫做了什麼');const j=judgeExtra(tx),left=Math.max(0,XCAP-extraUsed(D)),base=Math.min(j.base,left);let st=j.stat;
+ const draw=()=>{$('#xst').innerHTML=Object.keys(STATS).map(k=>`<button class="${k===st?'on':''}" data-xst="${k}">${STATS[k].n}</button>`).join('')};
+ modal(`<h2>[額外修練・判定]</h2><div class="bigt" style="font-size:22px">${esc(tx)}</div>
+ <p class="muted" style="margin:0 0 8px">判定依據：${esc(j.why)}</p><div class="gd"><h4>屬性（判錯可以改）</h4></div><div class="chipg" id="xst"></div>
+ <p style="margin:8px 0 0">獲得 <b style="color:var(--cyan)">約 +${base} XP</b>　<span class="gold">約 +${Math.round(base/2)} G</span>${base<j.base?`<br><span class="muted" style="font-size:12px">今天額外加分快到上限（每天 ${XCAP} 基礎分），超過的部分不加分，但會照樣記錄。</span>`:''}</p>`,
+ [['取消','btn'],['確認','btn pri',()=>{const L=dayLog(D);L.extra=L.extra||[];const e={text:tx.slice(0,60),stat:st,why:j.why,base};
+  if(base>0){e.r=reward(D,'x'+Date.now(),base,st,'extra')}L.extra.push(e);xDraft='';jlog('➕',`額外修練：${e.text}${e.r?'，+'+e.r.xp+' XP':''}`);after()}]]);
+ draw();$('#mcard').onclick=ev=>{const b=ev.target.closest('[data-xst]');if(!b)return;st=b.dataset.xst;draw()}}
+
 /* ---------- UI 基礎 ---------- */
 function toast(h,c=''){const box=$('#toasts');while(box.children.length>=3)box.firstChild.remove();const el=document.createElement('div');el.className='toast '+c;el.innerHTML=h;box.appendChild(el);setTimeout(()=>el.remove(),2600)}
 let mActs=[];
@@ -827,6 +857,7 @@ function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)
  h+=act.length?Object.keys(SLOTS).map(k=>{const g=act.filter(q=>q.slot===k);return g.length?`<div class="slot">${SLOTS[k]}</div>`+g.map(row).join(''):''}).join(''):'<p class="muted">今天沒有排任務 😴</p>';
  h+='</div>';
  h+=`<div class="panel bonus"><div class="ptitle" style="color:var(--gold)">[隨機任務]<span>每天 3 個・不影響通關</span></div>`+sidesOf(D).map(i=>{const s=SIDE[i],d=L.side[i];return`<div class="q ${d?'done':''}"><button class="box" data-side="${i}">${d?'✓':''}</button><button class="nm" data-info="s:${i}"><span class="qn">${esc(s[0])}</span></button>${tag(s[1])}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+15'}</span></div>`}).join('')+'</div>';
+ h+=vExtra(D);
  h+=`<div class="panel"><div class="ptitle">[66 天紀錄]<span>亮 = 通關</span></div><div class="heat">`;
  for(let i=0;i<66;i++){const d=addDays(S.start,i),c=diff(d,t);let cl='';
   if(c===0)cl='now '+(cleared(d)?'ok':doneCount(d)?'part':'');else if(c>0)cl=cleared(d)?'ok':doneCount(d)?'part':'miss';h+=`<i class="${cl}"></i>`}
@@ -913,12 +944,13 @@ function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務]<span>
  return h}
 
 const VIEWS={today:vToday,battle:vBattle,shop:vShop,me:vMe,log:vLog,set:vSet};
-let jDraft='';
-function render(){header();$('#view').innerHTML=VIEWS[tab]();const ta=$('#jtxt');if(ta){ta.value=jDraft;ta.oninput=()=>{jDraft=ta.value}}tick()}
+let jDraft='',xDraft='';
+function render(){header();$('#view').innerHTML=VIEWS[tab]();const ta=$('#jtxt');if(ta){ta.value=jDraft;ta.oninput=()=>{jDraft=ta.value}}const xt=$('#xtxt');if(xt){xt.value=xDraft;xt.oninput=()=>{xDraft=xt.value}}tick()}
 
 /* ---------- 事件 ---------- */
-$('#view').addEventListener('click',e=>{const el=e.target.closest('[data-mood],[data-jf],[data-jdel],[data-info],[data-q],[data-side],[data-day],[data-shift],[data-pen],[data-focus],[data-buy],[data-gear],[data-eq],[data-skill],[data-delr],button[id]');if(!el||el.disabled)return;const d=el.dataset;
+$('#view').addEventListener('click',e=>{const el=e.target.closest('[data-xdel],[data-mood],[data-jf],[data-jdel],[data-info],[data-q],[data-side],[data-day],[data-shift],[data-pen],[data-focus],[data-buy],[data-gear],[data-eq],[data-skill],[data-delr],button[id]');if(!el||el.disabled)return;const d=el.dataset;
  const D=viewY?addDays(today(),-1):today();
+ if(d.xdel!==undefined){const L=dayLog(D),e=(L.extra||[])[+d.xdel];if(!e)return;return modal(`<h2>[額外修練]</h2><div class="bigt" style="font-size:22px">刪除「${esc(e.text)}」？</div><p class="muted">加的分會扣回來。</p>`,[['取消','btn'],['刪除','btn red',()=>{if(e.r)undo(e.r);L.extra.splice(+d.xdel,1);after()}]])}
  if(d.mood!==undefined){const m=+d.mood;S.jm=S.jm===m?null:m;document.querySelectorAll('[data-mood]').forEach(b=>b.classList.toggle('on',+b.dataset.mood===S.jm));return}
  if(d.jf){S.jf=d.jf;save();return render()}
  if(d.jdel){const t0=+d.jdel;return modal('<h2>[勇者日誌]</h2><div class="bigt">刪除這篇？</div>',[['取消','btn'],['刪除','btn red',()=>{S.journal=S.journal.filter(e=>!(e.t===t0&&e.type==='user'));save();render()}]])}
@@ -938,6 +970,7 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-mood],[
   case'toClaude':{const tx=exportForClaude();const done=()=>modal('<h2>[已複製]</h2><div class="bigt" style="font-size:22px">貼給 Claude 吧</div><p class="muted" style="line-height:1.7">打開 Claude，貼上剛剛複製的內容送出，就會幫你分析最近的狀況。<br>紀錄只會在你貼上時傳出去，app 本身不會上傳任何資料。</p>',[['好','btn pri']]);
    const fb=()=>modal(`<h2>[手動複製]</h2><p class="muted">長按下面的文字 → 全選 → 拷貝</p><textarea style="min-height:220px;font-size:12px">${esc(tx)}</textarea>`,[['關閉','btn']]);
    try{navigator.clipboard.writeText(tx).then(done,fb)}catch(e){fb()}return}
+  case'xJudge':return openExtra(D,($('#xtxt').value||'').trim());
   case'jSave':{const tx=($('#jtxt').value||'').trim();if(!tx)return toast('先寫點什麼');S.journal=S.journal||[];S.journal.unshift({t:Date.now(),d:today(),type:'user',text:tx.slice(0,2000),mood:S.jm==null?null:S.jm});
    jDraft='';S.jm=null;if(S.jxp!==today()){S.jxp=today();S.stats.SPI=(S.stats.SPI||0)+1;gain(10,0);toast('<b>[勇者日誌]</b> 今天第一篇 +10 XP　心靈 +1')}else toast('<b>已寫入日誌</b>');sfx('done');return after()}
   case'giveup':return modal('<h2>[專注地城]</h2><div class="bigt">確定逃跑？</div><p class="muted">不會有任何獎勵。</p>',[['繼續撐','btn pri'],['逃跑','btn red',()=>{S.timer=null;save();render()}]]);
@@ -956,6 +989,7 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-mood],[
   case'restart':return modal('<h2>[重開計畫]</h2><div class="bigt">從 DAY 1 重新開始？</div><p class="muted">等級、金幣、裝備、成就保留，66 天進度歸零。</p>',[['取消','btn'],['重開','btn pri',()=>{S.start=today();S.lastClosed=null;S.penalties=[];save();render()}]]);
   case'wipe':return modal('<h2>[警告]</h2><div class="bigt" style="color:var(--red)">全部清空？</div><p class="muted">無法復原。建議先匯出備份。</p>',[['取消','btn'],['清空','btn red',()=>{S=defaults();S.seen=1;save();render()}]]);
  }});
+$('#view').addEventListener('keydown',e=>{if(e.target.id==='xtxt'&&e.key==='Enter'){e.preventDefault();openExtra(viewY?addDays(today(),-1):today(),(e.target.value||'').trim())}});
 $('#view').addEventListener('change',e=>{if(e.target.id==='rsInput'){const f=e.target.files&&e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const o=JSON.parse(rd.result);if(!o.log)throw 0;restoreData(o)}catch(err){toast('這個檔案不是 RESET 的備份')}};rd.readAsText(f);e.target.value='';return}
  if(e.target.id==='dayStart'){S.dayStart=+e.target.value;save();return render()}
 });
