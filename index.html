@@ -159,6 +159,12 @@ textarea{min-height:90px;font:12px var(--mono)}
 @keyframes shake{0%,100%{transform:rotate(0)}20%{transform:rotate(-12deg)}40%{transform:rotate(12deg)}60%{transform:rotate(-8deg)}80%{transform:rotate(8deg) scale(1.1)}99%{opacity:1}100%{opacity:0;transform:scale(1.6)}}
 @keyframes rev{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
 .boss svg{display:block;margin:0 auto}
+
+.lvpick{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}
+.lvpick button{border:1.5px solid var(--line);border-radius:14px;padding:12px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;background:#070c18}
+.lvpick b{font-size:16px}.lvpick span{font-size:13px}.lvpick small{font:600 11px var(--mono);color:var(--mute)}
+.lvb{display:inline-block;margin-top:4px;font-size:11px;padding:1px 7px;border:1px solid;border-radius:99px}
+.q.done .lvb{text-decoration:none}
 </style>
 </head>
 <body>
@@ -205,34 +211,47 @@ function shuffleSeed(n,seed){const a=[...Array(n).keys()];for(let i=n-1;i>0;i--)
 /* ---------- 屬性 ---------- */
 const STATS={STR:{n:'體能',c:'#ff6b6b'},VIT:{n:'健康',c:'#3ee08f'},INT:{n:'智力',c:'#4fd1ff'},SPI:{n:'心靈',c:'#f0a8ff'},DIS:{n:'自律',c:'#b48cff'}};
 const SLOTS={am:'☀️ 早上',pm:'🌤 下午',night:'🌙 晚上'};
+const ELV=[['迷你',.5,'#3ee08f'],['標準',1,'#4fd1ff'],['精英',1.6,'#f5c451']];
 
 /* ---------- 後台任務（只在這裡改） ----------
+   lv: 彈性習慣三段（迷你/標準/精英）  amt: 每段換算的數量
    days: 只在星期幾出現（0=日）  shift: 'off' 沒班才有 / 'on' 有班才有
-   type:'screen' 螢幕時間任務（goal 分鐘）  per/unit: 現實數據換算    */
+   type:'screen' 螢幕時間任務（goal 分鐘）                              */
 const QUESTS=[
- {id:'focus1',name:'寫下今天最重要的 1 件事',stat:'SPI',xp:10,slot:'am',hint:'起床 5 分鐘內，備忘錄寫一句就好',unit:'次'},
- {id:'esp',name:'西文 15 分鐘',stat:'INT',xp:20,slot:'pm',hint:'上西文課或跟室友練都算',per:15,unit:'分鐘'},
- {id:'train',name:'訓練',stat:'STR',xp:30,slot:'night',days:[1,2,3,4,5],shift:'off',hint:'平日 19:30–21:00',unit:'次'},
+ {id:'med',name:'冥想',stat:'SPI',xp:20,slot:'am',hint:'坐好、專心呼吸，分心了就輕輕拉回來',lv:['1 分鐘','5 分鐘','15 分鐘'],amt:[1,5,15],unit:'分鐘'},
+ {id:'woop',name:'今天的 1 件事＋卡關對策',stat:'SPI',xp:15,slot:'am',hint:'最重要的事／最可能卡住的點／「如果＿＿，我就＿＿」',unit:'次'},
+ {id:'esp',name:'西文',stat:'INT',xp:20,slot:'pm',hint:'上課、背單字、跟室友講都算',lv:['5 分鐘','15 分鐘','30 分鐘'],amt:[5,15,30],unit:'分鐘'},
+ {id:'train',name:'訓練',stat:'STR',xp:30,slot:'night',days:[1,2,3,4,5],shift:'off',hint:'平日 19:30–21:00',lv:['有到場','完整練完','練完再加練 20 分'],unit:'次'},
  {id:'screen',name:'螢幕時間',stat:'DIS',xp:20,slot:'night',type:'screen',goal:180},
- {id:'nophone',name:'睡前 30 分鐘不滑手機',stat:'DIS',xp:20,slot:'night',hint:'手機放遠一點充電',unit:'天'},
+ {id:'nophone',name:'睡前 30 分鐘不滑手機',stat:'DIS',xp:20,slot:'night',hint:'手機放房間外充電',unit:'天'},
  {id:'sleep_off',name:'00:30 前上床',stat:'VIT',xp:30,slot:'night',shift:'off',group:'sleep',gname:'準時上床',unit:'天'},
  {id:'sleep_on',name:'下班後 1 小時內上床',stat:'VIT',xp:30,slot:'night',shift:'on',group:'sleep',gname:'準時上床',unit:'天'},
- {id:'review',name:'睡前復盤 3 行',stat:'SPI',xp:10,slot:'night',hint:'今天做到什麼／卡在哪／明天怎麼改',unit:'篇'}];
+ {id:'review',name:'睡前復盤',stat:'SPI',xp:15,slot:'night',hint:'今天 3 件順利的事＋為什麼；明天改一件事',lv:['寫 1 行','寫 3 件好事','3 件好事＋明天改進'],unit:'篇'},
+ {id:'weekly',name:'每週回顧',stat:'SPI',xp:40,slot:'night',days:[0],hint:'這週最大的進步／最卡的地方／下週只改一件事',unit:'次'}];
 
-/* ---------- 隨機任務池（每天抽 3 個，16 天內不重複） ---------- */
+/* ---------- 隨機任務池（每天 3 個，28 天不重複） ---------- */
 const SIDE=[
- ['走路 8000 步','STR'],['伸展 10 分鐘','STR'],['伏地挺身 30 下','STR'],['深蹲 50 下','STR'],['棒式 2 分鐘','STR'],['今天爬樓梯不搭電梯','STR'],['空擊 3 回合','STR'],['核心訓練 10 分鐘','STR'],['跳繩 5 分鐘','STR'],['練一個技術動作 10 次','STR'],
- ['喝水 2000ml','VIT'],['吃一份蔬菜','VIT'],['今天不喝含糖飲料','VIT'],['今天不吃宵夜','VIT'],['曬太陽 10 分鐘','VIT'],['吃早餐','VIT'],['下午 3 點後不喝咖啡','VIT'],['冷水澡','VIT'],['整理床鋪','VIT'],['午睡不超過 30 分鐘','VIT'],
- ['讀 10 頁書','INT'],['學 5 個西文單字','INT'],['用西文跟室友說一句話','INT'],['聽一集 podcast','INT'],['把今天學到的講給別人聽','INT'],['查清楚一個你好奇的問題','INT'],['用西文自言自語 3 分鐘','INT'],['看完一篇長文不滑走','INT'],['用西文寫 3 句話','INT'],['記下一個新點子','INT'],
- ['冥想 5 分鐘','SPI'],['寫 3 件感謝的事','SPI'],['散步 10 分鐘不戴耳機','SPI'],['打給家人聊聊','SPI'],['認真跟一個人說謝謝','SPI'],['稱讚一個人','SPI'],['寫下一個煩惱＋一個行動','SPI'],['深呼吸 10 次','SPI'],['回想今天最好的一刻','SPI'],['傳訊息給很久沒聯絡的朋友','SPI'],
- ['整理房間 10 分鐘','DIS'],['做一件拖很久的小事','DIS'],['今天不碰短影音','DIS'],['手機放別的房間 1 小時','DIS'],['通知全關 2 小時','DIS'],['起床 30 分鐘內不看手機','DIS'],['把桌面清空','DIS'],['今天準時出門','DIS'],['先做最難的那件事','DIS'],['刪掉一個沒在用的 app','DIS']];
+ ['走路 8000 步','STR','走路是最被低估的訓練'],['伸展 10 分鐘','STR','練完的身體需要還債'],['伏地挺身 30 下','STR','可以分組做'],['深蹲 50 下','STR',''],['棒式累計 3 分鐘','STR',''],['今天全程走樓梯','STR','把運動藏進生活裡'],['空擊 3 回合','STR','每回合專注練一個組合'],['刻意練一個弱項動作 10 次','STR','恆毅力：刻意練習就是專攻弱點'],['跳繩 5 分鐘','STR',''],['核心訓練 10 分鐘','STR',''],['滾筒放鬆 10 分鐘','STR','恢復也是訓練的一部分'],['看一段比賽影片，記下一個重點','STR','把練習變成刻意練習'],['單腳站 1 分鐘 × 2','STR','練平衡'],['今天的訓練比上次多一點點','STR','每天進步 1%'],
+ ['喝水 2000ml','VIT',''],['每餐都有蔬菜','VIT',''],['今天不喝含糖飲料','VIT',''],['今天不吃宵夜','VIT','宵夜惡龍最怕這招'],['早上曬太陽 10 分鐘','VIT','光線幫你校正生理時鐘'],['吃早餐','VIT',''],['下午 2 點後不喝咖啡','VIT','咖啡因會拖到半夜'],['冷水澡 30 秒','VIT',''],['起床整理床鋪','VIT','一天的第一個小勝利'],['午睡不超過 20 分鐘','VIT',''],['晚餐吃到八分飽','VIT',''],['睡前 1 小時調暗燈光','VIT','幫身體準備睡覺'],['走路去一個平常騎車去的地方','VIT',''],['吃一份水果','VIT',''],['明天的衣服今晚先準備好','VIT','原子習慣：讓好行為更容易'],['房間通風 10 分鐘','VIT',''],
+ ['讀 10 頁書','INT',''],['學 5 個西文單字並造句','INT',''],['用西文跟室友聊 1 分鐘','INT','學了馬上用最記得住'],['聽一集 podcast，記一個重點','INT',''],['把今天學到的講給別人聽','INT','教別人是最好的複習'],['查清楚一個你好奇的問題','INT',''],['用西文自言自語 3 分鐘','INT',''],['讀完一篇長文不滑走','INT','練專注力'],['用西文寫 3 句話','INT',''],['記下一個新點子','INT',''],['看一部紀錄片的前 20 分鐘','INT',''],['複習上週學的西文','INT','間隔複習記得最久'],['學一個新的調酒或技術，寫下步驟','INT',''],['整理一頁筆記','INT',''],['用 3 句話寫下一本書的重點','INT',''],['問一個比你厲害的人一個問題','INT',''],
+ ['冥想 10 分鐘','SPI','今天加碼，坐久一點'],['寫 3 件感謝的事','SPI','感恩練習'],['三件好事：今天 3 件順利的事＋原因','SPI','正向心理學的經典練習'],['散步 10 分鐘不戴耳機','SPI','讓腦袋放空'],['打給家人聊 5 分鐘','SPI',''],['認真跟一個人說謝謝，說出原因','SPI',''],['真心稱讚一個人','SPI',''],['把煩惱寫出來 15 分鐘，寫完丟掉','SPI','表達性書寫：寫出來就不用一直扛著'],['WOOP 一個這週的目標','SPI','願望→最好結果→內在障礙→如果…就…'],['寫下「我是一個＿＿的人」，做一件證明它的事','SPI','原子習慣：每個行動都是在為身分投票'],['回想今天最好的一刻，細細想 1 分鐘','SPI',''],['傳訊息給很久沒聯絡的朋友','SPI',''],['箱式呼吸：吸 4、停 4、吐 4，做 5 輪','SPI','緊張的時候最好用'],['寫下最近一次失敗，學到什麼','SPI','成長心態：失敗是資料'],['做一件幫別人的小事','SPI','恆毅力：目的感來自幫助別人'],['對自己說一句你會對朋友說的鼓勵','SPI','對自己好一點'],['寫下 1 年後想成為的樣子','SPI',''],['5 分鐘什麼都不做，只是坐著','SPI',''],['把一個「我不會」改成「我還不會」','SPI','成長心態的那個「還」'],['寫下一件焦慮的事，圈出你能控制的部分','SPI','斯多葛：只管能控制的'],
+ ['整理房間 10 分鐘','DIS','環境會影響行為'],['做一件拖很久的小事','DIS',''],['今天不碰短影音','DIS',''],['手機放別的房間 1 小時','DIS','原子習慣：讓壞習慣看不見'],['通知全關 2 小時','DIS',''],['起床 30 分鐘內不看手機','DIS',''],['把桌面清空','DIS',''],['今天準時出門','DIS',''],['先做最難的那件事','DIS','吃掉那隻青蛙'],['刪掉一個沒在用的 app','DIS',''],['打一場 25 分鐘專注地城','DIS','去戰鬥頁開一場'],['把一件事縮成 2 分鐘版本，馬上做','DIS','原子習慣的兩分鐘法則'],['寫下明天的 3 件事','DIS',''],['今天花錢前先停 10 秒','DIS',''],['清掉手機相簿 20 張沒用的照片','DIS',''],['整理衣櫃一格','DIS',''],['把一個壞習慣的觸發點藏起來','DIS','讓它看不見、拿不到'],['設好明天的鬧鐘並準時起床','DIS','']];
+
+/* ---------- Boss ---------- */
+const BOSS=[
+ {n:'怠惰之王',t:'坐在王座上，從來不站起來',c:'#a78bfa',e:'#c4b5fd'},
+ {n:'無限滑動獸',t:'每片鱗都是一塊發光的螢幕',c:'#22d3ee',e:'#a5f3fc'},
+ {n:'拖延巨像',t:'胸口的時鐘永遠停在「等一下」',c:'#f97316',e:'#fdba74'},
+ {n:'宵夜惡龍',t:'半夜十二點準時甦醒',c:'#ef4444',e:'#fca5a5'},
+ {n:'熬夜幽靈',t:'在凌晨三點的螢幕光裡遊蕩',c:'#60a5fa',e:'#bfdbfe'},
+ {n:'藉口魔偶',t:'每條線都牽著一個「明天再說」',c:'#a3e635',e:'#d9f99d'},
+ {n:'沙發吸血鬼',t:'一坐下就把你的時間吸乾',c:'#e11d48',e:'#fda4af'}];
+const BOSS_PRE=['','強化','精英','狂暴','魔王級','傳說','神話'];
+const TH={STR:[6,20,45,80],VIT:[8,25,55,100],INT:[8,25,55,100],SPI:[15,45,100,180],DIS:[12,40,90,160]};
 
 /* ---------- RPG 資料 ---------- */
 const RANKS=[[1,'E','見習者'],[5,'D','覺醒者'],[10,'C','獵人'],[20,'B','精英獵人'],[35,'A','王牌'],[50,'S','君主']];
 const AURA={E:'#7d8aa6',D:'#3ee08f',C:'#4fd1ff',B:'#b48cff',A:'#f5c451',S:'#ff5d6c'};
-const BOSSES=['怠惰之王','無限滑動獸','拖延巨像','宵夜惡龍','熬夜幽靈','藉口魔偶','沙發吸血鬼'];
-const BOSS_COL=['#8fa0bf','#3ee08f','#c58b5a','#ff5d6c','#b8c4ff','#9aa3ad','#b48cff'];
-const BOSS_PRE=['','強化','精英','狂暴','魔王級','傳說','神話'];
 const GEAR={
  weapon:{n:'武器',eff:'Boss 傷害',items:[['w1','木棍',1,100,.05],['w2','鐵劍',5,300,.10],['w3','雙刃匕首',10,700,.18],['w4','寒冰長槍',20,1400,.28],['w5','暗影大鎌',35,2500,.40]]},
  armor:{n:'防具',eff:'金幣',items:[['a1','布衣',1,100,.05],['a2','皮甲',5,300,.10],['a3','鎖子甲',10,700,.15],['a4','獵人戰甲',20,1400,.22],['a5','君主黑甲',35,2500,.30]]},
@@ -243,7 +262,7 @@ const SKILLS=[
  ['curio','🎲','好奇心',lv=>`隨機任務 XP +${lv*20}%`],
  ['luck','💰','財運',lv=>`寶箱與掉落金幣 +${lv*30}%`]];
 const SKILL_COST=[200,500,1000];
-const LOGIN=[['g',20],['g',30],['c'],['g',40],['g',50],['c'],['C']];
+const LOGIN=[['g',10],['g',15],['c'],['g',20],['g',25],['c'],['C']];
 const PENALTY=['伏地挺身 100 下','深蹲 100 下','棒式累計 5 分鐘','跑步 3 公里','波比跳 50 下','冷水澡 3 分鐘'];
 const QUOTES=['今天比昨天強一點就好。','不想做的那一項，通常就是最該做的。','連續比完美重要。','滑手機不會讓你升級。','先做 2 分鐘，剩下的自己會跟上。','睡飽，是最便宜的外掛。','心態是練出來的，不是想出來的。'];
 
@@ -254,16 +273,16 @@ function sfx(type){if(!S||!S.sound)return;try{AC=AC||new(window.AudioContext||wi
 
 /* ---------- 存檔 ---------- */
 function defaults(){return{v:4,start:today(),hard:false,sound:true,badge:false,dayStart:4,gold:0,xp:0,best:0,seen:0,
- rewards:[{id:uid(),name:'追劇一集',cost:50},{id:uid(),name:'手搖飲一杯',cost:80},{id:uid(),name:'睡到自然醒',cost:120},{id:uid(),name:'放縱餐',cost:200},{id:uid(),name:'買一個想要的小東西',cost:400}],
+ rewards:[{id:uid(),name:'追劇一集',cost:120},{id:uid(),name:'手搖飲一杯',cost:150},{id:uid(),name:'睡到自然醒',cost:250},{id:uid(),name:'放縱餐',cost:400},{id:uid(),name:'買一個想要的小東西',cost:1000}],
  log:{},lastClosed:null,penalties:[],stats:{STR:0,VIT:0,INT:0,SPI:0,DIS:0},
  boss:{week:null,dmg:0,dead:false,tier:0},bossKills:0,crits:0,focusCount:0,questCount:0,sideCount:0,
- ach:{},buys:[],timer:null,shift:{},gear:{own:[],eq:{}},skills:{},login:{last:null,streak:0,best:0}}}
+ ach:{},buys:[],timer:null,shift:{},gear:{own:[],eq:{}},skills:{},login:{last:null,streak:0,best:0},stolen:null,pendingMsg:null}}
 function load(){let d=defaults(),r=null;try{r=JSON.parse(localStorage.getItem(KEY))}catch(e){}
  S=r&&typeof r==='object'&&r.log?Object.assign(d,r):d;
  if(r&&r.log&&r.seen===undefined)S.seen=1;
  delete S.quests;delete S.safari;delete S.igUntil;
  S.stats=Object.assign({STR:0,VIT:0,INT:0,SPI:0,DIS:0},S.stats);if(S.stats.CHA){S.stats.SPI+=S.stats.CHA;delete S.stats.CHA}
- S.rewards=(S.rewards||[]).filter(x=>!(x.ig>0));S.shift=S.shift||{};S.gear=S.gear||{own:[],eq:{}};S.skills=S.skills||{};S.login=S.login||{last:null,streak:0,best:0};
+ S.rewards=(S.rewards||[]).filter(x=>!(x.ig>0));const RP={'追劇一集':[50,120],'手搖飲一杯':[80,150],'睡到自然醒':[120,250],'放縱餐':[200,400],'買一個想要的小東西':[400,1000]};S.rewards.forEach(r=>{const p=RP[r.name];if(p&&r.cost===p[0])r.cost=p[1]});S.shift=S.shift||{};S.gear=S.gear||{own:[],eq:{}};S.skills=S.skills||{};S.login=S.login||{last:null,streak:0,best:0};
  if(S.dayStart===undefined)S.dayStart=4;if(S.sound===undefined)S.sound=true;if(S.boss.tier===undefined)S.boss.tier=S.bossKills}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 load();
@@ -273,12 +292,15 @@ const dayLog=d=>{const L=S.log[d]||(S.log[d]={});L.done=L.done||{};L.cnt=L.cnt||
 const isShift=d=>!!S.shift[d];
 const activeOn=(q,d)=>!(q.days&&!q.days.includes(parse(d).getDay()))&&!(q.shift==='off'&&isShift(d))&&!(q.shift==='on'&&!isShift(d));
 const actives=d=>QUESTS.filter(q=>activeOn(q,d));
-const need=d=>Math.ceil(actives(d).length*0.8);
+const need=d=>Math.ceil(actives(d).length*0.75);
 const doneCount=d=>{const L=S.log[d];return L&&L.done?actives(d).filter(q=>L.done[q.id]).length:0};
 const cleared=d=>doneCount(d)>=need(d);
-const sidesOf=d=>{const n=dayNum(d),perm=shuffleSeed(SIDE.length,'side'+Math.floor(n/16)),k=((n%16)+16)%16;return[0,1,2].map(j=>perm[k*3+j])};
-function streak(){let n=0,d=today();if(cleared(d))n++;d=addDays(d,-1);while(diff(S.start,d)>=0&&cleared(d)){n++;d=addDays(d,-1)}return n}
-function lvInfo(xp){let lv=1,nd=60;xp=Math.max(0,xp);while(xp>=nd){xp-=nd;lv++;nd=60+lv*25}return{lv,cur:xp,need:nd}}
+const sidesOf=d=>{const n=dayNum(d),C=Math.floor(SIDE.length/3),perm=shuffleSeed(SIDE.length,'side'+Math.floor(n/C)),k=((n%C)+C)%C;return[0,1,2].map(j=>perm[k*3+j])};
+// 原子習慣「不要連續錯過兩次」：錯過一天不斷連勝，連續兩天才斷
+function streak(){let n=0,miss=0,d=today();if(cleared(d))n++;d=addDays(d,-1);
+ while(diff(S.start,d)>=0){if(cleared(d)){n++;miss=0}else if(++miss>=2)break;d=addDays(d,-1)}return n}
+const yMissed=()=>{const y=addDays(today(),-1);return diff(S.start,y)>=0&&!cleared(y)};
+function lvInfo(xp){let lv=1,nd=115;xp=Math.max(0,xp);while(xp>=nd){xp-=nd;lv++;nd=80+lv*35}return{lv,cur:xp,need:nd}}
 const rankOf=lv=>{let r=RANKS[0];for(const x of RANKS)if(lv>=x[0])r=x;return r};
 const pendingPen=()=>S.penalties.filter(p=>!p.done);
 const gearById=id=>{for(const k in GEAR){const i=GEAR[k].items.findIndex(x=>x[0]===id);if(i>=0)return{slot:k,tier:i+1,it:GEAR[k].items[i]}}return null};
@@ -300,13 +322,25 @@ function closeDays(){const t=today();let d=S.lastClosed?addDays(S.lastClosed,1):
  save()}
 
 /* ---------- Boss ---------- */
+function autoEquip(slot){let best=null;for(const id of S.gear.own){const g=gearById(id);if(g.slot===slot&&(!best||g.tier>best.tier))best=g}if(best)S.gear.eq[slot]=best.it[0];else delete S.gear.eq[slot]}
+function bossLost(p){const B=BOSS[p.idx];let msg;const eq=['weapon','armor','acc'].map(k=>S.gear.eq[k]).filter(Boolean);
+ if(eq.length&&!S.stolen){const id=eq[Math.floor(Math.random()*eq.length)],gg=gearById(id);S.gear.own=S.gear.own.filter(x=>x!==id);autoEquip(gg.slot);S.stolen=id;msg=`${B.n}搶走了你的 <b style="color:var(--red)">${gg.it[1]}</b>。<br>這週牠會再來，打倒牠就能搶回來。`}
+ else{const gl=Math.min(300,Math.round(S.gold*.3));S.gold-=gl;msg=`被搶走 <span class="gold">${gl} G</span>。<br>這週牠會再來，難度不變。`}
+ S.pendingMsg=`<h2>[敗北]</h2><div style="text-align:center">${bossSvg(p.idx,p.tier,170)}</div><div class="bigt" style="color:var(--red);text-align:center">上週沒打倒 ${B.n}</div><p class="muted" style="text-align:center;line-height:1.7">${msg}</p>`}
 function bossInfo(){const wk=weekKey(today());
- if(S.boss.week!==wk)S.boss={week:wk,dmg:0,dead:false,tier:S.bossKills};
- const i=((Math.round(dayNum(wk)/7)%7)+7)%7,t=S.boss.tier,hp=Math.round(700*(1+.35*t));
- return{i,t,name:(BOSS_PRE[Math.min(t,6)]?BOSS_PRE[Math.min(t,6)]+'・':'')+BOSSES[i],hp,dmg:Math.min(S.boss.dmg,hp),dead:S.boss.dead,gold:200+60*t,xp:100+30*t}}
+ if(S.boss.idx===undefined)S.boss.idx=((Math.round(dayNum(S.boss.week||wk)/7)%7)+7)%7;
+ if(S.boss.week!==wk){const p=S.boss,nb=(idx,tier,re)=>{S.boss={week:wk,idx,tier,dmg:0,dead:false,rematch:!!re}};
+  if(!p.week)nb(p.idx,S.bossKills);
+  else if(p.dead)nb((p.idx+1)%BOSS.length,S.bossKills);
+  else if(diff(p.week,S.start)>0)nb(p.idx,p.tier);   // 開始那週是試煉週，不懲罰
+  else{bossLost(p);nb(p.idx,p.tier,true)}
+  save()}
+ const B=BOSS[S.boss.idx],t=S.boss.tier,hp=Math.round(700*(1+.3*t)),pre=BOSS_PRE[Math.min(t,6)];
+ return{i:S.boss.idx,t,name:(pre?pre+'・':'')+B.n,title:B.t,hp,dmg:Math.min(S.boss.dmg,hp),dead:S.boss.dead,rematch:S.boss.rematch,gold:200+60*t,xp:100+30*t}}
 function hitBoss(x){const b0=bossInfo();if(S.boss.dead)return;S.boss.dmg=Math.max(0,S.boss.dmg+x);
- if(S.boss.dmg>=b0.hp){S.boss.dead=true;S.bossKills++;gain(b0.xp,b0.gold);sfx('lv');
-  setTimeout(()=>modal(`<h2>[BOSS 擊破]</h2><div style="text-align:center">${bossSvg(b0.i,b0.t,150,true)}</div><div class="bigt" style="text-align:center">${b0.name} 倒下了</div><p class="muted" style="text-align:center">獎勵 <span class="gold">+${b0.gold} G</span>　<b style="color:var(--cyan)">+${b0.xp} XP</b><br>下週的 Boss 會更強。</p>`,[['讚','btn pri']]),300)}}
+ if(S.boss.dmg>=b0.hp){S.boss.dead=true;S.bossKills++;gain(b0.xp,b0.gold);sfx('lv');let extra='';
+  if(S.boss.rematch&&S.stolen){const gg=gearById(S.stolen);giveGear(S.stolen);extra=`<br>奪回了 <b style="color:var(--gold)">${gg.it[1]}</b>！`;S.stolen=null}
+  setTimeout(()=>modal(`<h2>[BOSS 擊破]</h2><div style="text-align:center">${bossSvg(b0.i,b0.t,200,true)}</div><div class="bigt" style="text-align:center">${b0.name} 倒下了</div><p class="muted" style="text-align:center;line-height:1.7">獎勵 <span class="gold">+${b0.gold} G</span>　<b style="color:var(--cyan)">+${b0.xp} XP</b>${extra}<br>下週會出現另一隻，而且更強。</p>`,[['讚','btn pri']]),300)}}
 
 /* ---------- 獎勵 ---------- */
 function gain(xp,gold){const before=lvInfo(S.xp).lv;S.xp+=xp;S.gold+=gold;const after=lvInfo(S.xp).lv;
@@ -325,7 +359,12 @@ function undo(r){S.xp-=r.xp;S.gold-=r.gold;const st=STATS[r.stat]?r.stat:'SPI';S
  if(r.kind==='side')S.sideCount--;else S.questCount--;if(r.crit)S.crits--;bossInfo();if(!S.boss.dead)S.boss.dmg=Math.max(0,S.boss.dmg-(r.dmg||r.xp))}
 function settle(t,was){if(!was&&cleared(t)){if(t===today())setTimeout(()=>toast(`<b>[系統]</b> 今日任務達成，連續 ${streak()} 天 🔥`),500);
  else setTimeout(()=>toast(`<b>[系統]</b> ${t.slice(5).replace('-','/')} 補登通關`),500)}}
+function pickLevel(q,t){const was=cleared(t);
+ modal(`<h2>[${esc(q.name)}]</h2><div class="bigt" style="font-size:22px">今天做到哪個程度？</div><p class="muted" style="margin:0 0 4px">迷你也算完成。狀態差就做迷你，別讓它斷掉。</p><div class="lvpick">${q.lv.map((l,i)=>`<button data-pick="${i}" style="border-color:${ELV[i][2]}66"><b style="color:${ELV[i][2]}">${ELV[i][0]}</b><span>${esc(l)}</span><small>+${Math.round(q.xp*ELV[i][1])} XP</small></button>`).join('')}</div>`,[['取消','btn']]);
+ $('#mcard').onclick=e=>{const b=e.target.closest('[data-pick]');if(!b)return;$('#modal').classList.remove('on');$('#mcard').onclick=null;const i=+b.dataset.pick,L=dayLog(t);
+  const r=reward(t,q.id+'L'+i,Math.round(q.xp*ELV[i][1]),q.stat,'quest');r.lv=i;r.amt=q.amt?q.amt[i]:1;L.done[q.id]=r;settle(t,was);after()}}
 function toggleQuest(id,t){const q=QUESTS.find(x=>x.id===id);if(!q)return;if(q.type==='screen')return openScreen(id,t);
+ if(q.lv&&!dayLog(t).done[id])return pickLevel(q,t);
  const L=dayLog(t),was=cleared(t),tg=Math.max(1,+q.target||1);
  if(L.done[id]){undo(L.done[id]);delete L.done[id];L.cnt[id]=tg>1?tg-1:0}
  else if(tg>1&&(L.cnt[id]||0)+1<tg){L.cnt[id]=(L.cnt[id]||0)+1;sfx('tap')}
@@ -353,9 +392,9 @@ function askScreen(){const t=today(),y=addDays(t,-1);if(S.asked===t||diff(S.star
 function openChest(big){const lk=1+.3*skl('luck');
  if(big){const pool=[];for(const k in GEAR)GEAR[k].items.slice(0,2).forEach(it=>{if(!S.gear.own.includes(it[0]))pool.push(it)});
   if(pool.length&&Math.random()<.5){const it=pool[Math.floor(Math.random()*pool.length)];giveGear(it[0]);return{ic:'🗡️',txt:`稀有掉落：<b style="color:var(--gold)">${it[1]}</b>`}}
-  const g=Math.round((150+Math.floor(Math.random()*101))*lk);S.gold+=g;return{ic:'💰',txt:`<span class="gold">+${g} G</span>`}}
- if(Math.random()<.3){const x=25+Math.floor(Math.random()*16);gain(x,0);return{ic:'✨',txt:`<b style="color:var(--cyan)">+${x} XP</b>`}}
- const g=Math.round((30+Math.floor(Math.random()*41))*lk);S.gold+=g;return{ic:'💰',txt:`<span class="gold">+${g} G</span>`}}
+  const g=Math.round((100+Math.floor(Math.random()*81))*lk);S.gold+=g;return{ic:'💰',txt:`<span class="gold">+${g} G</span>`}}
+ if(Math.random()<.3){const x=15+Math.floor(Math.random()*11);gain(x,0);return{ic:'✨',txt:`<b style="color:var(--cyan)">+${x} XP</b>`}}
+ const g=Math.round((20+Math.floor(Math.random()*26))*lk);S.gold+=g;return{ic:'💰',txt:`<span class="gold">+${g} G</span>`}}
 function checkLogin(then){const t=today();if(S.login.last===t)return false;const y=addDays(t,-1);
  S.login.streak=S.login.last===y?S.login.streak+1:1;S.login.last=t;S.login.best=Math.max(S.login.best||0,S.login.streak);
  const k=(S.login.streak-1)%7,r=LOGIN[k];let res;
@@ -399,57 +438,160 @@ function checkAch(){for(const a of ACH)if(!S.ach[a[0]]&&a[4]()){S.ach[a[0]]=Date
 function after(){S.best=Math.max(S.best||0,streak());checkAch();save();render();updBadge()}
 function updBadge(){if(!S.badge||!('setAppBadge'in navigator))return;try{const t=today(),L=S.log[t],n=actives(t).filter(q=>!(L&&L.done&&L.done[q.id])).length;(n?navigator.setAppBadge(n):navigator.clearAppBadge()).catch(()=>{})}catch(e){}}
 
-/* ---------- 圖像 ---------- */
-function avatarSvg(w){const tw=tierOf('weapon'),ta=tierOf('armor'),tr=tierOf('acc'),rk=rankOf(lvInfo(S.xp).lv)[1],au=AURA[rk],gid='g'+Math.random().toString(36).slice(2,6);
- const ac=['#3a4660','#b08d5b','#7a5233','#9aa6b6','#1f3a6b','#17111f'][ta],tc=['#55617d','#e2c89c','#a0703f','#e6eefc','#4fd1ff','#b48cff'][ta],sk='#e8c4a0';
- let s=`<svg viewBox="0 0 160 200" width="${w}" style="max-width:100%;overflow:visible"><defs><radialGradient id="${gid}"><stop offset="0" stop-color="${au}" stop-opacity=".45"/><stop offset="1" stop-color="${au}" stop-opacity="0"/></radialGradient></defs>`;
- s+=`<circle cx="80" cy="105" r="80" fill="url(#${gid})"/><ellipse cx="80" cy="184" rx="42" ry="7" fill="#000" opacity=".45"/>`;
- if(ta>=4)s+=`<path d="M54 80 L36 176 Q80 168 124 176 L106 80Z" fill="${ta===5?'#2a0f3a':'#10203d'}" stroke="${tc}" stroke-width="1" opacity=".95"/>`;
- s+=`<rect x="64" y="128" width="13" height="46" rx="5" fill="#1b2233"/><rect x="83" y="128" width="13" height="46" rx="5" fill="#1b2233"/><rect x="61" y="168" width="18" height="10" rx="4" fill="#0b0e15"/><rect x="81" y="168" width="18" height="10" rx="4" fill="#0b0e15"/>`;
- s+=`<rect x="43" y="82" width="12" height="40" rx="6" fill="${ac}" stroke="${tc}" stroke-width="1.5"/><rect x="105" y="82" width="12" height="40" rx="6" fill="${ac}" stroke="${tc}" stroke-width="1.5"/>`;
- s+=`<path d="M55 78 Q80 70 105 78 L101 134 L59 134Z" fill="${ac}" stroke="${tc}" stroke-width="2"/>`;
+/* ---------- 圖像：角色房間 ---------- */
+const stTier=k=>{const v=S.stats[k]||0,t=TH[k];let n=0;for(const x of t)if(v>=x)n++;return n};
+const rid=()=>Math.random().toString(36).slice(2,7);
+function books(x,y,w,seed){let s='',cx=x;const cols=['#ef4444','#3b82f6','#f5c451','#3ee08f','#a78bfa','#f97316','#e6eefc'];let k=0;
+ while(cx<x+w-4){const bw=4+Math.floor(srand(seed+k)*4),bh=12+Math.floor(srand(seed+'h'+k)*6);s+=`<rect x="${cx}" y="${y-bh}" width="${bw}" height="${bh}" fill="${cols[Math.floor(srand(seed+'c'+k)*cols.length)]}" opacity=".85"/>`;cx+=bw+1;k++}return s}
+function avatarSvg(w){const tw=tierOf('weapon'),ta=tierOf('armor'),tr=tierOf('acc'),rk=rankOf(lvInfo(S.xp).lv)[1],au=AURA[rk],g=rid();
+ const st=stTier('STR'),vt=stTier('VIT'),it=stTier('INT'),sp=stTier('SPI'),dt=stTier('DIS');
+ const ac=['#3a4660','#b08d5b','#7a5233','#9aa6b6','#1f3a6b','#17111f'][ta],tc=['#55617d','#e2c89c','#a0703f','#e6eefc','#4fd1ff','#b48cff'][ta],sk=vt>=3?'#f0c9a2':'#e8c4a0';
+ let s=`<svg viewBox="0 0 240 220" width="${w}" style="max-width:100%;border-radius:14px"><defs><radialGradient id="a${g}"><stop offset="0" stop-color="${au}" stop-opacity=".45"/><stop offset="1" stop-color="${au}" stop-opacity="0"/></radialGradient><linearGradient id="w${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0f1830"/><stop offset="1" stop-color="#070b14"/></linearGradient></defs>`;
+ s+=`<rect width="240" height="220" fill="url(#w${g})"/><rect y="190" width="240" height="30" fill="#0a0f1c"/><line x1="0" y1="190" x2="240" y2="190" stroke="#1c2a44"/>`;
+ // 健康：窗戶陽光
+ if(vt>=4)s+=`<rect x="92" y="14" width="56" height="40" rx="3" fill="#13264a" stroke="#2b3d63"/><line x1="120" y1="14" x2="120" y2="54" stroke="#2b3d63"/><path d="M92 54 L60 190 L180 190 L148 54Z" fill="#fff7d6" opacity=".05"/>`;
+ // 智力：書櫃
+ if(it===1)s+=books(14,190,40,'b1')+books(18,174,30,'b2');
+ if(it>=2){const top=[0,0,148,108,66][it];s+=`<rect x="10" y="${top}" width="52" height="${190-top}" fill="#2a1d14" stroke="#3b2a1a"/>`;for(let y=top+40;y<=190;y+=40)s+=`<rect x="10" y="${y-3}" width="52" height="3" fill="#3b2a1a"/>`+books(13,y-3,46,'s'+y)}
+ if(it>=4)s+=`<rect x="30" y="${66+17}" width="6" height="20" fill="#4fd1ff"/><circle cx="33" cy="${66+27}" r="12" fill="#4fd1ff" opacity=".2"/>`;
+ // 自律：月曆＋時鐘
+ if(dt>=1){s+=`<rect x="180" y="28" width="46" height="40" rx="3" fill="#e6eefc" opacity=".9"/><rect x="180" y="28" width="46" height="9" rx="3" fill="#ef4444"/>`;
+  const n=Math.min(25,dt*6);for(let i=0;i<25;i++){const x=184+(i%5)*8.5,y=41+Math.floor(i/5)*5.2;s+=i<n?`<path d="M${x} ${y+2} l2 2 l4 -4" stroke="#16a34a" stroke-width="1.2" fill="none"/>`:`<rect x="${x}" y="${y}" width="5" height="3.5" fill="#cbd5e1"/>`}}
+ if(dt>=3)s+=`<circle cx="203" cy="88" r="11" fill="#e6eefc" stroke="#94a3b8" stroke-width="2"/><line x1="203" y1="88" x2="203" y2="81" stroke="#0f172a" stroke-width="1.5"/><line x1="203" y1="88" x2="208" y2="90" stroke="#0f172a" stroke-width="1.5"/>`;
+ // Boss 獎盃
+ const tk=Math.min(5,S.bossKills||0);if(tk){s+=`<rect x="172" y="122" width="62" height="3" fill="#3b2a1a"/>`;for(let i=0;i<tk;i++){const x=176+i*12;s+=`<path d="M${x} 108 h8 v4 a4 4 0 0 1 -8 0z" fill="#f5c451"/><rect x="${x+3}" y="116" width="2" height="4" fill="#f5c451"/><rect x="${x+1}" y="119" width="6" height="3" fill="#b8860b"/>`}}
+ // 健康：植物
+ if(vt>=1){const h=[0,10,22,36,48][vt];s+=`<path d="M196 190 l4 -16 h20 l4 16z" fill="#7c4a2d"/>`;for(let i=0;i<vt*2+1;i++){const a=-Math.PI/2+(i-vt)*0.45,x2=210+Math.cos(a)*h,y2=174+Math.sin(a)*h;s+=`<path d="M210 174 Q${(210+x2)/2+6} ${(174+y2)/2} ${x2} ${y2}" stroke="#2f9e5a" stroke-width="2" fill="none"/><ellipse cx="${x2}" cy="${y2}" rx="${3+vt}" ry="${2+vt*.6}" fill="#3ee08f" transform="rotate(${a*57} ${x2} ${y2})"/>`}}
+ // 心靈：光環
+ s+=`<circle cx="120" cy="112" r="78" fill="url(#a${g})"/>`;
+ if(sp>=1)s+=`<ellipse cx="120" cy="40" rx="${18+sp*2}" ry="5" fill="none" stroke="#f0a8ff" stroke-width="2" opacity=".7"/>`;
+ if(sp>=2)for(let i=0;i<sp*2;i++){const x=78+i*(84/(sp*2-1||1)),y=90+(i%2)*30;s+=`<circle cx="${x}" cy="${y}" r="2" fill="#f0a8ff"><animate attributeName="cy" values="${y};${y-10};${y}" dur="${3+i%3}s" repeatCount="indefinite"/><animate attributeName="opacity" values=".3;1;.3" dur="${3+i%3}s" repeatCount="indefinite"/></circle>`}
+ if(sp>=3)s+=`<circle cx="120" cy="112" r="70" fill="none" stroke="#f0a8ff" stroke-opacity=".25" stroke-dasharray="3 6"><animateTransform attributeName="transform" type="rotate" from="0 120 112" to="360 120 112" dur="30s" repeatCount="indefinite"/></circle>`;
+ if(sp>=4)s+=`<path d="M100 188 q10 -14 20 0 q10 -14 20 0 q-20 8 -40 0z" fill="#f0a8ff" opacity=".6"/>`;
+ // 角色（體能決定體格）
+ const b=st*2.5,aw=12+st*2.2;
+ s+=`<g transform="translate(40,8)"><ellipse cx="80" cy="178" rx="${40+b}" ry="6" fill="#000" opacity=".45"/>`;
+ if(ta>=4)s+=`<path d="M${54-b} 80 L${36-b} 174 Q80 166 ${124+b} 174 L${106+b} 80Z" fill="${ta===5?'#2a0f3a':'#10203d'}" stroke="${tc}" stroke-width="1"/>`;
+ s+=`<rect x="${64-b*.4}" y="128" width="${13+b*.4}" height="44" rx="5" fill="#1b2233"/><rect x="83" y="128" width="${13+b*.4}" height="44" rx="5" fill="#1b2233"/><rect x="${61-b*.4}" y="166" width="18" height="9" rx="4" fill="#0b0e15"/><rect x="${81+b*.4}" y="166" width="18" height="9" rx="4" fill="#0b0e15"/>`;
+ s+=`<rect x="${55-b-aw}" y="82" width="${aw}" height="40" rx="${aw/2}" fill="${ac}" stroke="${tc}" stroke-width="1.5"/><rect x="${105+b}" y="82" width="${aw}" height="40" rx="${aw/2}" fill="${ac}" stroke="${tc}" stroke-width="1.5"/>`;
+ if(st>=3&&ta<3)s+=`<ellipse cx="${55-b-aw/2}" cy="96" rx="${aw/2+1.5}" ry="8" fill="${ac}"/><ellipse cx="${105+b+aw/2}" cy="96" rx="${aw/2+1.5}" ry="8" fill="${ac}"/>`;
+ s+=`<path d="M${55-b} 78 Q80 ${70-st} ${105+b} 78 L${101+b*.5} 134 L${59-b*.5} 134Z" fill="${ac}" stroke="${tc}" stroke-width="2"/>`;
+ if(st>=2&&ta<3)s+=`<path d="M66 92 Q73 98 80 92 Q87 98 94 92" stroke="#000" stroke-opacity=".3" stroke-width="1.5" fill="none"/>`;
+ if(st>=4&&ta<3)s+=`<path d="M74 104 h12 M74 112 h12 M74 120 h12 M80 100 v24" stroke="#000" stroke-opacity=".25" stroke-width="1.2"/>`;
  if(ta===3)for(let y=88;y<130;y+=8)s+=`<path d="M62 ${y} Q80 ${y+4} 98 ${y}" stroke="#c9d2de" stroke-width="1" fill="none" opacity=".6"/>`;
  if(ta>=2)s+=`<rect x="59" y="118" width="42" height="6" fill="#2b1d12"/><rect x="76" y="117" width="8" height="8" rx="1" fill="#f5c451"/>`;
- if(ta>=3)s+=`<ellipse cx="53" cy="82" rx="12" ry="8" fill="${tc}"/><ellipse cx="107" cy="82" rx="12" ry="8" fill="${tc}"/>`;
- if(ta===5)s+=`<path d="M44 80 l-6 -12 l12 6z M116 80 l6 -12 l-12 6z" fill="${tc}"/>`;
+ if(ta>=3)s+=`<ellipse cx="${53-b}" cy="82" rx="${12+b*.4}" ry="8" fill="${tc}"/><ellipse cx="${107+b}" cy="82" rx="${12+b*.4}" ry="8" fill="${tc}"/>`;
+ if(ta===5)s+=`<path d="M${44-b} 80 l-6 -12 l12 6z M${116+b} 80 l6 -12 l-12 6z" fill="${tc}"/>`;
  if(ta>=4)s+=`<path d="M80 88 l7 10 -7 10 -7 -10z" fill="${tc}" opacity=".9"/>`;
- s+=`<circle cx="49" cy="124" r="6" fill="${sk}"/><circle cx="111" cy="124" r="6" fill="${sk}"/><rect x="74" y="66" width="12" height="10" fill="${sk}"/>`;
- s+=`<circle cx="80" cy="54" r="17" fill="${sk}"/>`;
+ const lh=55-b-aw/2,rh=105+b+aw/2;
+ s+=`<circle cx="${lh}" cy="124" r="${6+st*.4}" fill="${sk}"/><circle cx="${rh}" cy="124" r="${6+st*.4}" fill="${sk}"/><rect x="${74-st*.5}" y="66" width="${12+st}" height="10" fill="${sk}"/><circle cx="80" cy="54" r="17" fill="${sk}"/>`;
  s+=ta>=4?`<path d="M58 62 Q57 30 80 30 Q103 30 102 62 Q98 44 80 43 Q62 44 58 62Z" fill="${ac}" stroke="${tc}" stroke-width="1.5"/>`:`<path d="M62 52 Q64 34 80 35 Q97 34 98 52 Q92 42 80 43 Q68 42 62 52Z" fill="#141414"/>`;
  const glow=['C','B','A','S'].includes(rk);
  s+=`<circle cx="73" cy="56" r="2.2" fill="${glow?au:'#1a1a1a'}"/><circle cx="87" cy="56" r="2.2" fill="${glow?au:'#1a1a1a'}"/>`;
  if(glow)s+=`<circle cx="73" cy="56" r="5" fill="${au}" opacity=".25"/><circle cx="87" cy="56" r="5" fill="${au}" opacity=".25"/>`;
- if(tw===1)s+=`<line x1="111" y1="140" x2="124" y2="72" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round"/>`;
- if(tw===2)s+=`<path d="M110 118 L116 52 L121 52 L116 118Z" fill="#dfe6ee"/><rect x="103" y="116" width="20" height="4" rx="2" fill="#f5c451"/><rect x="109" y="120" width="5" height="12" fill="#5a3a22"/>`;
- if(tw===3)s+=`<path d="M112 124 L126 96 L129 98 L116 126Z" fill="#dfe6ee"/><path d="M48 124 L34 96 L31 98 L44 126Z" fill="#dfe6ee"/><circle cx="120" cy="110" r="10" fill="#4fd1ff" opacity=".15"/>`;
- if(tw===4)s+=`<line x1="114" y1="160" x2="126" y2="34" stroke="#9aa6b6" stroke-width="3.5"/><path d="M126 34 l-7 -4 l9 -22 l7 24z" fill="#9ee8ff"/><circle cx="128" cy="22" r="12" fill="#4fd1ff" opacity=".25"/>`;
- if(tw===5)s+=`<line x1="114" y1="164" x2="122" y2="30" stroke="#6b5a86" stroke-width="4"/><path d="M122 32 Q150 30 156 60 Q140 42 121 44Z" fill="#b48cff"/><path d="M122 32 Q150 30 156 60" stroke="#e6d4ff" stroke-width="1.5" fill="none"/><circle cx="140" cy="44" r="18" fill="#b48cff" opacity=".2"/>`;
- if(tr===1)s+=`<circle cx="49" cy="124" r="2.5" fill="#d08a3a"/>`;
+ const R=rh;
+ if(tw===1)s+=`<line x1="${R}" y1="138" x2="${R+12}" y2="70" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round"/>`;
+ if(tw===2)s+=`<path d="M${R-1} 118 L${R+5} 52 L${R+10} 52 L${R+5} 118Z" fill="#dfe6ee"/><rect x="${R-8}" y="116" width="20" height="4" rx="2" fill="#f5c451"/><rect x="${R-2}" y="120" width="5" height="12" fill="#5a3a22"/>`;
+ if(tw===3)s+=`<path d="M${R+1} 124 L${R+15} 96 L${R+18} 98 L${R+5} 126Z" fill="#dfe6ee"/><path d="M${lh-1} 124 L${lh-15} 96 L${lh-18} 98 L${lh-5} 126Z" fill="#dfe6ee"/>`;
+ if(tw===4)s+=`<line x1="${R+3}" y1="160" x2="${R+15}" y2="34" stroke="#9aa6b6" stroke-width="3.5"/><path d="M${R+15} 34 l-7 -4 l9 -22 l7 24z" fill="#9ee8ff"/><circle cx="${R+17}" cy="22" r="12" fill="#4fd1ff" opacity=".25"/>`;
+ if(tw===5)s+=`<line x1="${R+3}" y1="164" x2="${R+11}" y2="30" stroke="#6b5a86" stroke-width="4"/><path d="M${R+11} 32 Q${R+39} 30 ${R+45} 60 Q${R+29} 42 ${R+10} 44Z" fill="#b48cff"/><circle cx="${R+29}" cy="44" r="18" fill="#b48cff" opacity=".2"/>`;
+ if(tr===1)s+=`<circle cx="${lh}" cy="124" r="2.5" fill="#d08a3a"/>`;
  if(tr>=2&&tr<=4)s+=`<path d="M70 76 Q80 86 90 76" stroke="#d6dde6" stroke-width="1.5" fill="none"/>`;
  if(tr===2)s+=`<circle cx="80" cy="84" r="3" fill="#d6dde6"/>`;
  if(tr===3)s+=`<circle cx="80" cy="85" r="7" fill="#4fd1ff" opacity=".3"/><path d="M80 80 l4 5 -4 5 -4 -5z" fill="#3b82f6"/>`;
  if(tr===4)s+=`<circle cx="80" cy="86" r="8" fill="#f5c451" opacity=".3"/><path d="M82 79 l-5 7 h4 l-3 7 6 -9 h-4z" fill="#f5c451"/>`;
  if(tr===5)s+=`<path d="M64 38 L66 26 L72 33 L80 22 L88 33 L94 26 L96 38Z" fill="#f5c451" stroke="#b8860b"/><circle cx="80" cy="31" r="2" fill="#ff5d6c"/>`;
- return s+'</svg>'}
-function bossSvg(i,t,w,dead){const c=BOSS_COL[i],T=Math.min(t,6),k=3+i%3,gid='b'+Math.random().toString(36).slice(2,6);
- const ec=T>=3?'#ffd84d':'#ff3b3b';let s=`<svg viewBox="0 0 200 180" width="${w}" style="max-width:100%;${dead?'filter:grayscale(1);opacity:.55':''}"><defs><radialGradient id="${gid}"><stop offset="0" stop-color="${c}" stop-opacity="${.18+T*.06}"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></radialGradient></defs>`;
- s+=`<circle cx="100" cy="98" r="${80+T*3}" fill="url(#${gid})"/><ellipse cx="100" cy="164" rx="${52+T*3}" ry="8" fill="#000" opacity=".5"/>`;
- const R=50+T*3;
- for(let j=0;j<T*2;j++){const a=Math.PI*(1.15+.7*(j+.5)/(T*2)),x=100+Math.cos(a)*R*.95,y=100+Math.sin(a)*R*.85;s+=`<path d="M${x-6} ${y+4} L${x+Math.cos(a)*16} ${y+Math.sin(a)*18} L${x+6} ${y+4}Z" fill="${c}" stroke="#05070d" stroke-width="1"/>`}
- if(T>=2){s+=`<path d="M70 ${100-R*.7} Q55 ${60-R*.5} 62 ${40-T*3} Q72 ${70-R*.4} 80 ${100-R*.75}Z" fill="#e8e0cf"/><path d="M130 ${100-R*.7} Q145 ${60-R*.5} 138 ${40-T*3} Q128 ${70-R*.4} 120 ${100-R*.75}Z" fill="#e8e0cf"/>`}
- if(T>=4){s+=`<path d="M58 ${100-R*.4} Q36 ${70-R*.3} 40 ${60-T*2} Q50 ${80-R*.2} 66 ${100-R*.5}Z" fill="#d6ccb8"/><path d="M142 ${100-R*.4} Q164 ${70-R*.3} 160 ${60-T*2} Q150 ${80-R*.2} 134 ${100-R*.5}Z" fill="#d6ccb8"/>`}
- let p='';for(let j=0;j<=40;j++){const a=j/40*Math.PI*2,r=R*(1+.08*Math.sin(k*a+i));p+=(j?'L':'M')+(100+Math.cos(a)*r*1.1).toFixed(1)+' '+(100+Math.sin(a)*r*.9).toFixed(1)}
- s+=`<path d="${p}Z" fill="${c}" stroke="#05070d" stroke-width="2"/><ellipse cx="100" cy="${112}" rx="${R*.7}" ry="${R*.45}" fill="#000" opacity=".12"/>`;
- const ex=T>=5?[66,83,100,117,134]:T>=3?[78,100,122]:[84,116],er=T>=5?7:8+T*.6;ex.forEach((x,j)=>{const y=T>=5?(j===2?80:j===1||j===3?86:94):86;s+=`<circle cx="${x}" cy="${y}" r="${er}" fill="#0b0b10"/><circle cx="${x}" cy="${y}" r="${er*.5}" fill="${dead?'#555':ec}"/><circle cx="${x}" cy="${y}" r="${12+T}" fill="${ec}" opacity="${dead?0:.12}"/>`});
- s+=`<path d="M78 120 Q100 ${132+T*2} 122 120" stroke="#0b0b10" stroke-width="4" fill="#3a0d14"/>`;
- if(T>=1)for(let j=0;j<5;j++){const x=82+j*9;s+=`<path d="M${x} 121 l4 ${7+T} l4 -${7+T}z" fill="#f1ece0"/>`}
- if(T>=5)s+=`<path d="M78 ${100-R*.85} L82 ${84-R*.85} L90 ${94-R*.85} L100 ${78-R*.85} L110 ${94-R*.85} L118 ${84-R*.85} L122 ${100-R*.85}Z" fill="#f5c451" stroke="#8a6a10"/>`;
- return s+'</svg>'}
+ return s+'</g></svg>'}
+
+/* ---------- 圖像：Boss ---------- */
+function bossSvg(i,t,w,dead){const B=BOSS[i],c=B.c,T=Math.min(t,6),g=rid();
+ const eye=T>=4?'#ffffff':T>=2?'#ffcf33':'#ff3b3b',eg=T>=4?c:eye;
+ let s=`<svg viewBox="0 0 240 220" width="${w}" style="max-width:100%;border-radius:14px;${dead?'filter:grayscale(1) brightness(.6)':''}"><defs>
+ <radialGradient id="bg${g}" cx="50%" cy="45%"><stop offset="0" stop-color="${c}" stop-opacity="${.28+T*.07}"/><stop offset=".6" stop-color="${c}" stop-opacity=".06"/><stop offset="1" stop-color="#05070d" stop-opacity="0"/></radialGradient>
+ <linearGradient id="bd${g}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${c}"/><stop offset="1" stop-color="#0b0b14"/></linearGradient>
+ <filter id="gl${g}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+ <rect width="240" height="220" fill="#05070d"/><rect width="240" height="220" fill="url(#bg${g})"/>
+ <ellipse cx="120" cy="198" rx="${70+T*4}" ry="9" fill="${c}" opacity=".18"/>`;
+ if(T>=2)s+=`<circle cx="120" cy="100" r="${84+T*2}" fill="none" stroke="${c}" stroke-opacity=".35" stroke-width="1.5" stroke-dasharray="2 9">${dead?'':`<animateTransform attributeName="transform" type="rotate" from="0 120 100" to="360 120 100" dur="40s" repeatCount="indefinite"/>`}</circle>`;
+ if(T>=4){let sp='';for(let k=0;k<12;k++){const a=k/12*Math.PI*2,r1=92,r2=104+(k%2)*8;sp+=`M${120+Math.cos(a-.08)*r1} ${100+Math.sin(a-.08)*r1} L${120+Math.cos(a)*r2} ${100+Math.sin(a)*r2} L${120+Math.cos(a+.08)*r1} ${100+Math.sin(a+.08)*r1}Z`}s+=`<path d="${sp}" fill="${c}" opacity=".35"/>`}
+ const n=6+T*3;for(let k=0;k<n;k++){const x=20+srand(g+k)*200,y=200-srand('y'+k)*40,d=3+srand('d'+k)*4;s+=`<circle cx="${x}" cy="${y}" r="${1+srand('r'+k)*1.6}" fill="${B.e}" opacity="0">${dead?'':`<animate attributeName="cy" values="${y};${y-140}" dur="${d}s" begin="${srand('b'+k)*d}s" repeatCount="indefinite"/><animate attributeName="opacity" values="0;.9;0" dur="${d}s" begin="${srand('b'+k)*d}s" repeatCount="indefinite"/>`}</circle>`}
+ s+=`<g>${dead?'':'<animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 0" dur="3.2s" repeatCount="indefinite"/>'}`;
+ const E=(x,y,r=3.2)=>`<g filter="url(#gl${g})"><ellipse cx="${x}" cy="${y}" rx="${r+1}" ry="${r*.7}" fill="${dead?'#444':eye}"/></g><circle cx="${x}" cy="${y}" r="${r*3}" fill="${eg}" opacity="${dead?0:.18}"/>`;
+ const D=[
+ // 0 怠惰之王
+ ()=>`<path d="M58 196 L58 64 Q58 44 78 42 L162 42 Q182 44 182 64 L182 196Z" fill="#140c24" stroke="${c}" stroke-opacity=".5"/>
+ <path d="M66 44 L74 20 L82 42 M100 42 L110 12 L120 40 L130 12 L140 42 M158 42 L166 20 L174 44" fill="#140c24" stroke="${c}" stroke-opacity=".5"/>
+ <path d="M74 196 Q66 132 90 100 L150 100 Q174 132 166 196Z" fill="url(#bd${g})"/>
+ <path d="M90 100 L120 196 L150 100" fill="#0b0716" opacity=".7"/>
+ <ellipse cx="120" cy="104" rx="48" ry="15" fill="#2a1d45"/>
+ <path d="M98 104 Q96 64 120 58 Q144 64 142 104Z" fill="#06030c"/>
+ <path d="M101 66 L104 48 L112 58 L120 42 L128 58 L136 48 L139 66Z" fill="#f5c451" stroke="#8a6a10"/><circle cx="120" cy="54" r="2.5" fill="${c}"/>
+ ${E(111,84)}${E(129,84)}
+ <ellipse cx="84" cy="150" rx="12" ry="18" fill="#1e1436"/><ellipse cx="156" cy="150" rx="12" ry="18" fill="#1e1436"/>
+ <line x1="168" y1="194" x2="178" y2="70" stroke="#f5c451" stroke-width="3"/><circle cx="178" cy="66" r="7" fill="${c}" filter="url(#gl${g})"/>`,
+ // 1 無限滑動獸
+ ()=>{let p=`<path d="M30 196 C70 206 110 176 92 150 S56 104 104 86 S150 92 140 60" stroke="#0b1620" stroke-width="34" fill="none" stroke-linecap="round"/>
+ <path d="M30 196 C70 206 110 176 92 150 S56 104 104 86 S150 92 140 60" stroke="url(#bd${g})" stroke-width="28" fill="none" stroke-linecap="round"/>`;
+  [[48,196],[70,192],[92,170],[84,140],[78,116],[96,92],[122,88],[138,74]].forEach(([x,y],k)=>p+=`<rect x="${x-5}" y="${y-7}" width="10" height="14" rx="2" fill="#071018" stroke="${c}" stroke-width="1"/><rect x="${x-3.5}" y="${y-5}" width="7" height="8" fill="${c}" opacity="${.35+.08*(k%3)}"/>`);
+  for(let k=0;k<7;k++){const a=-Math.PI*(.15+k*.12);p+=`<path d="M140 52 L${140+Math.cos(a)*44} ${52+Math.sin(a)*44} L${140+Math.cos(a+.14)*30} ${52+Math.sin(a+.14)*30}Z" fill="${c}" opacity=".45"/>`}
+  return p+`<path d="M118 58 Q124 24 152 26 Q180 32 176 54 L160 62 Q146 70 126 66Z" fill="#0d1d28" stroke="${c}" stroke-width="1.5"/>
+ <path d="M126 66 Q150 84 172 64 L160 62Z" fill="#300a12"/><path d="M134 66 l3 8 l3 -7 M146 68 l3 8 l3 -8 M158 66 l2 6 l3 -7" fill="#f1ece0"/>
+ ${E(146,40,3.6)}${E(164,42,3)}`},
+ // 2 拖延巨像
+ ()=>`<rect x="88" y="150" width="24" height="46" fill="#3b4252"/><rect x="128" y="150" width="24" height="46" fill="#3b4252"/>
+ <path d="M70 70 L170 70 L160 156 L80 156Z" fill="#4b5563" stroke="#1f2937" stroke-width="2"/>
+ <ellipse cx="66" cy="78" rx="22" ry="18" fill="#525b6b" stroke="#1f2937" stroke-width="2"/><ellipse cx="174" cy="78" rx="22" ry="18" fill="#525b6b" stroke="#1f2937" stroke-width="2"/>
+ <rect x="44" y="88" width="22" height="70" rx="8" fill="#4b5563" stroke="#1f2937" stroke-width="2"/><rect x="174" y="88" width="22" height="70" rx="8" fill="#4b5563" stroke="#1f2937" stroke-width="2"/>
+ <rect x="38" y="152" width="34" height="26" rx="8" fill="#3b4252"/><rect x="168" y="152" width="34" height="26" rx="8" fill="#3b4252"/>
+ <rect x="100" y="34" width="40" height="36" rx="6" fill="#525b6b" stroke="#1f2937" stroke-width="2"/><rect x="104" y="46" width="32" height="7" fill="#0b0b10"/>
+ ${E(112,49.5,2.8)}${E(128,49.5,2.8)}
+ <circle cx="120" cy="108" r="22" fill="#e7dcc6" stroke="#8b6b3a" stroke-width="3"/>${[...Array(12)].map((_,k)=>{const a=k/12*Math.PI*2;return`<line x1="${120+Math.cos(a)*17}" y1="${108+Math.sin(a)*17}" x2="${120+Math.cos(a)*20}" y2="${108+Math.sin(a)*20}" stroke="#3b2a1a" stroke-width="1.5"/>`}).join('')}
+ <line x1="120" y1="108" x2="120" y2="92" stroke="#1f1f1f" stroke-width="2.5"/><line x1="120" y1="108" x2="131" y2="114" stroke="#1f1f1f" stroke-width="2"/>
+ <g filter="url(#gl${g})" stroke="${c}" stroke-width="2" fill="none"><path d="M80 84 l10 10 l-4 12 l8 8"/><path d="M158 132 l-8 -6 l2 -10 l-8 -6"/><path d="M60 110 l-4 14 l6 10"/><path d="M98 140 l6 8 l-2 8"/></g>`,
+ // 3 宵夜惡龍
+ ()=>`<path d="M118 92 L28 40 Q36 64 30 84 Q46 80 50 96 Q62 90 70 104 Q84 98 92 112Z" fill="#3a0c12" stroke="${c}" stroke-width="1.5"/>
+ <path d="M122 92 L212 40 Q204 64 210 84 Q194 80 190 96 Q178 90 170 104 Q156 98 148 112Z" fill="#3a0c12" stroke="${c}" stroke-width="1.5"/>
+ <path d="M96 196 Q84 150 104 116 L136 116 Q156 150 144 196Z" fill="url(#bd${g})"/>
+ <path d="M108 196 Q104 158 112 128 L128 128 Q136 158 132 196Z" fill="#f5c45133"/>
+ <path d="M104 120 Q96 80 120 62 Q144 80 136 120Z" fill="url(#bd${g})"/>
+ <path d="M96 58 Q120 30 144 58 L150 74 Q120 90 90 74Z" fill="#7f1d1d" stroke="${c}" stroke-width="1.5"/>
+ <path d="M100 50 Q86 30 92 14 Q100 34 108 44Z M140 50 Q154 30 148 14 Q140 34 132 44Z" fill="#e8e0cf"/>
+ <path d="M100 76 Q120 88 140 76 L136 84 Q120 96 104 84Z" fill="#ffb020" filter="url(#gl${g})"/>
+ ${E(108,60,3)}${E(132,60,3)}
+ <path d="M90 190 l-8 6 h14z M150 190 l8 6 h-14z" fill="#e8e0cf"/>`,
+ // 4 熬夜幽靈
+ ()=>`<circle cx="176" cy="44" r="22" fill="#e2e8f0" opacity=".85"/><circle cx="186" cy="38" r="20" fill="#05070d"/>
+ <line x1="66" y1="196" x2="88" y2="40" stroke="#475569" stroke-width="3"/><path d="M88 40 Q40 30 26 70 Q50 52 90 54Z" fill="#cbd5e1" stroke="${c}" stroke-width="1.5" filter="url(#gl${g})"/>
+ <path d="M120 40 Q154 44 158 96 Q164 150 176 196 L160 186 L150 198 L138 184 L126 198 L114 184 L102 198 L90 186 L76 196 Q88 150 86 96 Q88 44 120 40Z" fill="url(#bd${g})" opacity=".95"/>
+ <path d="M120 52 Q142 56 142 92 Q132 104 120 104 Q108 104 98 92 Q98 56 120 52Z" fill="#02040a"/>
+ ${E(112,80,3.2)}${E(128,80,3.2)}
+ <path d="M84 120 q-14 8 -16 20 M156 120 q14 8 16 20" stroke="#cbd5e1" stroke-width="3" fill="none"/>
+ ${[[60,150],[180,140],[50,110],[190,100]].map(([x,y])=>`<path d="M${x} ${y} q-6 -10 0 -20 q6 10 0 20z" fill="${c}" opacity=".6" filter="url(#gl${g})"/>`).join('')}`,
+ // 5 藉口魔偶
+ ()=>`<path d="M120 20 Q138 24 136 50 L134 110 Q120 120 106 110 L104 50 Q102 24 120 20Z" fill="url(#bd${g})"/>
+ <path d="M106 26 L96 6 L112 22 M134 26 L144 6 L128 22" fill="#1a2e05" stroke="${c}"/>
+ ${E(112,40,2.6)}${E(128,40,2.6)}<path d="M110 54 Q120 62 130 54" stroke="${c}" stroke-width="1.5" fill="none"/>
+ <path d="M106 64 Q70 60 40 76 M134 64 Q170 60 200 76" stroke="#1a2e05" stroke-width="6" fill="none" stroke-linecap="round"/>
+ <path d="M106 112 L96 196 M134 112 L144 196" stroke="#1a2e05" stroke-width="5"/>
+ ${[[40,76,52,150,'smile'],[80,70,92,172,'sad'],[160,70,148,172,'smile'],[200,76,188,150,'sad']].map(([x1,y1,x2,y2,m])=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2-14}" stroke="${B.e}" stroke-width=".8" opacity=".7"/><ellipse cx="${x2}" cy="${y2}" rx="12" ry="15" fill="#f1ece0"/><ellipse cx="${x2-4}" cy="${y2-4}" rx="2.5" ry="2" fill="#111"/><ellipse cx="${x2+4}" cy="${y2-4}" rx="2.5" ry="2" fill="#111"/><path d="M${x2-5} ${y2+5} Q${x2} ${m==='smile'?y2+10:y2+1} ${x2+5} ${y2+5}" stroke="#111" stroke-width="1.5" fill="none"/>`).join('')}`,
+ // 6 沙發吸血鬼
+ ()=>`<path d="M120 60 L20 196 L50 180 L64 196 L86 182 L120 196 L154 182 L176 196 L190 180 L220 196Z" fill="#14060b" stroke="${c}" stroke-width="1.5"/>
+ <path d="M120 66 L40 186 L120 170 L200 186Z" fill="url(#bd${g})" opacity=".85"/>
+ <path d="M86 70 L96 40 L120 62 L144 40 L154 70Z" fill="#3a0a16" stroke="${c}" stroke-width="1.5"/>
+ <path d="M104 92 Q102 56 120 52 Q138 56 136 92 Q128 104 120 104 Q112 104 104 92Z" fill="#e5e7eb"/>
+ <path d="M102 66 Q104 44 120 46 L120 58 Z M138 66 Q136 44 120 46 L120 58Z" fill="#111"/>
+ ${E(112,76,2.8)}${E(128,76,2.8)}
+ <path d="M114 92 l2 6 l2 -6 M122 92 l2 6 l2 -6" fill="#f8fafc"/><path d="M110 90 Q120 96 130 90" stroke="#7f1d1d" stroke-width="1.5" fill="none"/>
+ ${[[44,48],[196,60],[60,24],[184,26]].map(([x,y])=>`<path d="M${x} ${y} q-8 -6 -14 0 q4 -1 6 3 q2 -4 8 -3 q2 -4 8 3 q-6 -6 -14 0z" fill="#1a0a10" stroke="${c}" stroke-width=".8"/>`).join('')}`];
+ s+=D[i]();
+ if(T>=1&&i!==0&&i!==2&&i!==3){s+=`<path d="M${108-T} ${i===1?28:i===6?40:i===4?40:20} l-4 -${8+T*2} l8 ${6+T} M${132+T} ${i===1?28:i===6?40:i===4?40:20} l4 -${8+T*2} l-8 ${6+T}" stroke="${c}" stroke-width="2" fill="none" opacity="${.3+T*.1}"/>`}
+ if(T>=5&&i!==0)s+=`<path d="M104 ${i===2?30:i===1?18:i===5?16:i===3?26:36} l4 -12 l6 8 l6 -12 l6 12 l6 -8 l4 12z" fill="#f5c451" stroke="#8a6a10" filter="url(#gl${g})"/>`;
+ return s+'</g></svg>'}
 
 /* ---------- UI 基礎 ---------- */
 function toast(h,c=''){const box=$('#toasts');while(box.children.length>=3)box.firstChild.remove();const el=document.createElement('div');el.className='toast '+c;el.innerHTML=h;box.appendChild(el);setTimeout(()=>el.remove(),2600)}
 let mActs=[];
-function modal(html,acts){mActs=acts||[['OK','btn pri']];
+function modal(html,acts){mActs=acts||[['OK','btn pri']];$('#mcard').onclick=null;
  $('#mcard').innerHTML=html+'<div class="acts">'+mActs.map((a,i)=>`<button class="${a[1]}" data-m="${i}">${a[0]}</button>`).join('')+'</div>';$('#modal').classList.add('on')}
 $('#modal').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b){const a=mActs[+b.dataset.m];$('#modal').classList.remove('on');if(a&&a[2])a[2]()}});
 let tab='today',viewY=false;
@@ -463,7 +605,7 @@ function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)
  let h=`<div class="panel sys"><div class="ptitle">[RESET PROGRAM]<span>${dn>66?'第 '+Math.ceil(dn/66)+' 輪':'66 天計畫'}</span></div>
  <div class="day"><div class="big">DAY ${dn>66?((dn-1)%66)+1:dn}<small> / 66</small></div><div class="grow"></div><div style="text-align:right"><div style="font:800 24px var(--mono);color:${dc>=nd?'var(--cyan)':'var(--text)'}">${dc}/${act.length}</div><div class="muted">達標需 ${nd}</div></div></div>
  <div class="bar" style="margin-top:10px"><i style="width:${nd?Math.min(100,dc/nd*100):100}%"></i></div>
- <div class="chips"><span class="chip hot">🔥 連續 ${st} 天</span><span class="chip">📅 簽到 ${S.login.streak||0} 天</span>${S.hard?'<span class="chip" style="color:var(--red);border-color:#552030">😈 硬核</span>':''}</div>
+ <div class="chips"><span class="chip hot">🔥 連續 ${st} 天</span><span class="chip">📅 簽到 ${S.login.streak||0} 天</span>${yMissed()&&!cleared(t)?'<span class="chip" style="color:var(--gold);border-color:#5a4a18">⚠️ 昨天沒過，今天別再錯過</span>':''}${S.hard?'<span class="chip" style="color:var(--red);border-color:#552030">😈 硬核</span>':''}</div>
  <p class="quote">「${q}」</p></div>`;
  const pp=pendingPen();
  if(pp.length)h+=`<div class="panel pen"><div class="ptitle">[懲罰任務]<span>完成前商店鎖定</span></div>${pp.map(p=>`<button class="q" data-pen="${p.id}"><span class="box"></span><span class="nm">${esc(p.text)}<div class="muted">${p.date.slice(5)} 失敗的代價</div></span></button>`).join('')}</div>`;
@@ -472,10 +614,11 @@ function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)
  if(viewY)h+=`<p class="muted" style="margin:0 0 6px">忘記勾的可以補，只開放昨天。</p>`;
  const row=q=>{const d=L.done[q.id];
   if(q.type==='screen'){const v=L.scr,over=v!=null&&!d;return`<div class="row qr"><button class="q ${d?'done':''}" data-q="${q.id}"><span class="box" style="${over?'border-color:var(--red);color:var(--red)':''}">${d?'✓':over?'✕':''}</span><span class="nm"><span class="qn">📱 ${esc(q.name)}</span><span class="cntw">${v!=null?`<b style="color:${over?'var(--red)':'var(--cyan)'}">${fmtMin(v)}</b><span class="muted">/ 目標 ${fmtMin(q.goal)}</span>`:`<span class="muted">點我輸入・目標 ${fmtMin(q.goal)} 內</span>`}</span></span>${tag(q.stat)}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+'+q.xp+'↑'}</span></button></div>`}
-  return`<div class="row qr"><button class="q ${d?'done':''}" data-q="${q.id}"><span class="box">${d?'✓':''}</span><span class="nm"><span class="qn">${esc(q.name)}</span>${q.hint&&!d?`<span class="hint">${esc(q.hint)}</span>`:''}</span>${tag(q.stat)}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+'+q.xp}</span></button></div>`};
+  const lb=d&&d.lv!=null&&q.lv?`<span class="lvb" style="color:${ELV[d.lv][2]};border-color:${ELV[d.lv][2]}66">${ELV[d.lv][0]}・${esc(q.lv[d.lv])}</span>`:'';
+  return`<div class="row qr"><button class="q ${d?'done':''}" data-q="${q.id}"><span class="box">${d?'✓':''}</span><span class="nm"><span class="qn">${esc(q.name)}</span>${q.lv&&!d?`<span class="hint">迷你 ${esc(q.lv[0])}・標準 ${esc(q.lv[1])}・精英 ${esc(q.lv[2])}</span>`:''}${q.hint&&!d?`<span class="hint">${esc(q.hint)}</span>`:''}${lb}</span>${tag(q.stat)}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:(q.lv?'+'+Math.round(q.xp*.5)+'~':'+')+(q.lv?Math.round(q.xp*1.6):q.xp)}</span></button></div>`};
  h+=act.length?Object.keys(SLOTS).map(k=>{const g=act.filter(q=>q.slot===k);return g.length?`<div class="slot">${SLOTS[k]}</div>`+g.map(row).join(''):''}).join(''):'<p class="muted">今天沒有排任務 😴</p>';
  h+='</div>';
- h+=`<div class="panel bonus"><div class="ptitle" style="color:var(--gold)">[隨機任務]<span>每天 3 個・不影響通關</span></div>`+sidesOf(D).map(i=>{const s=SIDE[i],d=L.side[i];return`<button class="q ${d?'done':''}" data-side="${i}"><span class="box">${d?'✓':''}</span><span class="nm"><span class="qn">${esc(s[0])}</span></span>${tag(s[1])}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+15'}</span></button>`}).join('')+'</div>';
+ h+=`<div class="panel bonus"><div class="ptitle" style="color:var(--gold)">[隨機任務]<span>每天 3 個・不影響通關</span></div>`+sidesOf(D).map(i=>{const s=SIDE[i],d=L.side[i];return`<button class="q ${d?'done':''}" data-side="${i}"><span class="box">${d?'✓':''}</span><span class="nm"><span class="qn">${esc(s[0])}</span>${s[2]&&!d?`<span class="hint">${esc(s[2])}</span>`:''}</span>${tag(s[1])}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+15'}</span></button>`}).join('')+'</div>';
  h+=`<div class="panel"><div class="ptitle">[66 天紀錄]<span>亮 = 通關</span></div><div class="heat">`;
  for(let i=0;i<66;i++){const d=addDays(S.start,i),c=diff(d,t);let cl='';
   if(c===0)cl='now '+(cleared(d)?'ok':doneCount(d)?'part':'');else if(c>0)cl=cleared(d)?'ok':doneCount(d)?'part':'miss';h+=`<i class="${cl}"></i>`}
@@ -483,11 +626,12 @@ function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)
 
 /* ---------- 戰鬥頁 ---------- */
 function vBattle(){const b=bossInfo(),pct=(1-b.dmg/b.hp)*100;
- let h=`<div class="panel sys boss ${b.dead?'dead':''}"><div class="ptitle">[本週 BOSS]<span>Lv.${b.t+1}・週一重生</span></div>${bossSvg(b.i,b.t,190,b.dead)}<h3>${b.name}</h3>
- <p class="muted">${b.dead?'已擊破。下週會出現更強的 Boss。':`你的攻擊 = 任務 XP × ${(1+eqv('weapon')).toFixed(2)}（武器加成）`}</p>
+ let h=`<div class="panel sys boss ${b.dead?'dead':''}"><div class="ptitle">[本週 BOSS]<span>Lv.${b.t+1}・週一重生</span></div>${bossSvg(b.i,b.t,190,b.dead)}<h3>${b.name}${b.rematch?' <span class="chip" style="color:var(--red);border-color:#552030">復仇戰</span>':''}</h3><p class="muted" style="margin:2px 0 6px;font-style:italic">「${b.title}」</p>
+ ${S.stolen&&b.rematch&&!b.dead?`<p style="color:var(--gold);margin:0 0 6px">打倒牠就能奪回 ${gearById(S.stolen).it[1]}</p>`:''}
+ <p class="muted">${b.dead?'已擊破。下週會出現另一隻，而且更強。':`你的攻擊 = 任務 XP × ${(1+eqv('weapon')).toFixed(2)}（武器加成）・週日結束前沒打倒會被搶東西`}</p>
  <div class="bar red" style="height:14px"><i style="width:${b.dead?0:pct}%"></i></div>
  <div class="row" style="justify-content:space-between;margin-top:6px;font:12px var(--mono);color:var(--mute)"><span>HP ${Math.max(0,b.hp-b.dmg)} / ${b.hp}</span><span>擊破 ${b.gold}G＋${b.xp}XP</span></div>
- <p class="muted" style="margin:8px 0 0">已擊破 ${S.bossKills} 隻・每打倒一隻，下一隻會變強、長得更兇</p></div>`;
+ <p class="muted" style="margin:8px 0 0">已擊破 ${S.bossKills} 隻・打贏換下一隻更強的；打輸下週同一隻復仇戰</p></div>`;
  const tm=S.timer;
  h+=`<div class="panel sys"><div class="ptitle">[專注地城]<span>完成 = XP + 智力</span></div>`;
  if(tm)h+=`<div class="timer" id="tmr">--:--</div><p class="muted" style="text-align:center">${tm.min} 分鐘・中途放棄沒獎勵</p><div class="row"><button class="btn red grow" id="giveup">放棄</button></div>`;
@@ -512,11 +656,12 @@ function radar(){const ks=Object.keys(STATS),mx=Math.max(10,...ks.map(k=>S.stats
  for(const f of[.33,.66,1])s+=`<polygon points="${ks.map((_,i)=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="#1c2a44"/>`;
  ks.forEach((k,i)=>{const[x,y]=pt(i,R);s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#1c2a44"/>`;const[lx,ly]=pt(i,R+15);s+=`<text x="${lx}" y="${ly+4}" fill="${STATS[k].c}" font-size="11" text-anchor="middle">${STATS[k].n}</text>`});
  return s+`<polygon points="${ks.map((k,i)=>pt(i,Math.max(4,R*(S.stats[k]||0)/mx)).join(',')).join(' ')}" fill="rgba(79,209,255,.22)" stroke="#4fd1ff" stroke-width="2"/></svg>`}
-function realData(){const t=today(),cnt=(ids,a,b)=>{let n=0;for(let i=a;i<b;i++){const L=S.log[addDays(t,-i)];if(L&&L.done)ids.forEach(id=>{if(L.done[id])n++})}return n};
- const tot=ids=>Object.values(S.log).reduce((a,L)=>a+(L.done?ids.filter(id=>L.done[id]).length:0),0);
+function realData(){const t=today(),cnt=(ids,a,b)=>{let n=0;for(let i=a;i<b;i++){const L=S.log[addDays(t,-i)];if(L&&L.done)ids.forEach(id=>{n+=am(L,id)})}return n};
+ const am=(L,id)=>{const r=L.done[id];return r?(r.amt!=null?r.amt:(QUESTS.find(q=>q.id===id)||{}).per||1):0};
+ const tot=ids=>Object.values(S.log).reduce((a,L)=>a+(L.done?ids.reduce((x,id)=>x+am(L,id),0):0),0);
  const groups=[];for(const q of QUESTS){if(q.type==='screen')continue;const key=q.group||q.id,g=groups.find(x=>x.key===key);if(g)g.ids.push(q.id);else groups.push({key,ids:[q.id],name:q.gname||q.name,per:q.per||1,unit:q.unit||'次'})}
  let h=`<div class="panel sys"><div class="ptitle">[現實數據]<span>本週 vs 上週・累計</span></div>`;
- h+=groups.map(g=>{const a=cnt(g.ids,0,7)*g.per,b=cnt(g.ids,7,14)*g.per,T=tot(g.ids)*g.per,d=a-b;return`<div class="rd"><span class="nm">${esc(g.name)}</span><b>${a}</b><span class="dl ${d>0?'up':d<0?'dn':''}">${d>0?'▲'+d:d<0?'▼'+(-d):'—'}</span><span class="muted">累計 ${T} ${g.unit}</span></div>`}).join('');
+ h+=groups.map(g=>{const a=cnt(g.ids,0,7),b=cnt(g.ids,7,14),T=tot(g.ids),d=a-b;return`<div class="rd"><span class="nm">${esc(g.name)}</span><b>${a}</b><span class="dl ${d>0?'up':d<0?'dn':''}">${d>0?'▲'+d:d<0?'▼'+(-d):'—'}</span><span class="muted">累計 ${T} ${g.unit}</span></div>`}).join('');
  const avg=(a,b)=>{const v=[];for(let i=a;i<b;i++){const L=S.log[addDays(t,-i)];if(L&&L.scr!=null)v.push(L.scr)}return v.length?Math.round(v.reduce((x,y)=>x+y,0)/v.length):null};
  const s1=avg(0,7),s0=avg(7,14);
  if(s1!=null)h+=`<div class="rd"><span class="nm">螢幕時間（日均）</span><b>${fmtMin(s1)}</b><span class="dl ${s0!=null&&s1<s0?'up':s0!=null&&s1>s0?'dn':''}">${s0==null?'—':s1<s0?'▼'+(s0-s1)+'m':s1>s0?'▲'+(s1-s0)+'m':'—'}</span><span class="muted">${s0!=null?'上週 '+fmtMin(s0):''}</span></div>`;
@@ -531,7 +676,7 @@ function rates(){const t=today();const rows=QUESTS.map(q=>{let a=0,d=0;for(let i
  return`<div class="panel"><div class="ptitle">[任務完成率]<span>近 14 天・弱點在上面</span></div>${rows.map(([q,p])=>`<div class="rate"><span class="nm">${esc(q.name)}</span><div class="bar ${p<.5?'red':''}"><i style="width:${p*100}%"></i></div><span class="muted" style="width:40px;text-align:right">${Math.round(p*100)}%</span></div>`).join('')}</div>`}
 function vMe(){const L=lvInfo(S.xp),r=rankOf(L.lv),nx=RANKS.find(x=>x[0]>L.lv);
  let h=`<div class="panel sys" style="text-align:center"><div class="ptitle">[狀態欄]<span>${esc(S.start)} 開始</span></div>
- <div class="avatar">${avatarSvg(180)}</div>
+ <div class="avatar">${avatarSvg(320)}</div>
  <div style="font-size:20px;font-weight:800"><span style="color:${AURA[r[1]]}">${r[1]} 級</span>・Lv.${L.lv} ${r[2]}</div>
  <div class="pw">戰力 <b>${power()}</b></div><p class="muted" style="margin:4px 0 10px">${nx?`Lv.${nx[0]} 晉升 ${nx[1]} 級`:'已達最高階級'}</p>
  <div class="eqrow">${['weapon','armor','acc'].map(k=>{const g=eqItem(k);return`<div><span>${g?gearIcon(k,g.tier):'—'}</span><small>${GEAR[k].n}</small><b>${g?g.it[1]:'空'}</b></div>`}).join('')}</div>
@@ -600,13 +745,15 @@ function tick(){const tm=S.timer;if(!tm)return;const left=tm.end-Date.now();
 setInterval(tick,1000);
 let lastDay=today();
 setInterval(()=>{if(today()!==lastDay){lastDay=today();closeDays();render();checkLogin(askScreen)}},30000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.seen){closeDays();render();if(!$('#modal').classList.contains('on')&&!checkLogin(askScreen))askScreen()}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.seen){closeDays();bossInfo();render();if(!$('#modal').classList.contains('on'))boot()}});
 
 /* ---------- 啟動 ---------- */
 closeDays();bossInfo();checkAch();save();render();updBadge();
 try{if('serviceWorker'in navigator&&location.protocol==='https:'&&!/claude/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
-if(!S.seen)modal(`<h2>[系統] 玩家覺醒</h2><div style="text-align:center">${avatarSvg(130)}</div><div class="bigt" style="text-align:center">歡迎來到 RESET</div><p class="muted" style="line-height:1.7">每天完成 80% 任務 = 通關。<br>任務 → XP 升級、金幣買裝備和技能。<br>每週一隻 Boss，打倒一隻下一隻更強。<br>每天簽到開寶箱，還有 3 個隨機任務。<br>有上班的日子記得切「有班」。</p>`,[['開始','btn pri',()=>{S.seen=1;save();checkLogin(askScreen)}]]);
-else if(!checkLogin(askScreen))askScreen();
+function boot(){if(S.pendingMsg){const h=S.pendingMsg;S.pendingMsg=null;save();sfx('bad');modal(h,[['可惡','btn red',()=>{if(!checkLogin(askScreen))askScreen()}]]);return}
+ if(!checkLogin(askScreen))askScreen()}
+if(!S.seen)modal(`<h2>[系統] 玩家覺醒</h2><div style="text-align:center">${avatarSvg(220)}</div><div class="bigt" style="text-align:center">歡迎來到 RESET</div><p class="muted" style="line-height:1.7">每天完成 75% 任務 = 通關，錯過一天不會斷，連續兩天才會。<br>有些任務分迷你／標準／精英，狀態差做迷你也算。<br>任務 → XP 升級、金幣買裝備和技能；你練什麼，房間和角色就長成什麼樣。<br>每週一隻 Boss，打贏換更強的，打輸會被搶東西。<br>有上班的日子記得切「有班」。</p>`,[['開始','btn pri',()=>{S.seen=1;save();boot()}]]);
+else boot();
 
 </script>
 </body>
