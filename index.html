@@ -237,6 +237,7 @@ textarea{min-height:90px;font:12px var(--mono)}
 .fpre{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}
 .fpre button{padding:7px 0;border-radius:10px;border:1px solid var(--line);font:600 13px var(--mono);color:var(--mute);background:#070c18}
 .fpre button.on{border-color:var(--cyan);color:var(--cyan);background:rgba(79,209,255,.1)}
+.dep{display:block;font-size:11px;color:var(--mute);font-style:italic;margin:-2px 0 6px}
 </style>
 </head>
 <body>
@@ -259,7 +260,7 @@ textarea{min-height:90px;font:12px var(--mono)}
 <div id="toasts"></div>
 <div id="modal"><div class="card" id="mcard"></div></div>
 <script>
-const VER='v17・11/19 23:10';
+const VER='v18・11/19 23:50';
 'use strict';
 /* =====================================================================
    RESET 系統 v4
@@ -314,13 +315,13 @@ const SIDE=[
 
 /* ---------- Boss ---------- */
 const BOSS=[
- {n:'怠惰之王',t:'坐在王座上，從來不站起來',c:'#a78bfa',e:'#c4b5fd'},
- {n:'無限滑動獸',t:'每片鱗都是一塊發光的螢幕',c:'#22d3ee',e:'#a5f3fc'},
- {n:'拖延巨像',t:'胸口的時鐘永遠停在「等一下」',c:'#f97316',e:'#fdba74'},
- {n:'宵夜惡龍',t:'半夜十二點準時甦醒',c:'#ef4444',e:'#fca5a5'},
- {n:'熬夜幽靈',t:'在凌晨三點的螢幕光裡遊蕩',c:'#60a5fa',e:'#bfdbfe'},
- {n:'藉口魔偶',t:'每條線都牽著一個「明天再說」',c:'#a3e635',e:'#d9f99d'},
- {n:'沙發吸血鬼',t:'一坐下就把你的時間吸乾',c:'#e11d48',e:'#fda4af'}];
+ {n:'墮夢君主',t:'永眠王座之主，從未起身',c:'#a78bfa',e:'#c4b5fd'},
+ {n:'藍屏巨蛇',t:'無盡深淵的捲軸，每片鱗都在吞噬時間',c:'#22d3ee',e:'#a5f3fc'},
+ {n:'明日巨像',t:'胸口之鐘，永遠停在「等一下」',c:'#f97316',e:'#fdba74'},
+ {n:'暴食炎龍',t:'午夜零時，饑餓之焰甦醒',c:'#ef4444',e:'#fca5a5'},
+ {n:'不眠亡靈',t:'徘徊於凌晨三點的螢幕微光',c:'#60a5fa',e:'#bfdbfe'},
+ {n:'千面傀儡師',t:'每條絲線，都牽著一句「明天再說」',c:'#a3e635',e:'#d9f99d'},
+ {n:'沙發伯爵',t:'血族之主，一坐下便吸乾你的時間',c:'#e11d48',e:'#fda4af'}];
 const BOSS_PRE=['','強化','精英','狂暴','魔王級','傳說','神話'];
 const TH={STR:[6,20,45,80],VIT:[8,25,55,100],INT:[8,25,55,100],SPI:[15,45,100,180],DIS:[12,40,90,160]};
 
@@ -882,8 +883,12 @@ function openExtra(D,tx,skipQ){if(!tx)return toast('先寫做了什麼');
    ===================================================================== */
 const MATS={stone:['💎','魔石'],fang:['🦷','獸牙'],soul:['✨','靈魂碎片']};
 const MINIONS=[
- {n:'滑手機史萊姆',c:'#22d3ee',w:'DIS'},{n:'拖延小鬼',c:'#f97316',w:'DIS'},{n:'宵夜哥布林',c:'#84cc16',w:'VIT'},
- {n:'鬧鐘蝙蝠',c:'#a78bfa',w:'SPI'},{n:'分心蚊子',c:'#facc15',w:'INT'},{n:'藉口泥偶',c:'#b45309',w:'STR'}];
+ {n:'噬光史萊姆',e:'吞食藍光的不定形之物',c:'#22d3ee',w:'DIS'},
+ {n:'時竊小惡魔',e:'專偷你的「等一下」',c:'#f97316',w:'DIS'},
+ {n:'饑宴哥布林',e:'午夜零時的掠食者',c:'#84cc16',w:'VIT'},
+ {n:'嘲曉夜蝠',e:'在鬧鐘響起前振翅',c:'#a78bfa',w:'SPI'},
+ {n:'千念魔蚊',e:'嗡嗡作響的雜念化身',c:'#facc15',w:'INT'},
+ {n:'藉口泥魔像',e:'由「明天再說」堆成的軀體',c:'#b45309',w:'STR'}];
 const FCATS={study:['📖','讀書','INT'],esp:['🗣️','西文','INT'],med:['🧘','冥想','SPI'],body:['💪','體能','STR'],tidy:['🧹','整理','DIS']};
 const SPELLS=[
  {id:'fire',ic:'🔥',n:'火球術',d:'造成 60＋等級×4 點傷害',g:100,m:{stone:3}},
@@ -1027,7 +1032,7 @@ function vBattle(){const b=bossInfo(),D=dun(),m=minionOf(D.floor),fd=isFightDay(
  else h+=`<div class="bstate">⏳ 再 <b>${toSat}</b> 天開戰・預估 <b style="color:${pr[1]}">${pr[0]}</b></div>`;
  h+=`</div><div class="panel sys"><div class="ptitle">[地城]<span>第 ${D.floor} 層・擊倒 ${D.kills} 隻</span></div>
  <div class="dun"><div class="dsv">${minionSvg(D.floor,130)}</div><div class="dinfo">
-  <b class="dn">${m.rare?'<span style="color:var(--gold)">✨稀有・金色</span><br>':''}${m.n}</b>
+  <b class="dn">${m.rare?'<span style="color:var(--gold)">✨稀有・金色</span><br>':''}${m.n}</b><span class="dep">${m.e}</span>
   <span class="weak">弱點：<b style="color:${STATS[m.w].c}">${STATS[m.w].n}</b>　傷害 ×2</span>
   <div class="bar red" style="height:10px;margin:8px 0 4px"><i style="width:${(1-D.dmg/m.hp)*100}%"></i></div>
   <span class="muted sm">HP ${m.hp-D.dmg} / ${m.hp}</span></div></div>
