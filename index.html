@@ -128,6 +128,37 @@ nav button.on i{filter:drop-shadow(0 0 6px var(--cyan))}
 textarea{min-height:90px;font:12px var(--mono)}
 .hide{display:none!important}
 .quote{font:13px var(--mono);color:var(--mute);text-align:center;margin:4px 0 0}
+
+.hint{display:block;font-size:12px;color:var(--mute);margin-top:3px}
+.q.done .hint{display:none}
+.shift{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 6px;font-size:13px;color:var(--mute)}
+.seg{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.seg button{padding:6px 12px;font-size:13px;color:var(--mute)}
+.seg button.on{background:rgba(79,209,255,.15);color:var(--cyan)}
+.avatar{display:flex;justify-content:center;margin:4px 0 6px}
+.pw{display:inline-block;margin-top:6px;padding:4px 14px;border-radius:99px;border:1px solid var(--gold);color:var(--gold);font:600 13px var(--mono)}
+.pw b{font-size:18px}
+.eqrow{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:4px 0 10px}
+.eqrow div{border:1px solid var(--line);border-radius:12px;padding:8px 4px;background:#070c18;display:flex;flex-direction:column;align-items:center;gap:2px}
+.eqrow span{font-size:24px}.eqrow small{color:var(--mute);font-size:11px}.eqrow b{font-size:12px}
+.gi.lock{opacity:.45}
+.gic{width:34px;height:34px;border-radius:10px;background:#070c18;border:1px solid var(--line);display:grid;place-items:center;font-size:18px;flex:none}
+.dots{display:inline-flex;gap:3px;margin-left:4px;vertical-align:middle}.dots i{width:8px;height:8px;border-radius:50%;background:#1c2a44}.dots i.on{background:var(--cyan);box-shadow:0 0 6px var(--cyan)}
+.rd{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.rd:first-of-type{border-top:0}
+.rd .nm{flex:1}.rd b{font:800 18px var(--mono);min-width:36px;text-align:right}
+.rd .dl{font:600 12px var(--mono);min-width:44px;color:var(--mute)}.rd .dl.up{color:var(--green)}.rd .dl.dn{color:var(--red)}
+.rd .muted{font-size:12px;min-width:84px;text-align:right}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin:6px 0 12px}
+.cal .cd{border:1px solid var(--line);border-radius:10px;padding:5px 0;display:flex;flex-direction:column;align-items:center;font-size:18px;background:#070c18}
+.cal .cd small{font-size:9px;color:var(--mute)}
+.cal .cd.got{opacity:.45}.cal .cd.now{border-color:var(--gold);box-shadow:0 0 12px rgba(245,196,81,.4)}
+.chestbox{position:relative;height:110px;display:grid;place-items:center}
+.chest{font-size:64px;animation:shake .9s ease-in-out forwards}
+.reveal{position:absolute;text-align:center;opacity:0;animation:rev .5s .9s forwards}
+@keyframes shake{0%,100%{transform:rotate(0)}20%{transform:rotate(-12deg)}40%{transform:rotate(12deg)}60%{transform:rotate(-8deg)}80%{transform:rotate(8deg) scale(1.1)}99%{opacity:1}100%{opacity:0;transform:scale(1.6)}}
+@keyframes rev{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:scale(1)}}
+.boss svg{display:block;margin:0 auto}
 </style>
 </head>
 <body>
@@ -148,73 +179,115 @@ textarea{min-height:90px;font:12px var(--mono)}
 </nav>
 <div id="toasts"></div>
 <div id="modal"><div class="card" id="mcard"></div></div>
-
 <script>
 'use strict';
+/* =====================================================================
+   RESET 系統 v4
+   任務清單在 QUESTS（後台），要改任務改這裡。
+   ===================================================================== */
 const KEY='reset_sys_v1';
-const STATS={STR:{n:'力量',c:'#ff6b6b'},VIT:{n:'體力',c:'#3ee08f'},INT:{n:'智力',c:'#4fd1ff'},DIS:{n:'紀律',c:'#b48cff'},CHA:{n:'魅力',c:'#f5c451'}};
-const RANKS=[[1,'E','見習者'],[5,'D','覺醒者'],[10,'C','獵人'],[20,'B','精英獵人'],[35,'A','王牌'],[50,'S','君主']];
-const BOSSES=[['怠惰之王','🦥'],['無限滑動蛇','🐍'],['拖延巨獸','🦣'],['宵夜惡龍','🐉'],['熬夜幽靈','👻'],['藉口魔像','🗿'],['沙發吸血鬼','🧛']];
-const PENALTY=['伏地挺身 100 下','深蹲 100 下','棒式累計 5 分鐘','跑步 3 公里','波比跳 50 下','冷水澡 3 分鐘'];
-const QUOTES=['今天比昨天強一點就好。','不想做的那一項，通常就是最該做的。','連續比完美重要。','滑手機不會讓你升級。','先做 2 分鐘，剩下的自己會跟上。','系統不會替你出拳。'];
-
+let S=null;
 const pad=n=>String(n).padStart(2,'0');
 const fmt=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const parse=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
 const today=()=>fmt(new Date(Date.now()-((S&&S.dayStart)||0)*36e5));
-const WD='日一二三四五六';
-function srand(str){let h=2166136261;for(let i=0;i<str.length;i++)h=Math.imul(h^str.charCodeAt(i),16777619);return((h>>>0)%100000)/100000}
-const BONUS=[['走 8000 步','VIT'],['整理房間 10 分鐘','DIS'],['寫下 3 件感謝的事','CHA'],['打給家人或朋友','CHA'],['做一件拖很久的小事','DIS'],['不喝含糖飲料','VIT'],['12 點前上床','VIT'],['學一個新東西並教別人','INT'],['伸展 10 分鐘','STR'],['今天不碰短影音','DIS']];
-let AC=null;
-function sfx(type){if(!S||!S.sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const seq={tap:[[660,.06]],done:[[660,.07],[990,.1]],crit:[[880,.06],[1320,.06],[1760,.14]],lv:[[523,.1],[659,.1],[784,.1],[1047,.25]],bad:[[220,.2],[160,.3]]}[type]||[[660,.06]];let t=AC.currentTime;
- for(const[f,d]of seq){const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.06,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d);t+=d*.9}}catch(e){}}
 const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return fmt(d)};
 const diff=(a,b)=>Math.round((parse(b)-parse(a))/864e5);
 const weekKey=s=>{const d=parse(s);d.setDate(d.getDate()-((d.getDay()+6)%7));return fmt(d)};
+const dayNum=d=>diff('2024-01-01',d);
 const uid=()=>Math.random().toString(36).slice(2,9);
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const $=s=>document.querySelector(s);
+const WD='日一二三四五六';
+function srand(str){let h=2166136261;for(let i=0;i<str.length;i++)h=Math.imul(h^str.charCodeAt(i),16777619);return((h>>>0)%100000)/100000}
+function shuffleSeed(n,seed){const a=[...Array(n).keys()];for(let i=n-1;i>0;i--){const j=Math.floor(srand(seed+':'+i)*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 
-function defaults(){return{v:3,start:today(),hard:false,sound:true,badge:false,dayStart:4,gold:0,xp:0,best:0,
- quests:[
-  {id:uid(),name:'早起（7:30 前）',stat:'DIS',xp:20,slot:'am'},
-  {id:uid(),name:'冷水澡',stat:'VIT',xp:10,slot:'am'},
-  {id:uid(),name:'喝水（每杯 250ml）',stat:'VIT',xp:10,target:8,slot:'day'},
-  {id:uid(),name:'訓練 / 運動',stat:'STR',xp:30,days:[1,2,3,4,5,6],slot:'day'},
-  {id:uid(),name:'學語言 15 分鐘',stat:'INT',xp:20,slot:'day'},
-  {id:uid(),name:'主動找朋友聊天',stat:'CHA',xp:10,slot:'day'},
-  {id:uid(),name:'閱讀 20 分鐘',stat:'INT',xp:20,slot:'pm'},
-  {id:uid(),name:'螢幕時間',stat:'DIS',xp:20,type:'screen',goal:180,slot:'pm'}],
- rewards:[
-  {id:uid(),name:'追劇一集',cost:50},
-  {id:uid(),name:'手搖飲一杯',cost:80},
-  {id:uid(),name:'睡到自然醒',cost:120},
-  {id:uid(),name:'放縱餐',cost:200},
-  {id:uid(),name:'買一個想要的小東西',cost:400}],
- log:{},lastClosed:null,penalties:[],stats:{STR:0,VIT:0,INT:0,DIS:0,CHA:0},
- boss:{week:null,dmg:0,dead:false},bossKills:0,crits:0,focusCount:0,questCount:0,
- ach:{},buys:[],timer:null}}
+/* ---------- 屬性 ---------- */
+const STATS={STR:{n:'體能',c:'#ff6b6b'},VIT:{n:'健康',c:'#3ee08f'},INT:{n:'智力',c:'#4fd1ff'},SPI:{n:'心靈',c:'#f0a8ff'},DIS:{n:'自律',c:'#b48cff'}};
+const SLOTS={am:'☀️ 早上',pm:'🌤 下午',night:'🌙 晚上'};
 
-let S;
+/* ---------- 後台任務（只在這裡改） ----------
+   days: 只在星期幾出現（0=日）  shift: 'off' 沒班才有 / 'on' 有班才有
+   type:'screen' 螢幕時間任務（goal 分鐘）  per/unit: 現實數據換算    */
+const QUESTS=[
+ {id:'focus1',name:'寫下今天最重要的 1 件事',stat:'SPI',xp:10,slot:'am',hint:'起床 5 分鐘內，備忘錄寫一句就好',unit:'次'},
+ {id:'esp',name:'西文 15 分鐘',stat:'INT',xp:20,slot:'pm',hint:'上西文課或跟室友練都算',per:15,unit:'分鐘'},
+ {id:'train',name:'訓練',stat:'STR',xp:30,slot:'night',days:[1,2,3,4,5],shift:'off',hint:'平日 19:30–21:00',unit:'次'},
+ {id:'screen',name:'螢幕時間',stat:'DIS',xp:20,slot:'night',type:'screen',goal:180},
+ {id:'nophone',name:'睡前 30 分鐘不滑手機',stat:'DIS',xp:20,slot:'night',hint:'手機放遠一點充電',unit:'天'},
+ {id:'sleep_off',name:'00:30 前上床',stat:'VIT',xp:30,slot:'night',shift:'off',group:'sleep',gname:'準時上床',unit:'天'},
+ {id:'sleep_on',name:'下班後 1 小時內上床',stat:'VIT',xp:30,slot:'night',shift:'on',group:'sleep',gname:'準時上床',unit:'天'},
+ {id:'review',name:'睡前復盤 3 行',stat:'SPI',xp:10,slot:'night',hint:'今天做到什麼／卡在哪／明天怎麼改',unit:'篇'}];
+
+/* ---------- 隨機任務池（每天抽 3 個，16 天內不重複） ---------- */
+const SIDE=[
+ ['走路 8000 步','STR'],['伸展 10 分鐘','STR'],['伏地挺身 30 下','STR'],['深蹲 50 下','STR'],['棒式 2 分鐘','STR'],['今天爬樓梯不搭電梯','STR'],['空擊 3 回合','STR'],['核心訓練 10 分鐘','STR'],['跳繩 5 分鐘','STR'],['練一個技術動作 10 次','STR'],
+ ['喝水 2000ml','VIT'],['吃一份蔬菜','VIT'],['今天不喝含糖飲料','VIT'],['今天不吃宵夜','VIT'],['曬太陽 10 分鐘','VIT'],['吃早餐','VIT'],['下午 3 點後不喝咖啡','VIT'],['冷水澡','VIT'],['整理床鋪','VIT'],['午睡不超過 30 分鐘','VIT'],
+ ['讀 10 頁書','INT'],['學 5 個西文單字','INT'],['用西文跟室友說一句話','INT'],['聽一集 podcast','INT'],['把今天學到的講給別人聽','INT'],['查清楚一個你好奇的問題','INT'],['用西文自言自語 3 分鐘','INT'],['看完一篇長文不滑走','INT'],['用西文寫 3 句話','INT'],['記下一個新點子','INT'],
+ ['冥想 5 分鐘','SPI'],['寫 3 件感謝的事','SPI'],['散步 10 分鐘不戴耳機','SPI'],['打給家人聊聊','SPI'],['認真跟一個人說謝謝','SPI'],['稱讚一個人','SPI'],['寫下一個煩惱＋一個行動','SPI'],['深呼吸 10 次','SPI'],['回想今天最好的一刻','SPI'],['傳訊息給很久沒聯絡的朋友','SPI'],
+ ['整理房間 10 分鐘','DIS'],['做一件拖很久的小事','DIS'],['今天不碰短影音','DIS'],['手機放別的房間 1 小時','DIS'],['通知全關 2 小時','DIS'],['起床 30 分鐘內不看手機','DIS'],['把桌面清空','DIS'],['今天準時出門','DIS'],['先做最難的那件事','DIS'],['刪掉一個沒在用的 app','DIS']];
+
+/* ---------- RPG 資料 ---------- */
+const RANKS=[[1,'E','見習者'],[5,'D','覺醒者'],[10,'C','獵人'],[20,'B','精英獵人'],[35,'A','王牌'],[50,'S','君主']];
+const AURA={E:'#7d8aa6',D:'#3ee08f',C:'#4fd1ff',B:'#b48cff',A:'#f5c451',S:'#ff5d6c'};
+const BOSSES=['怠惰之王','無限滑動獸','拖延巨像','宵夜惡龍','熬夜幽靈','藉口魔偶','沙發吸血鬼'];
+const BOSS_COL=['#8fa0bf','#3ee08f','#c58b5a','#ff5d6c','#b8c4ff','#9aa3ad','#b48cff'];
+const BOSS_PRE=['','強化','精英','狂暴','魔王級','傳說','神話'];
+const GEAR={
+ weapon:{n:'武器',eff:'Boss 傷害',items:[['w1','木棍',1,100,.05],['w2','鐵劍',5,300,.10],['w3','雙刃匕首',10,700,.18],['w4','寒冰長槍',20,1400,.28],['w5','暗影大鎌',35,2500,.40]]},
+ armor:{n:'防具',eff:'金幣',items:[['a1','布衣',1,100,.05],['a2','皮甲',5,300,.10],['a3','鎖子甲',10,700,.15],['a4','獵人戰甲',20,1400,.22],['a5','君主黑甲',35,2500,.30]]},
+ acc:{n:'飾品',eff:'暴擊率',items:[['r1','銅戒指',1,150,.02],['r2','銀項鍊',5,350,.04],['r3','藍寶石墜',10,800,.06],['r4','雷電護符',20,1500,.08],['r5','王者之冠',35,2800,.10]]}};
+const SKILLS=[
+ ['grit','🔥','毅力',lv=>`連續通關 7 天以上，任務 XP +${lv*5}%`],
+ ['focus','🎯','專注',lv=>`專注地城 XP +${lv*25}%`],
+ ['curio','🎲','好奇心',lv=>`隨機任務 XP +${lv*20}%`],
+ ['luck','💰','財運',lv=>`寶箱與掉落金幣 +${lv*30}%`]];
+const SKILL_COST=[200,500,1000];
+const LOGIN=[['g',20],['g',30],['c'],['g',40],['g',50],['c'],['C']];
+const PENALTY=['伏地挺身 100 下','深蹲 100 下','棒式累計 5 分鐘','跑步 3 公里','波比跳 50 下','冷水澡 3 分鐘'];
+const QUOTES=['今天比昨天強一點就好。','不想做的那一項，通常就是最該做的。','連續比完美重要。','滑手機不會讓你升級。','先做 2 分鐘，剩下的自己會跟上。','睡飽，是最便宜的外掛。','心態是練出來的，不是想出來的。'];
+
+/* ---------- 音效 ---------- */
+let AC=null;
+function sfx(type){if(!S||!S.sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const seq={tap:[[660,.06]],done:[[660,.07],[990,.1]],crit:[[880,.06],[1320,.06],[1760,.14]],lv:[[523,.1],[659,.1],[784,.1],[1047,.25]],bad:[[220,.2],[160,.3]],chest:[[392,.08],[523,.08],[659,.08],[784,.08],[1047,.2]]}[type]||[[660,.06]];let t=AC.currentTime;
+ for(const[f,d]of seq){const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.06,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d);t+=d*.9}}catch(e){}}
+
+/* ---------- 存檔 ---------- */
+function defaults(){return{v:4,start:today(),hard:false,sound:true,badge:false,dayStart:4,gold:0,xp:0,best:0,seen:0,
+ rewards:[{id:uid(),name:'追劇一集',cost:50},{id:uid(),name:'手搖飲一杯',cost:80},{id:uid(),name:'睡到自然醒',cost:120},{id:uid(),name:'放縱餐',cost:200},{id:uid(),name:'買一個想要的小東西',cost:400}],
+ log:{},lastClosed:null,penalties:[],stats:{STR:0,VIT:0,INT:0,SPI:0,DIS:0},
+ boss:{week:null,dmg:0,dead:false,tier:0},bossKills:0,crits:0,focusCount:0,questCount:0,sideCount:0,
+ ach:{},buys:[],timer:null,shift:{},gear:{own:[],eq:{}},skills:{},login:{last:null,streak:0,best:0}}}
 function load(){let d=defaults(),r=null;try{r=JSON.parse(localStorage.getItem(KEY))}catch(e){}
- S=r&&r.quests?Object.assign(d,r):d;if(S.dayStart===undefined)S.dayStart=4;if(S.sound===undefined)S.sound=true;
- S.rewards=S.rewards.filter(r=>!(r.ig>0));for(const q of S.quests){if(!q.slot)q.slot='day';if(!q.type&&/螢幕時間/.test(q.name)){q.type='screen';q.goal=q.goal||180;q.name='螢幕時間'}}}
+ S=r&&typeof r==='object'&&r.log?Object.assign(d,r):d;
+ if(r&&r.log&&r.seen===undefined)S.seen=1;
+ delete S.quests;delete S.safari;delete S.igUntil;
+ S.stats=Object.assign({STR:0,VIT:0,INT:0,SPI:0,DIS:0},S.stats);if(S.stats.CHA){S.stats.SPI+=S.stats.CHA;delete S.stats.CHA}
+ S.rewards=(S.rewards||[]).filter(x=>!(x.ig>0));S.shift=S.shift||{};S.gear=S.gear||{own:[],eq:{}};S.skills=S.skills||{};S.login=S.login||{last:null,streak:0,best:0};
+ if(S.dayStart===undefined)S.dayStart=4;if(S.sound===undefined)S.sound=true;if(S.boss.tier===undefined)S.boss.tier=S.bossKills}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 load();
 
-/* ---------- 核心規則 ---------- */
-const dayLog=d=>{const L=S.log[d]||(S.log[d]={done:{},focus:[]});L.cnt=L.cnt||{};return L};
-const activeOn=(q,d)=>!q.days||!q.days.length||q.days.includes(parse(d).getDay());
-const actives=d=>S.quests.filter(q=>activeOn(q,d));
-const need=(d=today())=>Math.ceil(actives(d).length*0.8);
-const doneCount=d=>S.log[d]?Object.keys(S.log[d].done).filter(id=>S.quests.some(q=>q.id===id)).length:0;
+/* ---------- 規則 ---------- */
+const dayLog=d=>{const L=S.log[d]||(S.log[d]={});L.done=L.done||{};L.cnt=L.cnt||{};L.side=L.side||{};L.focus=L.focus||[];return L};
+const isShift=d=>!!S.shift[d];
+const activeOn=(q,d)=>!(q.days&&!q.days.includes(parse(d).getDay()))&&!(q.shift==='off'&&isShift(d))&&!(q.shift==='on'&&!isShift(d));
+const actives=d=>QUESTS.filter(q=>activeOn(q,d));
+const need=d=>Math.ceil(actives(d).length*0.8);
+const doneCount=d=>{const L=S.log[d];return L&&L.done?actives(d).filter(q=>L.done[q.id]).length:0};
 const cleared=d=>doneCount(d)>=need(d);
-const bonusOf=d=>BONUS[Math.floor(srand(d+'bonus')*BONUS.length)];
-function streak(){let n=0,d=today();if(cleared(d))n++;d=addDays(d,-1);
- while(diff(S.start,d)>=0&&cleared(d)){n++;d=addDays(d,-1)}return n}
+const sidesOf=d=>{const n=dayNum(d),perm=shuffleSeed(SIDE.length,'side'+Math.floor(n/16)),k=((n%16)+16)%16;return[0,1,2].map(j=>perm[k*3+j])};
+function streak(){let n=0,d=today();if(cleared(d))n++;d=addDays(d,-1);while(diff(S.start,d)>=0&&cleared(d)){n++;d=addDays(d,-1)}return n}
 function lvInfo(xp){let lv=1,nd=60;xp=Math.max(0,xp);while(xp>=nd){xp-=nd;lv++;nd=60+lv*25}return{lv,cur:xp,need:nd}}
-function rankOf(lv){let r=RANKS[0];for(const x of RANKS)if(lv>=x[0])r=x;return r}
+const rankOf=lv=>{let r=RANKS[0];for(const x of RANKS)if(lv>=x[0])r=x;return r};
 const pendingPen=()=>S.penalties.filter(p=>!p.done);
+const gearById=id=>{for(const k in GEAR){const i=GEAR[k].items.findIndex(x=>x[0]===id);if(i>=0)return{slot:k,tier:i+1,it:GEAR[k].items[i]}}return null};
+const eqItem=slot=>{const g=S.gear.eq[slot]&&gearById(S.gear.eq[slot]);return g?g:null};
+const eqv=slot=>{const g=eqItem(slot);return g?g.it[4]:0};
+const tierOf=slot=>{const g=eqItem(slot);return g?g.tier:0};
+const skl=id=>S.skills[id]||0;
+const critRate=()=>.15+eqv('acc');
+function power(){const L=lvInfo(S.xp).lv;return L*20+Object.values(S.stats).reduce((a,b)=>a+b,0)*3+['weapon','armor','acc'].reduce((a,k)=>a+tierOf(k)*40,0)+Object.values(S.skills).reduce((a,b)=>a+b*25,0)}
 
 function closeDays(){const t=today();let d=S.lastClosed?addDays(S.lastClosed,1):S.start;let n=0;
  while(diff(d,t)>1&&n<500){
@@ -222,61 +295,84 @@ function closeDays(){const t=today();let d=S.lastClosed?addDays(S.lastClosed,1):
    S.gold=Math.max(0,S.gold-50);sfx('bad');
    S.penalties.push({id:uid(),date:d,text:PENALTY[Math.floor(Math.random()*PENALTY.length)],done:false});
    const md=d.slice(5).replace('-','/');
-   setTimeout(()=>modal(`<h2>[系統警告]</h2><div class="bigt" style="color:var(--red)">${md} 任務失敗</div><p class="muted">補登期限過了。硬核模式：扣 50G，並追加懲罰任務。完成前商店鎖定。</p>`,[['收到','btn red']]),400);
-  }
+   setTimeout(()=>modal(`<h2>[系統警告]</h2><div class="bigt" style="color:var(--red)">${md} 任務失敗</div><p class="muted">補登期限過了。硬核模式：扣 50G，並追加懲罰任務。完成前商店鎖定。</p>`,[['收到','btn red']]),400)}
   S.lastClosed=d;d=addDays(d,1);n++}
  save()}
 
+/* ---------- Boss ---------- */
 function bossInfo(){const wk=weekKey(today());
- if(S.boss.week!==wk)S.boss={week:wk,dmg:0,dead:false};
- const i=Math.floor(parse(wk).getTime()/6048e5)%BOSSES.length;
- const per=S.quests.reduce((a,q)=>a+Number(q.xp||0),0);
- const hp=Math.max(200,Math.round(per*7*0.7));
- return{name:BOSSES[i][0],em:BOSSES[i][1],hp,dmg:Math.min(S.boss.dmg,hp),dead:S.boss.dead}}
-function hitBoss(x){bossInfo();if(S.boss.dead)return;S.boss.dmg=Math.max(0,S.boss.dmg+x);const b=bossInfo();
- if(S.boss.dmg>=b.hp){S.boss.dead=true;S.gold+=200;S.xp+=100;S.bossKills++;
-  setTimeout(()=>modal(`<h2>[BOSS 擊破]</h2><div style="font-size:56px;text-align:center">${b.em}</div><div class="bigt" style="text-align:center">${b.name} 倒下了</div><p class="muted" style="text-align:center">獎勵 <span class="gold">+200 G</span>　<b style="color:var(--cyan)">+100 XP</b></p>`,[['讚','btn pri']]),300)}}
+ if(S.boss.week!==wk)S.boss={week:wk,dmg:0,dead:false,tier:S.bossKills};
+ const i=((Math.round(dayNum(wk)/7)%7)+7)%7,t=S.boss.tier,hp=Math.round(700*(1+.35*t));
+ return{i,t,name:(BOSS_PRE[Math.min(t,6)]?BOSS_PRE[Math.min(t,6)]+'・':'')+BOSSES[i],hp,dmg:Math.min(S.boss.dmg,hp),dead:S.boss.dead,gold:200+60*t,xp:100+30*t}}
+function hitBoss(x){const b0=bossInfo();if(S.boss.dead)return;S.boss.dmg=Math.max(0,S.boss.dmg+x);
+ if(S.boss.dmg>=b0.hp){S.boss.dead=true;S.bossKills++;gain(b0.xp,b0.gold);sfx('lv');
+  setTimeout(()=>modal(`<h2>[BOSS 擊破]</h2><div style="text-align:center">${bossSvg(b0.i,b0.t,150,true)}</div><div class="bigt" style="text-align:center">${b0.name} 倒下了</div><p class="muted" style="text-align:center">獎勵 <span class="gold">+${b0.gold} G</span>　<b style="color:var(--cyan)">+${b0.xp} XP</b><br>下週的 Boss 會更強。</p>`,[['讚','btn pri']]),300)}}
 
+/* ---------- 獎勵 ---------- */
 function gain(xp,gold){const before=lvInfo(S.xp).lv;S.xp+=xp;S.gold+=gold;const after=lvInfo(S.xp).lv;
  if(after>before){sfx('lv');const r0=rankOf(before),r1=rankOf(after);
-  setTimeout(()=>modal(`<h2>[系統] LEVEL UP</h2><div class="bigt">Lv.${before} → <span style="color:var(--cyan)">Lv.${after}</span></div>${r1[1]!==r0[1]?`<p>階級提升：<b style="color:var(--gold)">${r1[1]} 級・${r1[2]}</b></p>`:''}<p class="muted">所有屬性的努力都算數。</p>`,[['繼續','btn pri']]),250)}}
-
-// 獎勵結果由「日期+任務」決定：取消再勾不會重抽暴擊
-function roll(t,key,base){const crit=srand(t+key+'c')<.15,xp=crit?base*2:base,loot=srand(t+key+'l')<.1?10+Math.floor(srand(t+key+'a')*31):0;return{xp,crit,loot,gold:Math.round(base/2)+loot}}
-function undo(r){S.xp-=r.xp;S.gold-=r.gold;S.stats[r.stat]=Math.max(0,(S.stats[r.stat]||0)-1);S.questCount--;if(r.crit)S.crits--;
- bossInfo();if(!S.boss.dead)S.boss.dmg=Math.max(0,S.boss.dmg-r.xp)}
-function reward(t,key,base,stat){const r=roll(t,key,base);r.stat=stat;if(r.crit)S.crits++;S.stats[stat]=(S.stats[stat]||0)+1;S.questCount++;gain(r.xp,r.gold);hitBoss(r.xp);
- if(r.crit){sfx('crit');toast(`<b>CRITICAL!</b> 經驗值 ×2　+${r.xp} XP`,'crit')}else{sfx('done');toast(`<b>+${r.xp} XP</b>　+${r.gold-r.loot} G　${STATS[stat].n} +1`)}
- if(r.loot)toast(`<b>寶箱掉落！</b> +${r.loot} G`,'crit');return r}
-function settle(t,was){const y=addDays(today(),-1);
- if(!was&&cleared(t)){if(t===today())setTimeout(()=>toast(`<b>[系統]</b> 今日任務達成，連續 ${streak()} 天 🔥`),500);
-  else{const p=S.penalties.find(x=>!x.done&&x.date===t);if(p&&t===y){S.penalties=S.penalties.filter(x=>x!==p);S.gold+=50;setTimeout(()=>toast('<b>[系統]</b> 補登成功，懲罰撤銷、退回 50G'),500)}
-   else setTimeout(()=>toast(`<b>[系統]</b> ${t.slice(5).replace('-','/')} 補登通關`),500)}}}
-const fmtMin=m=>`${Math.floor(m/60)}h ${pad(m%60)}m`;
-function openScreen(id,t,morning){const q=S.quests.find(x=>x.id===id),L=dayLog(t),v=L.scr;
- modal(`<h2>[${morning?'早安・昨日結算':'螢幕時間'}]</h2><div class="bigt">${t===today()?'今天':t.slice(5).replace('-','/')}用了多久？</div>
- <p class="muted" style="line-height:1.6">iPhone 設定 → 螢幕使用時間 → 查看所有活動，點${t===today()?'今天':'昨天那條'}，看最上面的總時數。目標 ${fmtMin(q.goal||180)} 以內。</p>
- <div class="row" style="white-space:nowrap"><input id="sh" style="flex:1;min-width:0" type="number" inputmode="numeric" min="0" max="24" placeholder="0" value="${v!=null?Math.floor(v/60):''}"><b>小時</b><input id="sm" style="flex:1;min-width:0" type="number" inputmode="numeric" min="0" max="59" placeholder="0" value="${v!=null?v%60:''}"><b>分</b></div>`,
- [['取消','btn'],['記錄','btn pri',()=>{const m=(+$('#sh').value||0)*60+(+$('#sm').value||0);if(!$('#sh').value&&!$('#sm').value)return;setScreen(id,t,Math.min(1440,m))}]]);
- setTimeout(()=>{const e=$('#sh');if(e&&v==null)e.focus()},300)}
-function setScreen(id,t,m){const q=S.quests.find(x=>x.id===id),L=dayLog(t),was=cleared(t),g=q.goal||180;L.scr=m;
- if(L.done[id]){undo(L.done[id]);delete L.done[id]}
- if(m<=g){const base=Math.round(q.xp*(1+Math.min(1,(g-m)/g)));L.done[id]=reward(t,id,base,q.stat);if(m<=g/2)setTimeout(()=>toast('<b>[系統]</b> 比目標少一半以上，XP 加成拉滿'),400)}
- else{sfx('bad');toast(`超標 ${m-g} 分鐘，明天再拚`)}
- settle(t,was);after()}
-function askScreen(){const t=today(),y=addDays(t,-1);if(S.asked===t||diff(S.start,y)<0)return;const q=S.quests.find(q=>q.type==='screen'&&activeOn(q,y));
- if(!q){return}if(S.log[y]&&S.log[y].scr!=null)return;S.asked=t;save();setTimeout(()=>openScreen(q.id,y,true),500)}
-function toggleQuest(id,t){const q=S.quests.find(x=>x.id===id);if(!q)return;if(q.type==='screen')return openScreen(id,t);const L=dayLog(t),was=cleared(t),tg=Math.max(1,+q.target||1);
+  setTimeout(()=>modal(`<h2>[系統] LEVEL UP</h2><div style="text-align:center">${avatarSvg(120)}</div><div class="bigt" style="text-align:center">Lv.${before} → <span style="color:var(--cyan)">Lv.${after}</span></div>${r1[1]!==r0[1]?`<p style="text-align:center">階級提升：<b style="color:var(--gold)">${r1[1]} 級・${r1[2]}</b></p>`:''}<p class="muted" style="text-align:center">${newUnlocks(before,after)}</p>`,[['繼續','btn pri']]),250)}}
+function newUnlocks(a,b){const u=[];for(const k in GEAR)for(const it of GEAR[k].items)if(it[2]>a&&it[2]<=b)u.push(it[1]);return u.length?'商店解鎖：'+u.join('、'):'繼續變強。'}
+function reward(t,key,base,stat,kind){let m=1;if(kind==='quest'&&skl('grit')&&streak()>=7)m+=.05*skl('grit');if(kind==='side')m+=.2*skl('curio');if(kind==='focus')m+=.25*skl('focus');
+ const crit=srand(t+key+'c')<critRate(),xp=Math.round(base*m*(crit?2:1));
+ const loot=srand(t+key+'l')<.1?Math.round((10+Math.floor(srand(t+key+'a')*31))*(1+.3*skl('luck'))):0;
+ const gold=Math.round(base/2*(1+eqv('armor')))+loot,dmg=Math.round(xp*(1+eqv('weapon')));
+ const r={xp,gold,loot,crit,stat,dmg,kind};if(crit)S.crits++;S.stats[stat]=(S.stats[stat]||0)+1;if(kind==='side')S.sideCount++;else if(kind==='quest')S.questCount++;
+ gain(xp,gold);hitBoss(dmg);
+ if(crit){sfx('crit');toast(`<b>CRITICAL!</b> 經驗值 ×2　+${xp} XP`,'crit')}else{sfx('done');toast(`<b>+${xp} XP</b>　+${gold-loot} G　${STATS[stat].n} +1`)}
+ if(loot)toast(`<b>寶箱掉落！</b> +${loot} G`,'crit');return r}
+function undo(r){S.xp-=r.xp;S.gold-=r.gold;const st=STATS[r.stat]?r.stat:'SPI';S.stats[st]=Math.max(0,(S.stats[st]||0)-1);
+ if(r.kind==='side')S.sideCount--;else S.questCount--;if(r.crit)S.crits--;bossInfo();if(!S.boss.dead)S.boss.dmg=Math.max(0,S.boss.dmg-(r.dmg||r.xp))}
+function settle(t,was){if(!was&&cleared(t)){if(t===today())setTimeout(()=>toast(`<b>[系統]</b> 今日任務達成，連續 ${streak()} 天 🔥`),500);
+ else setTimeout(()=>toast(`<b>[系統]</b> ${t.slice(5).replace('-','/')} 補登通關`),500)}}
+function toggleQuest(id,t){const q=QUESTS.find(x=>x.id===id);if(!q)return;if(q.type==='screen')return openScreen(id,t);
+ const L=dayLog(t),was=cleared(t),tg=Math.max(1,+q.target||1);
  if(L.done[id]){undo(L.done[id]);delete L.done[id];L.cnt[id]=tg>1?tg-1:0}
  else if(tg>1&&(L.cnt[id]||0)+1<tg){L.cnt[id]=(L.cnt[id]||0)+1;sfx('tap')}
- else{L.cnt[id]=tg;L.done[id]=reward(t,id,Number(q.xp),q.stat)}
+ else{L.cnt[id]=tg;L.done[id]=reward(t,id,q.xp,q.stat,'quest')}
  settle(t,was);after()}
-function minusQuest(id,t){const L=dayLog(t);if(L.done[id]){toggleQuest(id,t);return}if(L.cnt[id]>0){L.cnt[id]--;after()}}
-function toggleBonus(t){const L=dayLog(t),b=bonusOf(t);
- if(L.bonus){undo(L.bonus);L.bonus=null}else L.bonus=reward(t,'bonus',30,b[1]);after()}
+function toggleSide(t,idx){const L=dayLog(t),k=String(idx);
+ if(L.side[k]){undo(L.side[k]);delete L.side[k]}else L.side[k]=reward(t,'side'+idx,15,SIDE[idx][1],'side');after()}
 
-function after(){S.best=Math.max(S.best||0,streak());checkAch();save();render();updBadge()}
-function updBadge(){if(!S.badge||!('setAppBadge'in navigator))return;try{const t=today(),L=S.log[t],n=actives(t).filter(q=>!(L&&L.done[q.id])).length;(n?navigator.setAppBadge(n):navigator.clearAppBadge()).catch(()=>{})}catch(e){}}
+/* ---------- 螢幕時間 ---------- */
+const fmtMin=m=>`${Math.floor(m/60)}h ${pad(m%60)}m`;
+function openScreen(id,t,morning,then){const q=QUESTS.find(x=>x.id===id),L=dayLog(t),v=L.scr;
+ modal(`<h2>[${morning?'早安・昨日結算':'螢幕時間'}]</h2><div class="bigt">${t===today()?'今天':t.slice(5).replace('-','/')}用了多久？</div>
+ <p class="muted" style="line-height:1.6">設定 → 螢幕使用時間 → 查看所有活動，點${t===today()?'今天':'昨天那條'}，看最上面的總時數。目標 ${fmtMin(q.goal)} 以內，越少 XP 越多。</p>
+ <div class="row" style="white-space:nowrap"><input id="sh" style="flex:1;min-width:0" type="number" inputmode="numeric" min="0" max="24" placeholder="0" value="${v!=null?Math.floor(v/60):''}"><b>小時</b><input id="sm" style="flex:1;min-width:0" type="number" inputmode="numeric" min="0" max="59" placeholder="0" value="${v!=null?v%60:''}"><b>分</b></div>`,
+ [['取消','btn',()=>then&&then()],['記錄','btn pri',()=>{if($('#sh').value||$('#sm').value)setScreen(id,t,Math.min(1440,(+$('#sh').value||0)*60+(+$('#sm').value||0)));then&&setTimeout(then,600)}]])}
+function setScreen(id,t,m){const q=QUESTS.find(x=>x.id===id),L=dayLog(t),was=cleared(t),g=q.goal;L.scr=m;
+ if(L.done[id]){undo(L.done[id]);delete L.done[id]}
+ if(m<=g){L.done[id]=reward(t,id,Math.round(q.xp*(1+Math.min(1,(g-m)/g))),q.stat,'quest');if(m<=g/2)setTimeout(()=>toast('<b>[系統]</b> 比目標少一半以上，XP 加成拉滿'),400)}
+ else{sfx('bad');toast(`超標 ${m-g} 分鐘，明天再拚`)}
+ settle(t,was);after()}
+function askScreen(){const t=today(),y=addDays(t,-1);if(S.asked===t||diff(S.start,y)<0)return;const q=QUESTS.find(q=>q.type==='screen'&&activeOn(q,y));
+ if(!q||(S.log[y]&&S.log[y].scr!=null))return;S.asked=t;save();setTimeout(()=>openScreen(q.id,y,true),400)}
+
+/* ---------- 每日簽到 ---------- */
+function openChest(big){const lk=1+.3*skl('luck');
+ if(big){const pool=[];for(const k in GEAR)GEAR[k].items.slice(0,2).forEach(it=>{if(!S.gear.own.includes(it[0]))pool.push(it)});
+  if(pool.length&&Math.random()<.5){const it=pool[Math.floor(Math.random()*pool.length)];giveGear(it[0]);return{ic:'🗡️',txt:`稀有掉落：<b style="color:var(--gold)">${it[1]}</b>`}}
+  const g=Math.round((150+Math.floor(Math.random()*101))*lk);S.gold+=g;return{ic:'💰',txt:`<span class="gold">+${g} G</span>`}}
+ if(Math.random()<.3){const x=25+Math.floor(Math.random()*16);gain(x,0);return{ic:'✨',txt:`<b style="color:var(--cyan)">+${x} XP</b>`}}
+ const g=Math.round((30+Math.floor(Math.random()*41))*lk);S.gold+=g;return{ic:'💰',txt:`<span class="gold">+${g} G</span>`}}
+function checkLogin(then){const t=today();if(S.login.last===t)return false;const y=addDays(t,-1);
+ S.login.streak=S.login.last===y?S.login.streak+1:1;S.login.last=t;S.login.best=Math.max(S.login.best||0,S.login.streak);
+ const k=(S.login.streak-1)%7,r=LOGIN[k];let res;
+ if(r[0]==='g'){const g=Math.round(r[1]*(1+eqv('armor')));S.gold+=g;res={ic:'💰',txt:`<span class="gold">+${g} G</span>`}}else res=openChest(r[0]==='C');
+ sfx('chest');checkAch();save();
+ const cal=LOGIN.map((x,i)=>`<div class="cd ${i<k?'got':i===k?'now':''}"><small>D${i+1}</small><span>${x[0]==='g'?'💰':x[0]==='c'?'🎁':'👑'}</span><small>${x[0]==='g'?x[1]+'G':x[0]==='c'?'寶箱':'大寶箱'}</small></div>`).join('');
+ modal(`<h2>[每日簽到] 連續 ${S.login.streak} 天</h2><div class="cal">${cal}</div><div class="chestbox"><div class="chest">${r[0]==='g'?'💰':'🎁'}</div><div class="reveal"><div style="font-size:44px">${res.ic}</div><div class="bigt" style="font-size:22px">${res.txt}</div></div></div><p class="muted" style="text-align:center;margin:0">斷簽會從第 1 天重來。第 7 天大寶箱有機會開出裝備。</p>`,[['收下','btn pri',()=>{render();then&&then()}]]);
+ return true}
+
+/* ---------- 裝備 / 技能 ---------- */
+function giveGear(id){if(!S.gear.own.includes(id))S.gear.own.push(id);const g=gearById(id);if(g.tier>tierOf(g.slot))S.gear.eq[g.slot]=id}
+function buyGear(id){const g=gearById(id),L=lvInfo(S.xp).lv;if(pendingPen().length)return toast('先完成懲罰任務');if(L<g.it[2])return toast(`Lv.${g.it[2]} 才能用`);if(S.gold<g.it[3])return toast('金幣不夠，回去解任務');
+ modal(`<h2>[武器店]</h2><div class="bigt">${g.it[1]}</div><p>${GEAR[g.slot].eff} <b style="color:var(--cyan)">+${Math.round(g.it[4]*100)}%</b>　花費 <span class="gold">${g.it[3]} G</span></p>`,[['算了','btn'],['買','btn pri',()=>{
+  S.gold-=g.it[3];S.buys.unshift({t:Date.now(),name:g.it[1],cost:g.it[3]});giveGear(id);S.gear.eq[g.slot]=id;after();sfx('lv');
+  modal(`<h2>[裝備完成]</h2><div style="text-align:center">${avatarSvg(150)}</div><div class="bigt" style="text-align:center">${g.it[1]}</div><p class="muted" style="text-align:center">戰力 ${power()}</p>`,[['帥','btn pri']])}]])}
+function buySkill(id){const lv=skl(id);if(lv>=3)return;const c=SKILL_COST[lv];if(pendingPen().length)return toast('先完成懲罰任務');if(S.gold<c)return toast('金幣不夠');
+ const sk=SKILLS.find(x=>x[0]===id);modal(`<h2>[技能升級]</h2><div class="bigt">${sk[1]} ${sk[2]} Lv.${lv+1}</div><p>${sk[3](lv+1)}</p><p>花費 <span class="gold">${c} G</span></p>`,[['算了','btn'],['升級','btn pri',()=>{S.gold-=c;S.skills[id]=lv+1;S.buys.unshift({t:Date.now(),name:`${sk[2]} Lv.${lv+1}`,cost:c});after();sfx('lv');toast(`<b>技能升級</b>　${sk[2]} Lv.${lv+1}`)}]])}
 
 /* ---------- 成就 ---------- */
 const ACH=[
@@ -289,205 +385,229 @@ const ACH=[
  ['lv20','🏅','B 級獵人','達到 Lv.20',()=>lvInfo(S.xp).lv>=20],
  ['boss1','💀','首殺','擊敗第一隻 Boss',()=>S.bossKills>=1],
  ['boss4','🐲','屠龍者','擊敗 4 隻 Boss',()=>S.bossKills>=4],
+ ['gear1','🗡️','第一把武器','買到第一件裝備',()=>S.gear.own.length>=1],
+ ['full3','🛡️','全副武裝','三格都裝 T3 以上',()=>['weapon','armor','acc'].every(k=>tierOf(k)>=3)],
  ['crit','⚡','暴擊體質','觸發 10 次暴擊',()=>S.crits>=10],
+ ['side50','🎲','冒險家','完成 50 個隨機任務',()=>S.sideCount>=50],
+ ['login7','📅','全勤','連續簽到 7 天',()=>(S.login.best||0)>=7],
  ['focus','🎯','心流','完成 10 次專注',()=>S.focusCount>=10],
- ['rich','💰','守財奴','同時持有 500G',()=>S.gold>=500],
+ ['rich','💰','守財奴','同時持有 1000G',()=>S.gold>=1000],
  ['q100','💯','百戰','累計完成 100 個任務',()=>S.questCount>=100],
  ['hard','😈','自找苦吃','開啟硬核模式',()=>S.hard],
- ['detox','🧘','數位排毒','螢幕時間連續 7 天達標',()=>{const q=S.quests.find(q=>q.type==='screen');if(!q)return false;let n=0;for(let i=0;i<60;i++){const L=S.log[addDays(today(),-i)];if(L&&L.scr!=null&&L.scr<=(q.goal||180)){if(++n>=7)return true}else if(i>0)return false}return false}]];
+ ['detox','🧘','數位排毒','螢幕時間連續 7 天達標',()=>{let n=0;for(let i=0;i<60;i++){const L=S.log[addDays(today(),-i)];if(L&&L.scr!=null&&L.scr<=180){if(++n>=7)return true}else if(i>0)return false}return false}]];
 function checkAch(){for(const a of ACH)if(!S.ach[a[0]]&&a[4]()){S.ach[a[0]]=Date.now();setTimeout(()=>toast(`<b>🏆 成就解鎖</b>　${a[1]} ${a[2]}`,'crit'),700)}}
+function after(){S.best=Math.max(S.best||0,streak());checkAch();save();render();updBadge()}
+function updBadge(){if(!S.badge||!('setAppBadge'in navigator))return;try{const t=today(),L=S.log[t],n=actives(t).filter(q=>!(L&&L.done&&L.done[q.id])).length;(n?navigator.setAppBadge(n):navigator.clearAppBadge()).catch(()=>{})}catch(e){}}
+
+/* ---------- 圖像 ---------- */
+function avatarSvg(w){const tw=tierOf('weapon'),ta=tierOf('armor'),tr=tierOf('acc'),rk=rankOf(lvInfo(S.xp).lv)[1],au=AURA[rk],gid='g'+Math.random().toString(36).slice(2,6);
+ const ac=['#3a4660','#b08d5b','#7a5233','#9aa6b6','#1f3a6b','#17111f'][ta],tc=['#55617d','#e2c89c','#a0703f','#e6eefc','#4fd1ff','#b48cff'][ta],sk='#e8c4a0';
+ let s=`<svg viewBox="0 0 160 200" width="${w}" style="max-width:100%;overflow:visible"><defs><radialGradient id="${gid}"><stop offset="0" stop-color="${au}" stop-opacity=".45"/><stop offset="1" stop-color="${au}" stop-opacity="0"/></radialGradient></defs>`;
+ s+=`<circle cx="80" cy="105" r="80" fill="url(#${gid})"/><ellipse cx="80" cy="184" rx="42" ry="7" fill="#000" opacity=".45"/>`;
+ if(ta>=4)s+=`<path d="M54 80 L36 176 Q80 168 124 176 L106 80Z" fill="${ta===5?'#2a0f3a':'#10203d'}" stroke="${tc}" stroke-width="1" opacity=".95"/>`;
+ s+=`<rect x="64" y="128" width="13" height="46" rx="5" fill="#1b2233"/><rect x="83" y="128" width="13" height="46" rx="5" fill="#1b2233"/><rect x="61" y="168" width="18" height="10" rx="4" fill="#0b0e15"/><rect x="81" y="168" width="18" height="10" rx="4" fill="#0b0e15"/>`;
+ s+=`<rect x="43" y="82" width="12" height="40" rx="6" fill="${ac}" stroke="${tc}" stroke-width="1.5"/><rect x="105" y="82" width="12" height="40" rx="6" fill="${ac}" stroke="${tc}" stroke-width="1.5"/>`;
+ s+=`<path d="M55 78 Q80 70 105 78 L101 134 L59 134Z" fill="${ac}" stroke="${tc}" stroke-width="2"/>`;
+ if(ta===3)for(let y=88;y<130;y+=8)s+=`<path d="M62 ${y} Q80 ${y+4} 98 ${y}" stroke="#c9d2de" stroke-width="1" fill="none" opacity=".6"/>`;
+ if(ta>=2)s+=`<rect x="59" y="118" width="42" height="6" fill="#2b1d12"/><rect x="76" y="117" width="8" height="8" rx="1" fill="#f5c451"/>`;
+ if(ta>=3)s+=`<ellipse cx="53" cy="82" rx="12" ry="8" fill="${tc}"/><ellipse cx="107" cy="82" rx="12" ry="8" fill="${tc}"/>`;
+ if(ta===5)s+=`<path d="M44 80 l-6 -12 l12 6z M116 80 l6 -12 l-12 6z" fill="${tc}"/>`;
+ if(ta>=4)s+=`<path d="M80 88 l7 10 -7 10 -7 -10z" fill="${tc}" opacity=".9"/>`;
+ s+=`<circle cx="49" cy="124" r="6" fill="${sk}"/><circle cx="111" cy="124" r="6" fill="${sk}"/><rect x="74" y="66" width="12" height="10" fill="${sk}"/>`;
+ s+=`<circle cx="80" cy="54" r="17" fill="${sk}"/>`;
+ s+=ta>=4?`<path d="M58 62 Q57 30 80 30 Q103 30 102 62 Q98 44 80 43 Q62 44 58 62Z" fill="${ac}" stroke="${tc}" stroke-width="1.5"/>`:`<path d="M62 52 Q64 34 80 35 Q97 34 98 52 Q92 42 80 43 Q68 42 62 52Z" fill="#141414"/>`;
+ const glow=['C','B','A','S'].includes(rk);
+ s+=`<circle cx="73" cy="56" r="2.2" fill="${glow?au:'#1a1a1a'}"/><circle cx="87" cy="56" r="2.2" fill="${glow?au:'#1a1a1a'}"/>`;
+ if(glow)s+=`<circle cx="73" cy="56" r="5" fill="${au}" opacity=".25"/><circle cx="87" cy="56" r="5" fill="${au}" opacity=".25"/>`;
+ if(tw===1)s+=`<line x1="111" y1="140" x2="124" y2="72" stroke="#8b5a2b" stroke-width="5" stroke-linecap="round"/>`;
+ if(tw===2)s+=`<path d="M110 118 L116 52 L121 52 L116 118Z" fill="#dfe6ee"/><rect x="103" y="116" width="20" height="4" rx="2" fill="#f5c451"/><rect x="109" y="120" width="5" height="12" fill="#5a3a22"/>`;
+ if(tw===3)s+=`<path d="M112 124 L126 96 L129 98 L116 126Z" fill="#dfe6ee"/><path d="M48 124 L34 96 L31 98 L44 126Z" fill="#dfe6ee"/><circle cx="120" cy="110" r="10" fill="#4fd1ff" opacity=".15"/>`;
+ if(tw===4)s+=`<line x1="114" y1="160" x2="126" y2="34" stroke="#9aa6b6" stroke-width="3.5"/><path d="M126 34 l-7 -4 l9 -22 l7 24z" fill="#9ee8ff"/><circle cx="128" cy="22" r="12" fill="#4fd1ff" opacity=".25"/>`;
+ if(tw===5)s+=`<line x1="114" y1="164" x2="122" y2="30" stroke="#6b5a86" stroke-width="4"/><path d="M122 32 Q150 30 156 60 Q140 42 121 44Z" fill="#b48cff"/><path d="M122 32 Q150 30 156 60" stroke="#e6d4ff" stroke-width="1.5" fill="none"/><circle cx="140" cy="44" r="18" fill="#b48cff" opacity=".2"/>`;
+ if(tr===1)s+=`<circle cx="49" cy="124" r="2.5" fill="#d08a3a"/>`;
+ if(tr>=2&&tr<=4)s+=`<path d="M70 76 Q80 86 90 76" stroke="#d6dde6" stroke-width="1.5" fill="none"/>`;
+ if(tr===2)s+=`<circle cx="80" cy="84" r="3" fill="#d6dde6"/>`;
+ if(tr===3)s+=`<circle cx="80" cy="85" r="7" fill="#4fd1ff" opacity=".3"/><path d="M80 80 l4 5 -4 5 -4 -5z" fill="#3b82f6"/>`;
+ if(tr===4)s+=`<circle cx="80" cy="86" r="8" fill="#f5c451" opacity=".3"/><path d="M82 79 l-5 7 h4 l-3 7 6 -9 h-4z" fill="#f5c451"/>`;
+ if(tr===5)s+=`<path d="M64 38 L66 26 L72 33 L80 22 L88 33 L94 26 L96 38Z" fill="#f5c451" stroke="#b8860b"/><circle cx="80" cy="31" r="2" fill="#ff5d6c"/>`;
+ return s+'</svg>'}
+function bossSvg(i,t,w,dead){const c=BOSS_COL[i],T=Math.min(t,6),k=3+i%3,gid='b'+Math.random().toString(36).slice(2,6);
+ const ec=T>=3?'#ffd84d':'#ff3b3b';let s=`<svg viewBox="0 0 200 180" width="${w}" style="max-width:100%;${dead?'filter:grayscale(1);opacity:.55':''}"><defs><radialGradient id="${gid}"><stop offset="0" stop-color="${c}" stop-opacity="${.18+T*.06}"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></radialGradient></defs>`;
+ s+=`<circle cx="100" cy="98" r="${80+T*3}" fill="url(#${gid})"/><ellipse cx="100" cy="164" rx="${52+T*3}" ry="8" fill="#000" opacity=".5"/>`;
+ const R=50+T*3;
+ for(let j=0;j<T*2;j++){const a=Math.PI*(1.15+.7*(j+.5)/(T*2)),x=100+Math.cos(a)*R*.95,y=100+Math.sin(a)*R*.85;s+=`<path d="M${x-6} ${y+4} L${x+Math.cos(a)*16} ${y+Math.sin(a)*18} L${x+6} ${y+4}Z" fill="${c}" stroke="#05070d" stroke-width="1"/>`}
+ if(T>=2){s+=`<path d="M70 ${100-R*.7} Q55 ${60-R*.5} 62 ${40-T*3} Q72 ${70-R*.4} 80 ${100-R*.75}Z" fill="#e8e0cf"/><path d="M130 ${100-R*.7} Q145 ${60-R*.5} 138 ${40-T*3} Q128 ${70-R*.4} 120 ${100-R*.75}Z" fill="#e8e0cf"/>`}
+ if(T>=4){s+=`<path d="M58 ${100-R*.4} Q36 ${70-R*.3} 40 ${60-T*2} Q50 ${80-R*.2} 66 ${100-R*.5}Z" fill="#d6ccb8"/><path d="M142 ${100-R*.4} Q164 ${70-R*.3} 160 ${60-T*2} Q150 ${80-R*.2} 134 ${100-R*.5}Z" fill="#d6ccb8"/>`}
+ let p='';for(let j=0;j<=40;j++){const a=j/40*Math.PI*2,r=R*(1+.08*Math.sin(k*a+i));p+=(j?'L':'M')+(100+Math.cos(a)*r*1.1).toFixed(1)+' '+(100+Math.sin(a)*r*.9).toFixed(1)}
+ s+=`<path d="${p}Z" fill="${c}" stroke="#05070d" stroke-width="2"/><ellipse cx="100" cy="${112}" rx="${R*.7}" ry="${R*.45}" fill="#000" opacity=".12"/>`;
+ const ex=T>=5?[66,83,100,117,134]:T>=3?[78,100,122]:[84,116],er=T>=5?7:8+T*.6;ex.forEach((x,j)=>{const y=T>=5?(j===2?80:j===1||j===3?86:94):86;s+=`<circle cx="${x}" cy="${y}" r="${er}" fill="#0b0b10"/><circle cx="${x}" cy="${y}" r="${er*.5}" fill="${dead?'#555':ec}"/><circle cx="${x}" cy="${y}" r="${12+T}" fill="${ec}" opacity="${dead?0:.12}"/>`});
+ s+=`<path d="M78 120 Q100 ${132+T*2} 122 120" stroke="#0b0b10" stroke-width="4" fill="#3a0d14"/>`;
+ if(T>=1)for(let j=0;j<5;j++){const x=82+j*9;s+=`<path d="M${x} 121 l4 ${7+T} l4 -${7+T}z" fill="#f1ece0"/>`}
+ if(T>=5)s+=`<path d="M78 ${100-R*.85} L82 ${84-R*.85} L90 ${94-R*.85} L100 ${78-R*.85} L110 ${94-R*.85} L118 ${84-R*.85} L122 ${100-R*.85}Z" fill="#f5c451" stroke="#8a6a10"/>`;
+ return s+'</svg>'}
 
 /* ---------- UI 基礎 ---------- */
-function toast(h,c=''){const box=$('#toasts');while(box.children.length>=3)box.firstChild.remove();const el=document.createElement('div');el.className='toast '+c;el.innerHTML=h;$('#toasts').appendChild(el);setTimeout(()=>el.remove(),2600)}
+function toast(h,c=''){const box=$('#toasts');while(box.children.length>=3)box.firstChild.remove();const el=document.createElement('div');el.className='toast '+c;el.innerHTML=h;box.appendChild(el);setTimeout(()=>el.remove(),2600)}
 let mActs=[];
 function modal(html,acts){mActs=acts||[['OK','btn pri']];
- $('#mcard').innerHTML=html+'<div class="acts">'+mActs.map((a,i)=>a[3]?`<a class="${a[1]}" href="${esc(a[3])}" target="_blank" rel="noopener" data-m="${i}">${a[0]}</a>`:`<button class="${a[1]}" data-m="${i}">${a[0]}</button>`).join('')+'</div>';
- $('#modal').classList.add('on')}
-$('#modal').addEventListener('click',e=>{const b=e.target.closest('[data-m]');
- if(b){const a=mActs[+b.dataset.m];$('#modal').classList.remove('on');if(a&&a[2])a[2]()}
- else if(e.target.id==='modal')$('#modal').classList.remove('on')});
+ $('#mcard').innerHTML=html+'<div class="acts">'+mActs.map((a,i)=>`<button class="${a[1]}" data-m="${i}">${a[0]}</button>`).join('')+'</div>';$('#modal').classList.add('on')}
+$('#modal').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b){const a=mActs[+b.dataset.m];$('#modal').classList.remove('on');if(a&&a[2])a[2]()}});
+let tab='today',viewY=false;
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.t;document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));window.scrollTo(0,0);render()});
+function header(){const L=lvInfo(S.xp),r=rankOf(L.lv);$('#hRank').textContent=r[1];$('#hRank').style.color=AURA[r[1]];$('#hRank').style.borderColor=AURA[r[1]];$('#hLv').textContent='Lv.'+L.lv;$('#hTitle').textContent=r[2];$('#hGold').textContent=S.gold+' G';$('#hBar').style.width=(L.cur/L.need*100)+'%'}
+const tag=s=>`<span class="tag" style="color:${(STATS[s]||STATS.SPI).c};border-color:${(STATS[s]||STATS.SPI).c}55">${(STATS[s]||STATS.SPI).n}</span>`;
 
-let tab='today';
-$('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.t;
- document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));window.scrollTo(0,0);render()});
-
-function header(){const L=lvInfo(S.xp),r=rankOf(L.lv);$('#hRank').textContent=r[1];$('#hLv').textContent='Lv.'+L.lv;$('#hTitle').textContent=r[2];
- $('#hGold').textContent=S.gold+' G';$('#hBar').style.width=(L.cur/L.need*100)+'%'}
-const tag=s=>`<span class="tag" style="color:${STATS[s].c};border-color:${STATS[s].c}55">${STATS[s].n}</span>`;
-
-/* ---------- 頁面 ---------- */
-let viewY=false;
-function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)+1,prog=Math.min(dn,66),st=streak(),L=dayLog(D),dc=doneCount(D),nd=need(D),act=actives(D);
- const q=QUOTES[(parse(t).getTime()/864e5|0)%QUOTES.length];
+/* ---------- 任務頁 ---------- */
+function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)+1,st=streak(),L=dayLog(D),dc=doneCount(D),nd=need(D),act=actives(D);
+ const q=QUOTES[((dayNum(t)%QUOTES.length)+QUOTES.length)%QUOTES.length];
  let h=`<div class="panel sys"><div class="ptitle">[RESET PROGRAM]<span>${dn>66?'第 '+Math.ceil(dn/66)+' 輪':'66 天計畫'}</span></div>
- <div class="day"><div class="big">DAY ${dn>66?((dn-1)%66)+1:prog}<small> / 66</small></div><div class="grow"></div><div style="text-align:right"><div style="font:800 24px var(--mono);color:${dc>=nd?'var(--cyan)':'var(--text)'}">${dc}/${act.length}</div><div class="muted">達標需 ${nd}</div></div></div>
+ <div class="day"><div class="big">DAY ${dn>66?((dn-1)%66)+1:dn}<small> / 66</small></div><div class="grow"></div><div style="text-align:right"><div style="font:800 24px var(--mono);color:${dc>=nd?'var(--cyan)':'var(--text)'}">${dc}/${act.length}</div><div class="muted">達標需 ${nd}</div></div></div>
  <div class="bar" style="margin-top:10px"><i style="width:${nd?Math.min(100,dc/nd*100):100}%"></i></div>
- <div class="chips"><span class="chip hot">🔥 連續 ${st} 天</span><span class="chip">最佳 ${S.best||0}</span>${S.hard?'<span class="chip" style="color:var(--red);border-color:#552030">😈 硬核</span>':''}</div>
+ <div class="chips"><span class="chip hot">🔥 連續 ${st} 天</span><span class="chip">📅 簽到 ${S.login.streak||0} 天</span>${S.hard?'<span class="chip" style="color:var(--red);border-color:#552030">😈 硬核</span>':''}</div>
  <p class="quote">「${q}」</p></div>`;
  const pp=pendingPen();
- if(pp.length)h+=`<div class="panel pen"><div class="ptitle">[懲罰任務]<span>完成前商店鎖定</span></div>${pp.map(p=>`<button class="q" data-pen="${p.id}"><span class="box"></span><span class="nm">${esc(p.text)}<div class="muted">${p.date.slice(5)} 失敗的代價${p.date===y?'・或去「昨天」補登':''}</div></span></button>`).join('')}</div>`;
- h+=`<div class="panel sys"><div class="ptitle"><span style="display:flex;gap:6px"><button class="btn sm ${viewY?'':'cy'}" data-day="t">今天</button><button class="btn sm ${viewY?'cy':''}" data-day="y">昨天（補登）</button></span><span>${D.slice(5).replace('-','/')} 週${WD[parse(D).getDay()]}</span></div>`;
+ if(pp.length)h+=`<div class="panel pen"><div class="ptitle">[懲罰任務]<span>完成前商店鎖定</span></div>${pp.map(p=>`<button class="q" data-pen="${p.id}"><span class="box"></span><span class="nm">${esc(p.text)}<div class="muted">${p.date.slice(5)} 失敗的代價</div></span></button>`).join('')}</div>`;
+ h+=`<div class="panel sys"><div class="ptitle"><span style="display:flex;gap:6px"><button class="btn sm ${viewY?'':'cy'}" data-day="t">今天</button><button class="btn sm ${viewY?'cy':''}" data-day="y">昨天（補登）</button></span><span>${D.slice(5).replace('-','/')} 週${WD[parse(D).getDay()]}</span></div>
+ <div class="shift"><span>${viewY?'昨天':'今天'}有上班嗎？</span><div class="seg"><button class="${isShift(D)?'':'on'}" data-shift="0">沒班</button><button class="${isShift(D)?'on':''}" data-shift="1">🍸 有班</button></div></div>`;
  if(viewY)h+=`<p class="muted" style="margin:0 0 6px">忘記勾的可以補，只開放昨天。</p>`;
- const SL={am:'☀️ 早上',day:'🌤 下午',pm:'🌙 晚上'};const row=q=>{const d=L.done[q.id],tg=Math.max(1,+q.target||1),c=L.cnt[q.id]||0;
-  if(q.type==='screen'){const v=L.scr,over=v!=null&&!d;return`<div class="row qr"><button class="q ${d?'done':''}" data-q="${q.id}"><span class="box" style="${over?'border-color:var(--red);color:var(--red)':''}">${d?'✓':over?'✕':''}</span><span class="nm"><span class="qn">📱 ${esc(q.name)}</span><span class="cntw" style="text-decoration:none">${v!=null?`<b style="color:${over?'var(--red)':'var(--cyan)'}">${fmtMin(v)}</b><span class="muted">/ 目標 ${fmtMin(q.goal||180)}</span>`:`<span class="muted">點我輸入・目標 ${fmtMin(q.goal||180)}</span>`}</span></span>${tag(q.stat)}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+'+q.xp+'↑'}</span></button></div>`}
-  return`<div class="row qr"><button class="q ${d?'done':''}" data-q="${q.id}"><span class="box">${d?'✓':''}</span><span class="nm"><span class="qn">${esc(q.name)}</span>${tg>1?`<span class="cntw"><span class="cnt"><i style="width:${Math.min(100,(d?tg:c)/tg*100)}%"></i></span><b>${d?tg:c}/${tg}</b></span>`:''}</span>${tag(q.stat)}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+'+q.xp}</span></button>${tg>1&&(c>0||d)?`<button class="minus" data-minus="${q.id}">−</button>`:''}</div>`};
- h+=act.length?['am','day','pm'].map(k=>{const g=act.filter(q=>(q.slot||'day')===k);return g.length?`<div class="slot">${SL[k]}</div>`+g.map(row).join(''):''}).join(''):'<p class="muted">今天是休息日，沒有排任務 😴</p>';
- const rest=S.quests.length-act.length;if(rest>0)h+=`<p class="muted" style="margin:8px 0 0">今天休息的任務：${rest} 個</p>`;
+ const row=q=>{const d=L.done[q.id];
+  if(q.type==='screen'){const v=L.scr,over=v!=null&&!d;return`<div class="row qr"><button class="q ${d?'done':''}" data-q="${q.id}"><span class="box" style="${over?'border-color:var(--red);color:var(--red)':''}">${d?'✓':over?'✕':''}</span><span class="nm"><span class="qn">📱 ${esc(q.name)}</span><span class="cntw">${v!=null?`<b style="color:${over?'var(--red)':'var(--cyan)'}">${fmtMin(v)}</b><span class="muted">/ 目標 ${fmtMin(q.goal)}</span>`:`<span class="muted">點我輸入・目標 ${fmtMin(q.goal)} 內</span>`}</span></span>${tag(q.stat)}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+'+q.xp+'↑'}</span></button></div>`}
+  return`<div class="row qr"><button class="q ${d?'done':''}" data-q="${q.id}"><span class="box">${d?'✓':''}</span><span class="nm"><span class="qn">${esc(q.name)}</span>${q.hint&&!d?`<span class="hint">${esc(q.hint)}</span>`:''}</span>${tag(q.stat)}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+'+q.xp}</span></button></div>`};
+ h+=act.length?Object.keys(SLOTS).map(k=>{const g=act.filter(q=>q.slot===k);return g.length?`<div class="slot">${SLOTS[k]}</div>`+g.map(row).join(''):''}).join(''):'<p class="muted">今天沒有排任務 😴</p>';
  h+='</div>';
- const b=bonusOf(D),bd=L.bonus;
- h+=`<div class="panel bonus"><div class="ptitle" style="color:var(--gold)">[隨機任務]<span>不影響通關・每天換</span></div><button class="q ${bd?'done':''}" data-bonus="1"><span class="box">${bd?'✓':''}</span><span class="nm"><span class="qn">${esc(b[0])}</span></span>${tag(b[1])}<span class="xp">${bd?(bd.crit?'⚡':'')+'+'+bd.xp:'+30'}</span></button></div>`;
+ h+=`<div class="panel bonus"><div class="ptitle" style="color:var(--gold)">[隨機任務]<span>每天 3 個・不影響通關</span></div>`+sidesOf(D).map(i=>{const s=SIDE[i],d=L.side[i];return`<button class="q ${d?'done':''}" data-side="${i}"><span class="box">${d?'✓':''}</span><span class="nm"><span class="qn">${esc(s[0])}</span></span>${tag(s[1])}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+15'}</span></button>`}).join('')+'</div>';
  h+=`<div class="panel"><div class="ptitle">[66 天紀錄]<span>亮 = 通關</span></div><div class="heat">`;
  for(let i=0;i<66;i++){const d=addDays(S.start,i),c=diff(d,t);let cl='';
-  if(c===0)cl='now '+(cleared(d)?'ok':doneCount(d)?'part':'');else if(c>0)cl=cleared(d)?'ok':doneCount(d)?'part':'miss';
-  h+=`<i class="${cl}"></i>`}
+  if(c===0)cl='now '+(cleared(d)?'ok':doneCount(d)?'part':'');else if(c>0)cl=cleared(d)?'ok':doneCount(d)?'part':'miss';h+=`<i class="${cl}"></i>`}
  return h+'</div></div>'}
 
+/* ---------- 戰鬥頁 ---------- */
 function vBattle(){const b=bossInfo(),pct=(1-b.dmg/b.hp)*100;
- let h=`<div class="panel sys boss ${b.dead?'dead':''}"><div class="ptitle">[本週 BOSS]<span>週一重生</span></div><div class="em">${b.em}</div><h3>${b.name}</h3>
- <p class="muted">${b.dead?'已擊破。下週一會有新的 Boss。':'完成任務 = 攻擊。傷害 = 獲得的 XP。'}</p>
+ let h=`<div class="panel sys boss ${b.dead?'dead':''}"><div class="ptitle">[本週 BOSS]<span>Lv.${b.t+1}・週一重生</span></div>${bossSvg(b.i,b.t,190,b.dead)}<h3>${b.name}</h3>
+ <p class="muted">${b.dead?'已擊破。下週會出現更強的 Boss。':`你的攻擊 = 任務 XP × ${(1+eqv('weapon')).toFixed(2)}（武器加成）`}</p>
  <div class="bar red" style="height:14px"><i style="width:${b.dead?0:pct}%"></i></div>
- <div class="row" style="justify-content:space-between;margin-top:6px;font:12px var(--mono);color:var(--mute)"><span>HP ${Math.max(0,b.hp-b.dmg)} / ${b.hp}</span><span>擊破獎勵 200G</span></div></div>`;
+ <div class="row" style="justify-content:space-between;margin-top:6px;font:12px var(--mono);color:var(--mute)"><span>HP ${Math.max(0,b.hp-b.dmg)} / ${b.hp}</span><span>擊破 ${b.gold}G＋${b.xp}XP</span></div>
+ <p class="muted" style="margin:8px 0 0">已擊破 ${S.bossKills} 隻・每打倒一隻，下一隻會變強、長得更兇</p></div>`;
  const tm=S.timer;
  h+=`<div class="panel sys"><div class="ptitle">[專注地城]<span>完成 = XP + 智力</span></div>`;
- if(tm){h+=`<div class="timer" id="tmr">--:--</div><p class="muted" style="text-align:center">${tm.min} 分鐘・中途放棄沒獎勵</p><div class="row"><button class="btn red grow" id="giveup">放棄</button></div>`}
- else h+=`<p class="muted">手機放旁邊，專心做一件事。可以切出去，時間會照算。</p><div class="row">${[15,25,50].map(m=>`<button class="btn ${m===25?'pri':'cy'} grow" data-focus="${m}">${m} 分</button>`).join('')}</div>`;
- h+=`<p class="muted" style="margin-top:10px">累計完成 ${S.focusCount} 次</p></div>`;
- return h}
+ if(tm)h+=`<div class="timer" id="tmr">--:--</div><p class="muted" style="text-align:center">${tm.min} 分鐘・中途放棄沒獎勵</p><div class="row"><button class="btn red grow" id="giveup">放棄</button></div>`;
+ else h+=`<p class="muted">手機放旁邊，專心做一件事。可以切出去，時間照算。</p><div class="row">${[15,25,50].map(m=>`<button class="btn ${m===25?'pri':'cy'} grow" data-focus="${m}">${m} 分</button>`).join('')}</div>`;
+ return h+`<p class="muted" style="margin-top:10px">累計完成 ${S.focusCount} 次</p></div>`}
 
-function vShop(){const pp=pendingPen().length;
- let h=`<div class="panel sys"><div class="ptitle">[商店]<span>金幣 = 你流過的汗</span></div><div style="font:800 30px var(--mono)"><span class="gold">${S.gold}</span> <small class="muted">G</small></div>
- ${pp?'<p style="color:var(--red)">⛔ 還有懲罰任務沒完成，商店鎖定中。</p>':'<p class="muted">想要的東西先賺到再買，買的時候才爽。</p>'}</div>`;
- h+=`<div class="panel"><div class="ptitle">[獎勵]<span>在設定改</span></div>`+(S.rewards.length?S.rewards.map(r=>`<div class="item"><span class="nm">${esc(r.name)}${S.gold<r.cost?`<div class="bar gold" style="height:4px;margin-top:5px"><i style="width:${Math.max(0,S.gold)/r.cost*100}%"></i></div>`:''}</span><button class="btn sm cy" data-buy="${r.id}" ${pp||S.gold<r.cost?'disabled':''}>${r.cost} G</button></div>`).join(''):'<p class="muted">去設定新增你想要的獎勵。</p>')+'</div>';
- if(S.buys.length)h+=`<div class="panel"><div class="ptitle">[購買紀錄]</div>${S.buys.slice(0,8).map(b=>{const d=new Date(b.t);return`<div class="item"><span class="nm">${esc(b.name)}</span><span class="muted">${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}</span><span class="gold" style="min-width:52px;text-align:right">-${b.cost}</span></div>`}).join('')}</div>`;
+/* ---------- 商店頁 ---------- */
+function vShop(){const pp=pendingPen().length,L=lvInfo(S.xp).lv;
+ let h=`<div class="panel sys"><div class="ptitle">[商店]<span>金幣 = 你流過的汗</span></div><div style="font:800 30px var(--mono)"><span class="gold">${S.gold}</span> <small class="muted">G</small></div>${pp?'<p style="color:var(--red)">⛔ 還有懲罰任務沒完成，商店鎖定中。</p>':''}</div>`;
+ for(const k in GEAR){const G=GEAR[k];h+=`<div class="panel"><div class="ptitle">[${G.n}]<span>${G.eff}加成</span></div>`+G.items.map((it,ix)=>{const own=S.gear.own.includes(it[0]),on=S.gear.eq[k]===it[0],lock=L<it[2];
+  return`<div class="item gi ${lock?'lock':''}"><span class="gic">${gearIcon(k,ix+1)}</span><span class="nm">${it[1]} <small class="muted">T${ix+1}</small><div class="muted" style="font-size:12px">${G.eff} +${Math.round(it[4]*100)}%${lock?`・Lv.${it[2]} 解鎖`:''}</div></span>${on?'<span class="chip" style="color:var(--cyan);border-color:var(--cyan)">使用中</span>':own?`<button class="btn sm" data-eq="${it[0]}">裝備</button>`:`<button class="btn sm cy" data-gear="${it[0]}" ${pp||lock||S.gold<it[3]?'disabled':''}>${it[3]} G</button>`}</div>`}).join('')+'</div>'}
+ h+=`<div class="panel"><div class="ptitle">[技能]<span>每項最高 Lv.3</span></div>`+SKILLS.map(sk=>{const lv=skl(sk[0]);return`<div class="item"><span class="gic">${sk[1]}</span><span class="nm">${sk[2]} <span class="dots">${[1,2,3].map(n=>`<i class="${n<=lv?'on':''}"></i>`).join('')}</span><div class="muted" style="font-size:12px">${lv?sk[3](lv):sk[3](1).replace(/\+\d+%/,m=>m)+'（Lv.1）'}</div></span>${lv>=3?'<span class="chip">MAX</span>':`<button class="btn sm cy" data-skill="${sk[0]}" ${pp||S.gold<SKILL_COST[lv]?'disabled':''}>${SKILL_COST[lv]} G</button>`}</div>`}).join('')+'</div>';
+ h+=`<div class="panel"><div class="ptitle">[現實獎勵]<span>在設定改</span></div>`+(S.rewards.length?S.rewards.map(r=>`<div class="item"><span class="nm">${esc(r.name)}${S.gold<r.cost?`<div class="bar gold" style="height:4px;margin-top:5px"><i style="width:${Math.max(0,S.gold)/r.cost*100}%"></i></div>`:''}</span><button class="btn sm cy" data-buy="${r.id}" ${pp||S.gold<r.cost?'disabled':''}>${r.cost} G</button></div>`).join(''):'<p class="muted">去設定新增想要的獎勵。</p>')+'</div>';
+ if(S.buys.length)h+=`<div class="panel"><div class="ptitle">[購買紀錄]</div>${S.buys.slice(0,8).map(b=>{const d=new Date(b.t);return`<div class="item"><span class="nm">${esc(b.name)}</span><span class="muted">${d.getMonth()+1}/${d.getDate()}</span><span class="gold" style="min-width:52px;text-align:right">-${b.cost}</span></div>`}).join('')}</div>`;
  return h}
+function gearIcon(k,t){return{weapon:['','🪵','🗡️','⚔️','🔱','☠️'],armor:['','👕','🦺','⛓️','🛡️','🖤'],acc:['','💍','📿','💎','⚡','👑']}[k][t]}
 
-function scrChart(){const q=S.quests.find(q=>q.type==='screen');if(!q)return'';const g=q.goal||180,t=today();const days=[];for(let i=6;i>=0;i--){const d=addDays(t,-i);days.push([d,S.log[d]&&S.log[d].scr])}
- if(!days.some(x=>x[1]!=null))return'';const mx=Math.max(g*1.3,...days.map(x=>x[1]||0)),H=110,W=300,bw=30;
- let svg=`<svg viewBox="0 0 ${W} ${H+22}" style="width:100%">`;days.forEach(([d,v],i)=>{const x=12+i*41;if(v!=null){const h=v/mx*H;svg+=`<rect x="${x}" y="${H-h}" width="${bw}" height="${h}" rx="5" fill="${v<=g?'#4fd1ff':'#ff5d6c'}" opacity=".85"/><text x="${x+bw/2}" y="${H-h-4}" fill="#e6eefc" font-size="10" text-anchor="middle">${(v/60).toFixed(1)}</text>`}
-  svg+=`<text x="${x+bw/2}" y="${H+16}" fill="#7d8aa6" font-size="11" text-anchor="middle">${WD[parse(d).getDay()]}</text>`});
- const gy=H-g/mx*H;svg+=`<line x1="4" x2="${W-4}" y1="${gy}" y2="${gy}" stroke="#f5c451" stroke-dasharray="4 4"/><text x="${W-6}" y="${gy-4}" fill="#f5c451" font-size="10" text-anchor="end">目標 ${g/60}h</text></svg>`;
- const vs=days.filter(x=>x[1]!=null).map(x=>x[1]),avg=Math.round(vs.reduce((a,b)=>a+b,0)/vs.length);
- return`<div class="panel"><div class="ptitle">[螢幕時間]<span>近 7 天・平均 ${fmtMin(avg)}</span></div>${svg}</div>`}
-function radar(){const ks=Object.keys(STATS),mx=Math.max(10,...ks.map(k=>S.stats[k]||0)),R=80,cx=110,cy=100;
+/* ---------- 角色頁 ---------- */
+function radar(){const ks=Object.keys(STATS),mx=Math.max(10,...ks.map(k=>S.stats[k]||0)),R=72,cx=110,cy=96;
  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/ks.length;return[cx+r*Math.cos(a),cy+r*Math.sin(a)]};
- let s=`<svg viewBox="0 0 220 200" style="width:100%;max-width:300px;display:block;margin:0 auto">`;
+ let s=`<svg viewBox="0 0 220 190" style="width:100%;max-width:280px;display:block;margin:0 auto">`;
  for(const f of[.33,.66,1])s+=`<polygon points="${ks.map((_,i)=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="#1c2a44"/>`;
- ks.forEach((k,i)=>{const[x,y]=pt(i,R);s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#1c2a44"/>`;const[lx,ly]=pt(i,R+14);s+=`<text x="${lx}" y="${ly+4}" fill="${STATS[k].c}" font-size="11" text-anchor="middle">${STATS[k].n}</text>`});
- s+=`<polygon points="${ks.map((k,i)=>pt(i,Math.max(4,R*(S.stats[k]||0)/mx)).join(',')).join(' ')}" fill="rgba(79,209,255,.22)" stroke="#4fd1ff" stroke-width="2"/></svg>`;return s}
-function rates(){const t=today();let rows=S.quests.map(q=>{let a=0,d=0;for(let i=0;i<14;i++){const x=addDays(t,-i);if(diff(S.start,x)<0)break;if(!activeOn(q,x))continue;if(i===0&&!(S.log[x]&&S.log[x].done[q.id]))continue;a++;if(S.log[x]&&S.log[x].done[q.id])d++}return[q,a?d/a:null,d,a]});
- if(!rows.some(r=>r[1]!==null))return'';rows.sort((x,y)=>(x[1]??2)-(y[1]??2));
- return`<div class="panel"><div class="ptitle">[任務完成率]<span>近 14 天・弱點在上面</span></div>${rows.map(([q,p,d,a])=>`<div class="rate"><span class="nm">${esc(q.name)}</span><div class="bar ${p!==null&&p<.5?'red':''}"><i style="width:${p===null?0:p*100}%"></i></div><span class="muted" style="width:40px;text-align:right">${p===null?'—':Math.round(p*100)+'%'}</span></div>`).join('')}</div>`}
+ ks.forEach((k,i)=>{const[x,y]=pt(i,R);s+=`<line x1="${cx}" y1="${cy}" x2="${x}" y2="${y}" stroke="#1c2a44"/>`;const[lx,ly]=pt(i,R+15);s+=`<text x="${lx}" y="${ly+4}" fill="${STATS[k].c}" font-size="11" text-anchor="middle">${STATS[k].n}</text>`});
+ return s+`<polygon points="${ks.map((k,i)=>pt(i,Math.max(4,R*(S.stats[k]||0)/mx)).join(',')).join(' ')}" fill="rgba(79,209,255,.22)" stroke="#4fd1ff" stroke-width="2"/></svg>`}
+function realData(){const t=today(),cnt=(ids,a,b)=>{let n=0;for(let i=a;i<b;i++){const L=S.log[addDays(t,-i)];if(L&&L.done)ids.forEach(id=>{if(L.done[id])n++})}return n};
+ const tot=ids=>Object.values(S.log).reduce((a,L)=>a+(L.done?ids.filter(id=>L.done[id]).length:0),0);
+ const groups=[];for(const q of QUESTS){if(q.type==='screen')continue;const key=q.group||q.id,g=groups.find(x=>x.key===key);if(g)g.ids.push(q.id);else groups.push({key,ids:[q.id],name:q.gname||q.name,per:q.per||1,unit:q.unit||'次'})}
+ let h=`<div class="panel sys"><div class="ptitle">[現實數據]<span>本週 vs 上週・累計</span></div>`;
+ h+=groups.map(g=>{const a=cnt(g.ids,0,7)*g.per,b=cnt(g.ids,7,14)*g.per,T=tot(g.ids)*g.per,d=a-b;return`<div class="rd"><span class="nm">${esc(g.name)}</span><b>${a}</b><span class="dl ${d>0?'up':d<0?'dn':''}">${d>0?'▲'+d:d<0?'▼'+(-d):'—'}</span><span class="muted">累計 ${T} ${g.unit}</span></div>`}).join('');
+ const avg=(a,b)=>{const v=[];for(let i=a;i<b;i++){const L=S.log[addDays(t,-i)];if(L&&L.scr!=null)v.push(L.scr)}return v.length?Math.round(v.reduce((x,y)=>x+y,0)/v.length):null};
+ const s1=avg(0,7),s0=avg(7,14);
+ if(s1!=null)h+=`<div class="rd"><span class="nm">螢幕時間（日均）</span><b>${fmtMin(s1)}</b><span class="dl ${s0!=null&&s1<s0?'up':s0!=null&&s1>s0?'dn':''}">${s0==null?'—':s1<s0?'▼'+(s0-s1)+'m':s1>s0?'▲'+(s1-s0)+'m':'—'}</span><span class="muted">${s0!=null?'上週 '+fmtMin(s0):''}</span></div>`;
+ h+=`<div class="rd"><span class="nm">隨機任務</span><b>${S.sideCount}</b><span class="dl"></span><span class="muted">累計個</span></div>`;
+ return h+`<p class="muted" style="margin:6px 0 0;font-size:12px">▲ 綠色 = 比上週進步（螢幕時間是越少越好）</p></div>`}
+function scrChart(){const g=180,t=today(),days=[];for(let i=6;i>=0;i--){const d=addDays(t,-i);days.push([d,S.log[d]&&S.log[d].scr])}
+ if(!days.some(x=>x[1]!=null))return'';const mx=Math.max(g*1.3,...days.map(x=>x[1]||0)),H=110,W=300,bw=30;
+ let svg=`<svg viewBox="0 0 ${W} ${H+22}" style="width:100%">`;days.forEach(([d,v],i)=>{const x=12+i*41;if(v!=null){const hh=v/mx*H;svg+=`<rect x="${x}" y="${H-hh}" width="${bw}" height="${hh}" rx="5" fill="${v<=g?'#4fd1ff':'#ff5d6c'}" opacity=".85"/><text x="${x+bw/2}" y="${H-hh-4}" fill="#e6eefc" font-size="10" text-anchor="middle">${(v/60).toFixed(1)}</text>`}svg+=`<text x="${x+bw/2}" y="${H+16}" fill="#7d8aa6" font-size="11" text-anchor="middle">${WD[parse(d).getDay()]}</text>`});
+ const gy=H-g/mx*H;return`<div class="panel"><div class="ptitle">[螢幕時間]<span>近 7 天（小時）</span></div>${svg}<line x1="4" x2="${W-4}" y1="${gy}" y2="${gy}" stroke="#f5c451" stroke-dasharray="4 4"/></svg></div>`.replace('</svg><line','<line')}
+function rates(){const t=today();const rows=QUESTS.map(q=>{let a=0,d=0;for(let i=0;i<14;i++){const x=addDays(t,-i);if(diff(S.start,x)<0)break;if(!activeOn(q,x))continue;const ok=S.log[x]&&S.log[x].done&&S.log[x].done[q.id];if(i===0&&!ok)continue;a++;if(ok)d++}return[q,a?d/a:null]}).filter(r=>r[1]!==null);
+ if(!rows.length)return'';rows.sort((x,y)=>x[1]-y[1]);
+ return`<div class="panel"><div class="ptitle">[任務完成率]<span>近 14 天・弱點在上面</span></div>${rows.map(([q,p])=>`<div class="rate"><span class="nm">${esc(q.name)}</span><div class="bar ${p<.5?'red':''}"><i style="width:${p*100}%"></i></div><span class="muted" style="width:40px;text-align:right">${Math.round(p*100)}%</span></div>`).join('')}</div>`}
 function vMe(){const L=lvInfo(S.xp),r=rankOf(L.lv),nx=RANKS.find(x=>x[0]>L.lv);
  let h=`<div class="panel sys" style="text-align:center"><div class="ptitle">[狀態欄]<span>${esc(S.start)} 開始</span></div>
- <div class="rank" style="width:72px;height:72px;font-size:36px;margin:4px auto 8px;border-radius:18px">${r[1]}</div>
- <div style="font-size:20px;font-weight:800">Lv.${L.lv} ${r[2]}</div><p class="muted">${nx?`Lv.${nx[0]} 晉升 ${nx[1]} 級`:'已達最高階級'}・總 XP ${S.xp}</p>${radar()}
- <div class="stats">${Object.keys(STATS).map(k=>`<div><b style="color:${STATS[k].c}">${S.stats[k]||0}</b><span class="muted">${STATS[k].n}</span></div>`).join('')}</div></div>
- <div class="panel"><div class="ptitle">[戰績]</div><div class="stats" style="grid-template-columns:repeat(4,1fr)">
- <div><b>${S.questCount}</b><span class="muted">任務</span></div><div><b>${S.best||0}</b><span class="muted">最佳連續</span></div><div><b>${S.bossKills}</b><span class="muted">Boss</span></div><div><b>${S.crits}</b><span class="muted">暴擊</span></div></div></div>
- ${scrChart()}${rates()}
- <div class="panel"><div class="ptitle">[成就]<span>${Object.keys(S.ach).length}/${ACH.length}</span></div><div class="ach">${ACH.map(a=>`<div class="${S.ach[a[0]]?'':'off'}"><b>${a[1]}</b>${a[2]}<div class="muted" style="font-size:10px;margin-top:2px">${a[3]}</div></div>`).join('')}</div></div>`;
+ <div class="avatar">${avatarSvg(180)}</div>
+ <div style="font-size:20px;font-weight:800"><span style="color:${AURA[r[1]]}">${r[1]} 級</span>・Lv.${L.lv} ${r[2]}</div>
+ <div class="pw">戰力 <b>${power()}</b></div><p class="muted" style="margin:4px 0 10px">${nx?`Lv.${nx[0]} 晉升 ${nx[1]} 級`:'已達最高階級'}</p>
+ <div class="eqrow">${['weapon','armor','acc'].map(k=>{const g=eqItem(k);return`<div><span>${g?gearIcon(k,g.tier):'—'}</span><small>${GEAR[k].n}</small><b>${g?g.it[1]:'空'}</b></div>`}).join('')}</div>
+ ${radar()}<div class="stats">${Object.keys(STATS).map(k=>`<div><b style="color:${STATS[k].c}">${S.stats[k]||0}</b><span class="muted">${STATS[k].n}</span></div>`).join('')}</div></div>`;
+ h+=realData()+scrChart()+rates();
+ h+=`<div class="panel"><div class="ptitle">[戰績]</div><div class="stats" style="grid-template-columns:repeat(4,1fr)"><div><b>${S.questCount}</b><span class="muted">任務</span></div><div><b>${S.best||0}</b><span class="muted">最佳連續</span></div><div><b>${S.bossKills}</b><span class="muted">Boss</span></div><div><b>${S.crits}</b><span class="muted">暴擊</span></div></div></div>`;
+ h+=`<div class="panel"><div class="ptitle">[成就]<span>${Object.keys(S.ach).length}/${ACH.length}</span></div><div class="ach">${ACH.map(a=>`<div class="${S.ach[a[0]]?'':'off'}"><b>${a[1]}</b>${a[2]}<div class="muted" style="font-size:10px;margin-top:2px">${a[3]}</div></div>`).join('')}</div></div>`;
  return h}
 
-function vSet(){const so=s=>Object.keys(STATS).map(k=>`<option value="${k}" ${k===s?'selected':''}>${STATS[k].n}</option>`).join('');
- let h=`<div class="panel sys"><div class="ptitle">[任務編輯]<span>名稱 / 屬性 / XP</span></div>`;
- h+=S.quests.map(q=>`<div class="edit" data-eq="${q.id}"><input value="${esc(q.name)}" data-f="name"><select data-f="stat">${so(q.stat)}</select><select data-f="xp">${[10,20,30,50].map(x=>`<option ${+q.xp===x?'selected':''}>${x}</option>`).join('')}</select><button data-delq="${q.id}">✕</button></div>
-  <div class="wd">${[1,2,3,4,5,6,0].map(w=>`<button class="${activeOn(q,fmt(new Date(2024,0,7+w)))?'on':''}" data-wd="${w}" data-wdq="${q.id}">${WD[w]}</button>`).join('')}</div><div class="edit3" data-eq="${q.id}"><select data-f="slot" style="width:auto">${Object.entries({am:'☀️ 早上',day:'🌤 下午',pm:'🌙 晚上'}).map(([k,v])=>`<option value="${k}" ${(q.slot||'day')===k?'selected':''}>${v}</option>`).join('')}</select><select data-f="type" style="width:auto"><option value="">一般</option><option value="screen" ${q.type==='screen'?'selected':''}>螢幕時間</option></select>
-  ${q.type==='screen'?`<span class="muted">目標</span><select data-f="goal" style="width:auto">${[60,90,120,150,180,240,300].map(m=>`<option value="${m}" ${(q.goal||180)===m?'selected':''}>${m/60} 小時</option>`).join('')}</select>`:`<span class="muted">次數</span><input type="number" inputmode="numeric" min="1" value="${q.target||1}" data-f="target" style="width:56px">`}</div>`).join('');
- h+=`<button class="btn sm cy" id="addq" style="margin-top:4px">＋ 新增任務</button><p class="muted">藍色 = 那天要做。沒排的日子不算失敗。次數 > 1 會變成計數任務。螢幕時間任務越低 XP 越多。當天完成 80% 算通關，隔天還能補登。</p><button class="btn sm" id="wiz" style="width:100%;margin-top:4px">🎲 重新挑任務組合</button></div>`;
- h+=`<div class="panel"><div class="ptitle">[獎勵編輯]<span>名稱 / 價格</span></div>`;
- h+=S.rewards.map(r=>`<div class="edit rw" data-er="${r.id}"><input value="${esc(r.name)}" data-f="name"><input type="number" inputmode="numeric" value="${r.cost}" data-f="cost"><button data-delr="${r.id}">✕</button></div>`).join('');
- h+=`<button class="btn sm cy" id="addr" style="margin-top:4px">＋ 新增獎勵</button><p class="muted">放你真的想要的東西，越具體越有動力。</p></div>`;
+/* ---------- 設定頁 ---------- */
+function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務]<span>後台管理</span></div><p class="muted" style="margin:0;line-height:1.7">任務清單鎖在後台，不能在這裡改，免得一時懶就把任務調簡單。想調整就跟 Claude 說，說「改我的 RESET 系統」。</p></div>`;
+ h+=`<div class="panel"><div class="ptitle">[現實獎勵]<span>名稱 / 價格</span></div>`+S.rewards.map(r=>`<div class="edit rw" data-er="${r.id}"><input value="${esc(r.name)}" data-f="name"><input type="number" inputmode="numeric" value="${r.cost}" data-f="cost"><button data-delr="${r.id}">✕</button></div>`).join('')+`<button class="btn sm cy" id="addr" style="margin-top:4px">＋ 新增獎勵</button></div>`;
  h+=`<div class="panel"><div class="ptitle">[模式]</div>
- <div class="sw"><div><b>😈 硬核模式</b><div class="muted">沒通關的日子扣 50G＋懲罰任務，做完才能用商店</div></div><button class="tog ${S.hard?'on':''}" id="tHard"></button></div>
- <div class="sw"><div><b>🔊 音效</b><div class="muted">iPhone 開靜音就不會響</div></div><button class="tog c ${S.sound?'on':''}" id="tSnd"></button></div>
- <div class="sw"><div><b>🌙 一天從幾點開始</b><div class="muted">上晚班的話，凌晨 2 點勾的任務還算前一天</div></div><select id="dayStart" style="width:90px">${[0,2,3,4,5,6].map(x=>`<option value="${x}" ${S.dayStart===x?'selected':''}>${pad(x)}:00</option>`).join('')}</select></div>
- <div class="sw"><div><b>🔴 圖示顯示剩幾項</b><div class="muted">主畫面 app 圖示上的紅色數字＝今天還沒做的任務（要先加到主畫面）</div></div><button class="tog c ${S.badge?'on':''}" id="tBadge"></button></div></div>
- <div class="panel"><div class="ptitle">[每日提醒]<span>用 iPhone 捷徑，免費</span></div>
- <p class="muted" style="line-height:1.7;margin:0">捷徑 app → 自動化 → ＋ → 特定時間（例如 22:00）→ 選「立即執行」→ 動作選「打開 URL」→ 貼上這個 app 的網址。時間到 RESET 會自己跳出來。早上再設一個，效果更好。</p>
- <button class="btn sm cy" id="cpUrl" style="width:100%;margin-top:10px">複製這個 app 的網址</button></div>`;
- h+=`<div class="panel"><div class="ptitle">[備份]<span>換手機前一定要做</span></div>
- <div class="row"><button class="btn sm cy grow" id="exp">匯出（複製）</button><button class="btn sm grow" id="imp">匯入</button></div>
+ <div class="sw"><div><b>😈 硬核模式</b><div class="muted">沒通關（含補登期限）扣 50G＋懲罰任務，做完才能用商店</div></div><button class="tog ${S.hard?'on':''}" id="tHard"></button></div>
+ <div class="sw"><div><b>🔊 音效</b><div class="muted">iPhone 靜音時不會響</div></div><button class="tog c ${S.sound?'on':''}" id="tSnd"></button></div>
+ <div class="sw"><div><b>🌙 一天從幾點開始</b><div class="muted">凌晨勾的任務算前一天</div></div><select id="dayStart" style="width:90px">${[0,2,3,4,5,6].map(x=>`<option value="${x}" ${S.dayStart===x?'selected':''}>${pad(x)}:00</option>`).join('')}</select></div>
+ <div class="sw"><div><b>🔴 圖示顯示剩幾項</b><div class="muted">要先加到主畫面，打開 app 時更新</div></div><button class="tog c ${S.badge?'on':''}" id="tBadge"></button></div></div>
+ <div class="panel"><div class="ptitle">[每日提醒]<span>用 iPhone 捷徑</span></div><p class="muted" style="line-height:1.7;margin:0">捷徑 → 自動化 → ＋ → 特定時間 → 立即執行 → 動作「打開 URL」→ 貼上網址。建議早上一個、22:00 一個。</p><button class="btn sm cy" id="cpUrl" style="width:100%;margin-top:10px">複製這個 app 的網址</button></div>
+ <div class="panel"><div class="ptitle">[備份]<span>換手機前一定要做</span></div><div class="row"><button class="btn sm cy grow" id="exp">匯出（複製）</button><button class="btn sm grow" id="imp">匯入</button></div>
  <textarea id="bk" class="hide" style="margin-top:8px"></textarea><button class="btn sm pri hide" id="impGo" style="margin-top:6px;width:100%">確認匯入</button></div>
  <div class="panel"><div class="ptitle" style="color:var(--red)">[危險區]</div><div class="row"><button class="btn sm grow" id="restart">重開 66 天（保留等級）</button><button class="btn sm red grow" id="wipe">全部清空</button></div></div>`;
  return h}
 
-const GOALS=[
- ['💪','體能',[['訓練 / 運動','STR',30,{days:[1,2,3,4,5,6],slot:'day'}],['伸展 10 分鐘','STR',10,{slot:'pm'}]]],
- ['⏰','作息',[['早起（7:30 前）','DIS',20,{slot:'am'}],['12 點前上床','VIT',20,{slot:'pm'}]]],
- ['💧','健康',[['喝水（每杯 250ml）','VIT',10,{target:8,slot:'day'}],['冷水澡','VIT',10,{slot:'am'}]]],
- ['📚','學習',[['閱讀 20 分鐘','INT',20,{slot:'pm'}],['學語言 15 分鐘','INT',20,{slot:'day'}]]],
- ['📵','少滑手機',[['螢幕時間','DIS',20,{type:'screen',goal:180,slot:'pm'}],['睡前 30 分鐘不碰手機','DIS',20,{slot:'pm'}]]],
- ['🤝','社交',[['主動找朋友聊天','CHA',10,{slot:'day'}],['認真回覆訊息','CHA',10,{slot:'day'}]]],
- ['🧘','心靈',[['冥想 10 分鐘','DIS',10,{slot:'am'}],['寫 3 行日記','INT',10,{slot:'pm'}]]]];
-function wizard(first){const sel=new Set(['體能','作息','少滑手機']);let lv='easy';
- const chips=()=>GOALS.map(g=>`<button class="${sel.has(g[1])?'on':''}" data-g="${g[1]}">${g[0]} ${g[1]}</button>`).join('');
- const lvs=()=>[['easy','🌱 輕鬆','每類 1 項'],['std','⚔️ 標準','每類 2 項'],['hard','😈 硬派','2 項＋硬核']].map(x=>`<button class="${lv===x[0]?'on':''}" data-lv="${x[0]}">${x[1]}<div class="muted" style="font-size:11px">${x[2]}</div></button>`).join('');
- const draw=()=>{$('#wg').innerHTML=chips();$('#wl').innerHTML=lvs()};
- modal(`<h2>[系統] ${first?'玩家覺醒':'重新配置'}</h2><div class="bigt" style="font-size:22px">你想改變什麼？</div><p class="muted" style="margin:0">可以多選，之後都能在設定改。</p><div class="chipg" id="wg">${chips()}</div>
- <p class="muted" style="margin:10px 0 0">難度（剛開始建議輕鬆，少一點比較容易撐住）</p><div class="chipg" id="wl" style="flex-wrap:nowrap">${lvs()}</div>
- ${first?'<p class="muted" style="line-height:1.6;font-size:12px">每天完成 80% = 通關。任務給 XP 跟金幣，金幣在商店換獎勵。每週一隻 Boss，你的任務就是攻擊。</p>':'<p style="color:var(--red);font-size:12px">會取代目前的任務清單（等級、金幣不變）。</p>'}`,
- [...(first?[]:[['取消','btn']]),['產生計畫','btn pri',()=>{const qs=[];for(const g of GOALS)if(sel.has(g[1]))(lv==='easy'?g[2].slice(0,1):g[2]).forEach(([n,st,xp,o])=>qs.push(Object.assign({id:uid(),name:n,stat:st,xp},JSON.parse(JSON.stringify(o)))));
-  if(!qs.length)return toast('至少選一類');S.quests=qs;if(lv==='hard'&&!S.hard){S.hard=true;S.lastClosed=addDays(today(),-1)}S.seen=1;after();toast(`<b>[系統]</b> 已產生 ${qs.length} 個每日任務`)}]]);
- $('#mcard').onclick=e=>{const b=e.target.closest('[data-g],[data-lv]');if(!b)return;if(b.dataset.g){sel.has(b.dataset.g)?sel.delete(b.dataset.g):sel.add(b.dataset.g)}else lv=b.dataset.lv;draw()}}
 const VIEWS={today:vToday,battle:vBattle,shop:vShop,me:vMe,set:vSet};
 function render(){header();$('#view').innerHTML=VIEWS[tab]();tick()}
 
 /* ---------- 事件 ---------- */
-$('#view').addEventListener('click',e=>{const el=e.target.closest('[data-q],[data-minus],[data-bonus],[data-day],[data-wd],[data-pen],[data-focus],[data-buy],[data-delq],[data-delr],button[id]');if(!el)return;const d=el.dataset;
+$('#view').addEventListener('click',e=>{const el=e.target.closest('[data-q],[data-side],[data-day],[data-shift],[data-pen],[data-focus],[data-buy],[data-gear],[data-eq],[data-skill],[data-delr],button[id]');if(!el||el.disabled)return;const d=el.dataset;
  const D=viewY?addDays(today(),-1):today();
  if(d.q)return toggleQuest(d.q,D);
- if(d.minus)return minusQuest(d.minus,D);
- if(d.bonus)return toggleBonus(D);
+ if(d.side)return toggleSide(D,+d.side);
  if(d.day){viewY=d.day==='y';return render()}
- if(d.wd){const q=S.quests.find(x=>x.id===d.wdq);let a=q.days&&q.days.length?q.days.slice():[0,1,2,3,4,5,6];const w=+d.wd;a=a.includes(w)?a.filter(x=>x!==w):a.concat(w).sort();q.days=a.length===7?undefined:a;if(!a.length)q.days=[w];save();return render()}
- if(d.pen){const p=S.penalties.find(x=>x.id===d.pen);return modal(`<h2>[懲罰任務]</h2><div class="bigt">${esc(p.text)}</div><p class="muted">誠實點，真的做完了？</p>`,[['還沒','btn'],['做完了','btn red',()=>{p.done=true;p.doneAt=Date.now();toast('<b>[系統]</b> 懲罰解除，商店開放');after()}]])}
+ if(d.shift!==undefined){if(d.shift==='1')S.shift[D]=1;else delete S.shift[D];return after()}
+ if(d.gear)return buyGear(d.gear);
+ if(d.eq){const g=gearById(d.eq);S.gear.eq[g.slot]=d.eq;sfx('tap');return after()}
+ if(d.skill)return buySkill(d.skill);
+ if(d.pen){const p=S.penalties.find(x=>x.id===d.pen);return modal(`<h2>[懲罰任務]</h2><div class="bigt">${esc(p.text)}</div><p class="muted">誠實點，真的做完了？</p>`,[['還沒','btn'],['做完了','btn red',()=>{p.done=true;toast('<b>[系統]</b> 懲罰解除，商店開放');after()}]])}
  if(d.focus){S.timer={end:Date.now()+d.focus*6e4,min:+d.focus};save();toast(`<b>[專注地城]</b> 進入 ${d.focus} 分鐘`);return render()}
- if(d.buy){const r=S.rewards.find(x=>x.id===d.buy);if(!r)return;if(pendingPen().length)return toast('先完成懲罰任務');if(S.gold<r.cost)return toast('金幣不夠，回去解任務');
-  return modal(`<h2>[確認購買]</h2><div class="bigt">${esc(r.name)}</div><p>花費 <span class="gold">${r.cost} G</span>，剩 <span class="gold">${S.gold-r.cost} G</span></p>`,
-   [['算了','btn'],['買','btn pri',()=>{S.gold-=r.cost;S.buys.unshift({t:Date.now(),name:r.name,cost:r.cost});S.buys=S.buys.slice(0,50);after();sfx('lv');toast(`<b>已購買</b>　${esc(r.name)}，去享受吧`)}]])}
- if(d.delq){S.quests=S.quests.filter(q=>q.id!==d.delq);save();return render()}
+ if(d.buy){const r=S.rewards.find(x=>x.id===d.buy);if(!r)return;if(pendingPen().length)return toast('先完成懲罰任務');if(S.gold<r.cost)return toast('金幣不夠');
+  return modal(`<h2>[確認購買]</h2><div class="bigt">${esc(r.name)}</div><p>花費 <span class="gold">${r.cost} G</span>，剩 <span class="gold">${S.gold-r.cost} G</span></p>`,[['算了','btn'],['買','btn pri',()=>{S.gold-=r.cost;S.buys.unshift({t:Date.now(),name:r.name,cost:r.cost});S.buys=S.buys.slice(0,50);after();sfx('lv');toast(`<b>已購買</b>　${esc(r.name)}，去享受吧`)}]])}
  if(d.delr){S.rewards=S.rewards.filter(q=>q.id!==d.delr);save();return render()}
  switch(el.id){
   case'giveup':return modal('<h2>[專注地城]</h2><div class="bigt">確定逃跑？</div><p class="muted">不會有任何獎勵。</p>',[['繼續撐','btn pri'],['逃跑','btn red',()=>{S.timer=null;save();render()}]]);
-  case'addq':S.quests.push({id:uid(),name:'新任務',stat:'DIS',xp:20,slot:'day'});save();return render();
-  case'wiz':return wizard();
-  case'tBadge':{if(!('setAppBadge'in navigator)){toast('這裡不支援，先「加入主畫面」再從主畫面打開');return}
-   const on=()=>{S.badge=true;save();updBadge();render();toast('<b>已開啟</b>　圖示會顯示剩幾項')};
-   if(S.badge){S.badge=false;try{navigator.clearAppBadge()}catch(e){}save();return render()}
-   try{if(window.Notification&&Notification.permission!=='granted')Notification.requestPermission().then(p=>p==='granted'?on():toast('要允許通知才能顯示數字'));else on()}catch(e){on()}return}
-  case'cpUrl':try{navigator.clipboard.writeText(location.href.split('#')[0]).then(()=>toast('<b>已複製</b>　'+esc(location.href.split('#')[0])),()=>toast(esc(location.href)))}catch(e){toast(esc(location.href))}return;
   case'addr':S.rewards.push({id:uid(),name:'新獎勵',cost:50});save();return render();
   case'tHard':S.hard=!S.hard;if(S.hard)S.lastClosed=addDays(today(),-1);return after();
   case'tSnd':S.sound=!S.sound;save();sfx('done');return render();
-  case'exp':{const t=$('#bk');t.classList.remove('hide');$('#impGo').classList.add('hide');t.value=JSON.stringify(S);t.select();
-   try{navigator.clipboard.writeText(t.value).then(()=>toast('<b>已複製</b>　貼到備忘錄存起來'),()=>toast('請手動複製下面的文字'))}catch(err){toast('請手動複製下面的文字')}return}
+  case'tBadge':{if(!('setAppBadge'in navigator)){toast('這裡不支援，先「加入主畫面」再從主畫面打開');return}
+   const on=()=>{S.badge=true;save();updBadge();render();toast('<b>已開啟</b>')};
+   if(S.badge){S.badge=false;try{navigator.clearAppBadge()}catch(e){}save();return render()}
+   try{if(window.Notification&&Notification.permission!=='granted')Notification.requestPermission().then(p=>p==='granted'?on():toast('要允許通知才能顯示數字'));else on()}catch(e){on()}return}
+  case'cpUrl':{const u=location.href.split('#')[0];try{navigator.clipboard.writeText(u).then(()=>toast('<b>已複製</b>　'+esc(u)),()=>toast(esc(u)))}catch(e){toast(esc(u))}return}
+  case'exp':{const t=$('#bk');t.classList.remove('hide');$('#impGo').classList.add('hide');t.value=JSON.stringify(S);t.select();try{navigator.clipboard.writeText(t.value).then(()=>toast('<b>已複製</b>　貼到備忘錄存起來'),()=>toast('請手動複製下面的文字'))}catch(err){toast('請手動複製下面的文字')}return}
   case'imp':{const t=$('#bk');t.classList.remove('hide');t.value='';t.placeholder='把備份文字貼在這';$('#impGo').classList.remove('hide');return}
-  case'impGo':try{const o=JSON.parse($('#bk').value);if(!o.quests)throw 0;S=Object.assign(defaults(),o);save();toast('<b>匯入成功</b>');render()}catch(err){toast('格式不對，確認有整段貼上')}return;
-  case'restart':return modal('<h2>[重開計畫]</h2><div class="bigt">從 DAY 1 重新開始？</div><p class="muted">等級、金幣、成就保留，66 天進度歸零。</p>',[['取消','btn'],['重開','btn pri',()=>{S.start=today();S.lastClosed=null;S.penalties=[];save();render()}]]);
-  case'wipe':return modal('<h2>[警告]</h2><div class="bigt" style="color:var(--red)">全部清空？</div><p class="muted">無法復原。建議先匯出備份。</p>',[['取消','btn'],['清空','btn red',()=>{S=defaults();save();render()}]]);
+  case'impGo':try{const o=JSON.parse($('#bk').value);if(!o.log)throw 0;localStorage.setItem(KEY,JSON.stringify(o));load();save();toast('<b>匯入成功</b>');render()}catch(err){toast('格式不對，確認有整段貼上')}return;
+  case'restart':return modal('<h2>[重開計畫]</h2><div class="bigt">從 DAY 1 重新開始？</div><p class="muted">等級、金幣、裝備、成就保留，66 天進度歸零。</p>',[['取消','btn'],['重開','btn pri',()=>{S.start=today();S.lastClosed=null;S.penalties=[];save();render()}]]);
+  case'wipe':return modal('<h2>[警告]</h2><div class="bigt" style="color:var(--red)">全部清空？</div><p class="muted">無法復原。建議先匯出備份。</p>',[['取消','btn'],['清空','btn red',()=>{S=defaults();S.seen=1;save();render()}]]);
  }});
-$('#view').addEventListener('change',e=>{if(e.target.id==='dayStart'){S.dayStart=+e.target.value;save();return render()}const f=e.target.dataset.f;if(!f)return;const qe=e.target.closest('[data-eq]'),re=e.target.closest('[data-er]');
- if(qe){const q=S.quests.find(x=>x.id===qe.dataset.eq);q[f]=f==='xp'||f==='goal'?+e.target.value:f==='target'?Math.max(1,Math.min(50,+e.target.value||1)):e.target.value;if(f==='type'){if(!q.type)delete q.type;else q.goal=q.goal||180;save();return render()}}
- if(re){const r=S.rewards.find(x=>x.id===re.dataset.er);r[f]=f==='name'?e.target.value:Math.max(0,+e.target.value||0)}
- save();header()});
+$('#view').addEventListener('change',e=>{if(e.target.id==='dayStart'){S.dayStart=+e.target.value;save();return render()}
+ const f=e.target.dataset.f,re=e.target.closest('[data-er]');if(!f||!re)return;const r=S.rewards.find(x=>x.id===re.dataset.er);r[f]=f==='name'?e.target.value:Math.max(0,+e.target.value||0);save()});
 
 /* ---------- 計時 ---------- */
-function tick(){const tm=S.timer;
- if(tm){const left=tm.end-Date.now();
-  if(left<=0){S.timer=null;const xp=Math.round(tm.min*0.8),g=Math.round(tm.min/2);S.stats.INT=(S.stats.INT||0)+1;S.focusCount++;dayLog(today()).focus.push({min:tm.min,xp,g});
-   gain(xp,g);hitBoss(xp);after();modal(`<h2>[專注地城] 通關</h2><div class="bigt">${tm.min} 分鐘專注完成</div><p><b style="color:var(--cyan)">+${xp} XP</b>　<span class="gold">+${g} G</span>　智力 +1</p>`,[['讚','btn pri']]);return}
-  const el=$('#tmr');if(el){const s=Math.ceil(left/1e3);el.textContent=pad(Math.floor(s/60))+':'+pad(s%60)}}
-}
+function tick(){const tm=S.timer;if(!tm)return;const left=tm.end-Date.now();
+ if(left<=0){S.timer=null;const t=today(),r=reward(t,'focus'+Date.now(),Math.round(tm.min*.8),'INT','focus');S.focusCount++;dayLog(t).focus.push({min:tm.min,xp:r.xp});after();
+  modal(`<h2>[專注地城] 通關</h2><div class="bigt">${tm.min} 分鐘專注完成</div><p><b style="color:var(--cyan)">+${r.xp} XP</b>　<span class="gold">+${r.gold} G</span>　智力 +1</p>`,[['讚','btn pri']]);return}
+ const el=$('#tmr');if(el){const s=Math.ceil(left/1e3);el.textContent=pad(Math.floor(s/60))+':'+pad(s%60)}}
 setInterval(tick,1000);
 let lastDay=today();
-setInterval(()=>{if(today()!==lastDay){lastDay=today();closeDays();render()}},30000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){closeDays();render()}});
+setInterval(()=>{if(today()!==lastDay){lastDay=today();closeDays();render();checkLogin(askScreen)}},30000);
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.seen){closeDays();render();if(!$('#modal').classList.contains('on')&&!checkLogin(askScreen))askScreen()}});
 
-closeDays();bossInfo();checkAch();save();render();
+/* ---------- 啟動 ---------- */
+closeDays();bossInfo();checkAch();save();render();updBadge();
 try{if('serviceWorker'in navigator&&location.protocol==='https:'&&!/claude/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
-if(!S.seen)wizard(true);else askScreen();
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.seen)askScreen()});
-updBadge();
+if(!S.seen)modal(`<h2>[系統] 玩家覺醒</h2><div style="text-align:center">${avatarSvg(130)}</div><div class="bigt" style="text-align:center">歡迎來到 RESET</div><p class="muted" style="line-height:1.7">每天完成 80% 任務 = 通關。<br>任務 → XP 升級、金幣買裝備和技能。<br>每週一隻 Boss，打倒一隻下一隻更強。<br>每天簽到開寶箱，還有 3 個隨機任務。<br>有上班的日子記得切「有班」。</p>`,[['開始','btn pri',()=>{S.seen=1;save();checkLogin(askScreen)}]]);
+else if(!checkLogin(askScreen))askScreen();
+
 </script>
 </body>
 </html>
