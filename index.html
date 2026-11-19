@@ -208,6 +208,27 @@ textarea{min-height:90px;font:12px var(--mono)}
 .fsp{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;justify-content:center}
 .shake svg{animation:hit .35s}
 @keyframes hit{0%{transform:translateX(0)}25%{transform:translateX(-8px);filter:brightness(2)}50%{transform:translateX(8px)}75%{transform:translateX(-4px)}100%{transform:translateX(0)}}
+
+.muted,p{text-wrap:pretty}
+.ptitle span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:62%}
+.muted.sm,.sm{font-size:12px;line-height:1.6}
+.boss h3{margin:6px 0 0}.bt{margin:2px 0 10px;font-style:italic;font-size:13px}
+.fstat b{font-size:15px}
+.chg{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:8px;margin:10px 0 2px;font-size:13px;white-space:nowrap}
+.chg .bar{margin:0;height:8px}.chg b{font:800 15px var(--mono);color:var(--gold)}
+.bstate{text-align:center;margin:10px 0 8px;font-size:14px;white-space:nowrap}
+.dun{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center}
+.dsv svg{display:block;width:120px}.dinfo{min-width:0}.dn{display:block;font-size:16px;line-height:1.3;margin-bottom:4px}
+.weak{font-size:12px;color:var(--mute);white-space:nowrap}
+.fcats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.fcats button{position:relative;display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;border:1px solid var(--line);border-radius:12px;background:#070c18;font-size:12px;white-space:nowrap;color:var(--mute)}
+.fcats button span{font-size:20px}.fcats button.on{border-color:var(--cyan);color:var(--cyan);background:rgba(79,209,255,.1)}
+.fcats i{position:absolute;top:-7px;right:-4px;font-style:normal;font-size:9px;background:var(--gold);color:#1a1200;padding:1px 4px;border-radius:6px}
+.fbtns{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.fbtn{display:flex;flex-direction:column;align-items:center;line-height:1.15;padding:10px 0;border:1px solid var(--cyan);border-radius:12px;background:rgba(79,209,255,.08);color:var(--cyan);white-space:nowrap}
+.fbtn b{font:800 22px var(--mono)}.fbtn small{font-size:11px;opacity:.8}.fbtn em{font-style:normal;font-size:11px;margin-top:4px;color:var(--text);opacity:.85}
+.fbtn.pri{background:linear-gradient(180deg,#2d7cf6,#1f5fd0);border-color:#4d8ff8;color:#fff}
+.ftimer{display:grid;grid-template-columns:90px 1fr;align-items:center;gap:10px;margin-bottom:10px}.ftimer .timer{margin:0;text-align:left;font-size:46px}
 </style>
 </head>
 <body>
@@ -230,7 +251,7 @@ textarea{min-height:90px;font:12px var(--mono)}
 <div id="toasts"></div>
 <div id="modal"><div class="card" id="mcard"></div></div>
 <script>
-const VER='v15・11/19 20:30';
+const VER='v16・11/19 22:50';
 'use strict';
 /* =====================================================================
    RESET 系統 v4
@@ -470,7 +491,7 @@ function reward(t,key,base,stat,kind){let m=1;if(kind==='quest'&&skl('grit')&&st
  const loot=srand(t+key+'l')<.1?Math.round((10+Math.floor(srand(t+key+'a')*31))*(1+.3*skl('luck'))):0;
  const gold=Math.round(base/2*(1+eqv('armor')))+loot,dmg=Math.round(xp*(1+eqv('weapon')));
  const r={xp,gold,loot,crit,stat,dmg,kind};if(crit)S.crits++;S.stats[stat]=(S.stats[stat]||0)+1;if(kind==='side')S.sideCount++;else if(kind==='quest')S.questCount++;
- gain(xp,gold);hitMinion(dmg,kind);
+ gain(xp,gold);hitMinion(dmg,kind,stat);
  if(crit){sfx('crit');toast(`<b>CRITICAL!</b> 經驗值 ×2　+${xp} XP`,'crit')}else{sfx('done');toast(`<b>+${xp} XP</b>　+${gold-loot} G　${STATS[stat].n} +1`)}
  if(loot)toast(`<b>寶箱掉落！</b> +${loot} G`,'crit');return r}
 function undo(r){S.xp-=r.xp;S.gold-=r.gold;const st=STATS[r.stat]?r.stat:'SPI';S.stats[st]=Math.max(0,(S.stats[st]||0)-1);
@@ -853,8 +874,9 @@ function openExtra(D,tx,skipQ){if(!tx)return toast('先寫做了什麼');
    ===================================================================== */
 const MATS={stone:['💎','魔石'],fang:['🦷','獸牙'],soul:['✨','靈魂碎片']};
 const MINIONS=[
- {n:'滑手機史萊姆',c:'#22d3ee'},{n:'拖延小鬼',c:'#f97316'},{n:'宵夜哥布林',c:'#84cc16'},
- {n:'鬧鐘蝙蝠',c:'#a78bfa'},{n:'分心蚊子',c:'#facc15'},{n:'藉口泥偶',c:'#b45309'}];
+ {n:'滑手機史萊姆',c:'#22d3ee',w:'DIS'},{n:'拖延小鬼',c:'#f97316',w:'DIS'},{n:'宵夜哥布林',c:'#84cc16',w:'VIT'},
+ {n:'鬧鐘蝙蝠',c:'#a78bfa',w:'SPI'},{n:'分心蚊子',c:'#facc15',w:'INT'},{n:'藉口泥偶',c:'#b45309',w:'STR'}];
+const FCATS={study:['📖','讀書','INT'],esp:['🗣️','西文','INT'],med:['🧘','冥想','SPI'],body:['💪','體能','STR'],tidy:['🧹','整理','DIS']};
 const SPELLS=[
  {id:'fire',ic:'🔥',n:'火球術',d:'造成 60＋等級×4 點傷害',g:100,m:{stone:3}},
  {id:'bolt',ic:'⚡',n:'雷擊',d:'造成 30＋等級×2 點傷害，Boss 麻痺 1 回合',g:120,m:{stone:2,fang:1}},
@@ -865,15 +887,18 @@ const SPELL_MAX=3, FIGHT_TURNS=8;
 
 /* ---------- 地城 ---------- */
 function dun(){S.dun=S.dun||{floor:1,dmg:0,kills:0,last:null};S.mats=S.mats||{stone:0,fang:0,soul:0};S.items=S.items||{};return S.dun}
-const minionOf=f=>({...MINIONS[(f*7+3)%MINIONS.length],hp:60+f*8,floor:f});
-function hitMinion(x,src){const D=dun();if(x<=0)return;let left=x,drops=[];
- for(let k=0;k<5&&left>0;k++){const m=minionOf(D.floor),need=m.hp-D.dmg;if(left<need){D.dmg+=left;left=0;break}
-  left-=need;D.dmg=0;D.kills++;D.floor++;const g=5+Math.floor(Math.random()*8),keys=Object.keys(MATS),mk=keys[Math.floor(Math.random()*3)],n=Math.random()<.15?2:1;
-  S.gold+=g;S.mats[mk]+=n;if(src==='focus'){const k2=keys[Math.floor(Math.random()*3)];S.mats[k2]++;drops.push(MATS[k2][0])}
-  drops.push(`${MATS[mk][0]}×${n}`);D.last={n:m.n,g,mk,n2:n};
+const minionOf=f=>{const rare=f>2&&srand('rare'+f)<.12;return{...MINIONS[(f*7+3)%MINIONS.length],hp:Math.round((60+f*8)*(rare?1.5:1)),floor:f,rare}};
+function hitMinion(x,src,stat){const D=dun();if(x<=0)return;let left=x,drops=[],weakHit=false;
+ for(let k=0;k<6&&left>0;k++){const m=minionOf(D.floor),mul=stat&&stat===m.w?2:1;if(mul>1)weakHit=true;const need=m.hp-D.dmg,eff=left*mul;
+  if(eff<need){D.dmg+=Math.round(eff);left=0;break}
+  left-=need/mul;D.dmg=0;D.kills++;D.floor++;const rm=m.rare?2:1,g=(5+Math.floor(Math.random()*8))*rm,keys=Object.keys(MATS),mk=keys[Math.floor(Math.random()*3)],n=(Math.random()<.15?2:1)*rm;
+  S.gold+=g;S.mats[mk]+=n;drops.push(`${MATS[mk][0]}×${n}`);
+  if(src==='focus'){const k2=keys[Math.floor(Math.random()*3)];S.mats[k2]++;drops.push(MATS[k2][0])}
+  if(m.rare){drops.unshift('✨稀有');jlog('🌟',`擊倒稀有怪「金色${m.n}」`)}
   if(D.kills%10===0)jlog('🗝️',`地城突破第 ${D.floor} 層，累計擊倒 ${D.kills} 隻小怪`)}
- if(drops.length)setTimeout(()=>toast(`<b>擊倒小怪！</b>　${drops.join(' ')}`,'crit'),350)}
-function minionSvg(f,w){const m=minionOf(f),c=m.c,k=(f*7+3)%MINIONS.length,g=rid();
+ if(drops.length)setTimeout(()=>toast(`<b>擊倒小怪！</b>　${drops.join(' ')}`,'crit'),350);
+ else if(weakHit)setTimeout(()=>toast('<b>打中弱點！</b>　傷害 ×2'),350)}
+function minionSvg(f,w){const m=minionOf(f),c=m.rare?'#f5c451':m.c,k=(f*7+3)%MINIONS.length,g=rid();
  let s=`<svg viewBox="0 0 160 130" width="${w}" style="max-width:100%"><defs><radialGradient id="m${g}"><stop offset="0" stop-color="${c}" stop-opacity=".35"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></radialGradient></defs><ellipse cx="80" cy="70" rx="70" ry="56" fill="url(#m${g})"/><ellipse cx="80" cy="118" rx="38" ry="6" fill="#000" opacity=".45"/><g><animateTransform attributeName="transform" type="translate" values="0 0;0 -4;0 0" dur="1.6s" repeatCount="indefinite"/>`;
  const eyes=(x1,x2,y,col='#fff')=>`<circle cx="${x1}" cy="${y}" r="5" fill="${col}"/><circle cx="${x2}" cy="${y}" r="5" fill="${col}"/><circle cx="${x1+1}" cy="${y+1}" r="2.4" fill="#111"/><circle cx="${x2+1}" cy="${y+1}" r="2.4" fill="#111"/>`;
  s+=[
@@ -975,28 +1000,31 @@ function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)
 
 /* ---------- 戰鬥頁 ---------- */
 function vBattle(){const b=bossInfo(),D=dun(),m=minionOf(D.floor),fd=isFightDay(),ch=chargeOf(S.boss.week),p=pStats(),pr=predict(b);
- const wd=parse(today()).getDay(),toSat=(6-wd+7)%7;
- let h=`<div class="panel sys boss ${b.dead?'dead':''}"><div class="ptitle">[本週 BOSS]<span>Lv.${b.t+1}・決戰日：週六、週日</span></div>${bossSvg(b.i,b.t,200,b.dead)}<h3>${b.name}${b.rematch?' <span class="chip" style="color:var(--red);border-color:#552030">復仇戰</span>':''}</h3><p class="muted" style="margin:2px 0 8px;font-style:italic">「${b.title}」</p>
+ const wd=parse(today()).getDay(),toSat=(6-wd+7)%7,fcat=S.fcat||'study',nF=(dayLog(today()).focus||[]).length,combo=1+Math.min(3,nF)*.2;
+ let h=`<div class="panel sys boss ${b.dead?'dead':''}"><div class="ptitle">[本週 BOSS]<span>Lv.${b.t+1}・週六日決戰</span></div>${bossSvg(b.i,b.t,180,b.dead)}
+ <h3>${b.name}${b.rematch?' <span class="chip" style="color:var(--red);border-color:#552030">復仇戰</span>':''}</h3><p class="muted bt">「${b.title}」</p>
  ${S.stolen&&b.rematch&&!b.dead?`<p style="color:var(--gold);margin:0 0 6px">打倒牠就能奪回 ${gearById(S.stolen).it[1]}</p>`:''}
  <div class="fstat"><div><small>Boss HP</small><b style="color:var(--red)">${b.hp}</b></div><div><small>Boss 攻擊</small><b>${bossStats(b).atk}</b></div><div><small>你的 HP</small><b style="color:var(--green)">${p.hp}</b></div><div><small>你的攻擊</small><b>${p.atk}</b></div></div>
- <div class="row" style="justify-content:space-between;margin:8px 0 4px;font-size:13px"><span>💥 本週蓄力（開場一擊）</span><b style="color:var(--gold);font-family:var(--mono)">${ch}</b></div>
- <div class="bar gold" style="height:8px"><i style="width:${Math.min(100,ch/b.hp*100)}%"></i></div>
- <p class="muted" style="font-size:12px;margin:4px 0 10px">這週做的每個任務都在幫你蓄力。蓄力越多，開場那一擊越痛。</p>`;
- if(b.dead)h+=`<p style="color:var(--green);text-align:center;margin:0">✅ 已擊破。下週一出現新的 Boss，而且更強。</p>`;
- else if(S.boss.fought)h+=`<p style="color:var(--red);text-align:center;margin:0">這週已經挑戰過，下週同一隻會再來。</p>`;
- else if(fd)h+=`<p style="text-align:center;margin:0 0 8px">預估：<b style="color:${pr[1]}">${pr[0]}</b>　魔法庫存 ${SPELLS.reduce((a,s)=>a+(S.items[s.id]||0),0)} 個</p><button class="btn pri" id="fight" style="width:100%;font-size:17px">⚔️ 開始決戰（每週一次）</button><p class="muted" style="font-size:11px;text-align:center;margin:6px 0 0">週日結束前沒來挑戰算棄權，會被搶東西</p>`;
- else h+=`<p style="text-align:center;margin:0">⏳ 再 <b>${toSat}</b> 天開戰・目前預估：<b style="color:${pr[1]}">${pr[0]}</b></p><p class="muted" style="font-size:12px;text-align:center;margin:4px 0 0">平日去地城打小怪、收集素材，到商店換魔法</p>`;
- h+=`</div><div class="panel sys"><div class="ptitle">[地城]<span>第 ${D.floor} 層・已擊倒 ${D.kills} 隻</span></div>
- <div style="text-align:center">${minionSvg(D.floor,170)}</div><h3 style="text-align:center;margin:2px 0 6px">${m.n}</h3>
- <div class="bar red" style="height:12px"><i style="width:${(1-D.dmg/m.hp)*100}%"></i></div>
- <div class="row" style="justify-content:space-between;margin-top:6px;font:12px var(--mono);color:var(--mute)"><span>HP ${m.hp-D.dmg} / ${m.hp}</span><span>掉落：金幣＋素材</span></div>
- <p class="muted" style="font-size:12px;margin:8px 0 0">完成任務、隨機任務、額外修練都會自動攻擊小怪。專注討伐是重擊。</p>
+ <div class="chg"><span>💥 本週蓄力</span><div class="bar gold"><i style="width:${Math.min(100,ch/b.hp*100)}%"></i></div><b>${ch}</b></div>
+ <p class="muted sm">開場一擊的傷害，這週每做一個任務就多一點</p>`;
+ if(b.dead)h+=`<div class="bstate" style="color:var(--green)">✅ 已擊破，下週一換更強的</div>`;
+ else if(S.boss.fought)h+=`<div class="bstate" style="color:var(--red)">這週挑戰過了，下週復仇</div>`;
+ else if(fd)h+=`<div class="bstate">預估 <b style="color:${pr[1]}">${pr[0]}</b>・魔法 ${SPELLS.reduce((a,s)=>a+(S.items[s.id]||0),0)} 個</div><button class="btn pri" id="fight" style="width:100%;font-size:17px">⚔️ 開始決戰</button><p class="muted sm" style="text-align:center">每週一次・週日沒來打算棄權</p>`;
+ else h+=`<div class="bstate">⏳ 再 <b>${toSat}</b> 天開戰・預估 <b style="color:${pr[1]}">${pr[0]}</b></div>`;
+ h+=`</div><div class="panel sys"><div class="ptitle">[地城]<span>第 ${D.floor} 層・擊倒 ${D.kills} 隻</span></div>
+ <div class="dun"><div class="dsv">${minionSvg(D.floor,130)}</div><div class="dinfo">
+  <b class="dn">${m.rare?'<span style="color:var(--gold)">✨稀有・金色</span><br>':''}${m.n}</b>
+  <span class="weak">弱點：<b style="color:${STATS[m.w].c}">${STATS[m.w].n}</b>　傷害 ×2</span>
+  <div class="bar red" style="height:10px;margin:8px 0 4px"><i style="width:${(1-D.dmg/m.hp)*100}%"></i></div>
+  <span class="muted sm">HP ${m.hp-D.dmg} / ${m.hp}</span></div></div>
+ <p class="muted sm" style="margin:8px 0 0">任務、隨機任務、額外修練都會自動攻擊。用弱點屬性打，傷害加倍。</p>
  <div class="mats">${Object.entries(MATS).map(([k,v])=>`<div><span>${v[0]}</span><b>${S.mats[k]||0}</b><small>${v[1]}</small></div>`).join('')}</div></div>`;
  const tm=S.timer;
- h+=`<div class="panel sys"><div class="ptitle">[專注討伐]<span>重擊小怪＋保底掉素材</span></div>`;
- if(tm)h+=`<div class="timer" id="tmr">--:--</div><p class="muted" style="text-align:center">${tm.min} 分鐘・中途放棄沒獎勵</p><div class="row"><button class="btn red grow" id="giveup">放棄</button></div>`;
- else h+=`<p class="muted">手機放旁邊，專心做一件事，讀書、寫作業最適合。可以切出去，時間照算。</p><div class="row">${[15,25,50].map(n=>`<button class="btn ${n===25?'pri':'cy'} grow" data-focus="${n}">${n} 分<br><small style="font-weight:400">重擊 ${n*3}</small></button>`).join('')}</div>`;
- return h+`<p class="muted" style="margin-top:10px">累計完成 ${S.focusCount} 次</p></div>`}
+ h+=`<div class="panel sys"><div class="ptitle">[專注討伐]<span>${nF?`今天連戰 ${nF} 場・傷害 ×${combo.toFixed(1)}`:'重擊＋保底掉素材'}</span></div>`;
+ if(tm){const fc=FCATS[tm.cat||'study'];h+=`<div class="ftimer"><div>${minionSvg(D.floor,90)}</div><div><div class="muted sm">${fc[0]} ${fc[1]}中・${tm.min} 分鐘</div><div class="timer" id="tmr">--:--</div></div></div><button class="btn red" id="giveup" style="width:100%">放棄（沒有獎勵）</button>`}
+ else h+=`<p class="muted sm" style="margin:0 0 8px">1. 選這場要做什麼（決定加哪個屬性）</p><div class="fcats">${Object.entries(FCATS).map(([k,v])=>`<button class="${fcat===k?'on':''}" data-fcat="${k}"><span>${v[0]}</span>${v[1]}${v[2]===m.w?'<i>弱點</i>':''}</button>`).join('')}</div>
+ <p class="muted sm" style="margin:12px 0 8px">2. 選時間，手機放旁邊開始</p><div class="fbtns">${[5,15,25,50].map(n=>`<button class="fbtn ${n===25?'pri':''}" data-focus="${n}"><b>${n}</b><small>分鐘</small><em>重擊 ${Math.round(n*3*combo*(FCATS[fcat][2]===m.w?2:1))}</em></button>`).join('')}</div>`;
+ return h+`<p class="muted sm" style="margin:10px 0 0">連戰：今天第 2 場起傷害 +20%，最多 +60%・累計 ${S.focusCount} 場</p></div>`}
 
 /* ---------- 商店頁 ---------- */
 function vShop(){const pp=pendingPen().length,L=lvInfo(S.xp).lv;
@@ -1071,7 +1099,7 @@ let jDraft='',xDraft='';
 function render(){header();$('#view').innerHTML=VIEWS[tab]();const ta=$('#jtxt');if(ta){ta.value=jDraft;ta.oninput=()=>{jDraft=ta.value}}const xt=$('#xtxt');if(xt){xt.value=xDraft;xt.oninput=()=>{xDraft=xt.value}}tick()}
 
 /* ---------- 事件 ---------- */
-$('#view').addEventListener('click',e=>{const el=e.target.closest('[data-spell],[data-xdel],[data-mood],[data-jf],[data-jdel],[data-info],[data-q],[data-side],[data-day],[data-shift],[data-pen],[data-focus],[data-buy],[data-gear],[data-eq],[data-skill],[data-delr],button[id]');if(!el||el.disabled)return;const d=el.dataset;
+$('#view').addEventListener('click',e=>{const el=e.target.closest('[data-fcat],[data-spell],[data-xdel],[data-mood],[data-jf],[data-jdel],[data-info],[data-q],[data-side],[data-day],[data-shift],[data-pen],[data-focus],[data-buy],[data-gear],[data-eq],[data-skill],[data-delr],button[id]');if(!el||el.disabled)return;const d=el.dataset;
  const D=viewY?addDays(today(),-1):today();
  if(d.spell){const sp=SPELLS.find(x=>x.id===d.spell);if(S.gold<sp.g||!Object.entries(sp.m).every(([k,n])=>(S.mats[k]||0)>=n))return toast('金幣或素材不夠');
   S.gold-=sp.g;Object.entries(sp.m).forEach(([k,n])=>S.mats[k]-=n);S.items[sp.id]=(S.items[sp.id]||0)+1;sfx('chest');toast(`<b>${sp.ic} ${sp.n}</b> 製作完成`);return after()}
@@ -1088,7 +1116,8 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-spell],
  if(d.eq){const g=gearById(d.eq);S.gear.eq[g.slot]=d.eq;sfx('tap');return after()}
  if(d.skill)return buySkill(d.skill);
  if(d.pen){const p=S.penalties.find(x=>x.id===d.pen);return modal(`<h2>[懲罰任務]</h2><div class="bigt">${esc(p.text)}</div><p class="muted">誠實點，真的做完了？</p>`,[['還沒','btn'],['做完了','btn red',()=>{p.done=true;jlog('✅',`完成懲罰任務：${p.text}`);toast('<b>[系統]</b> 懲罰解除，商店開放');after()}]])}
- if(d.focus){S.timer={end:Date.now()+d.focus*6e4,min:+d.focus};save();toast(`<b>[專注討伐]</b> 進入 ${d.focus} 分鐘`);return render()}
+ if(d.fcat){S.fcat=d.fcat;save();return render()}
+ if(d.focus){const fc=S.fcat||'study';S.timer={end:Date.now()+d.focus*6e4,min:+d.focus,cat:fc};save();toast(`<b>[專注討伐]</b> 進入 ${d.focus} 分鐘`);return render()}
  if(d.buy){const r=REWARDS.find(x=>x.id===d.buy);if(!r)return;if(pendingPen().length)return toast('先完成懲罰任務');if(S.gold<r.cost)return toast('金幣不夠');
   return modal(`<h2>[確認購買]</h2><div class="bigt">${esc(r.name)}</div><p>花費 <span class="gold">${r.cost} G</span>，剩 <span class="gold">${S.gold-r.cost} G</span></p>`,[['算了','btn'],['買','btn pri',()=>{S.gold-=r.cost;S.buys.unshift({t:Date.now(),name:r.name,cost:r.cost});jlog('🎉',`花 ${r.cost} G 兌換了「${r.name}」`);S.buys=S.buys.slice(0,50);after();sfx('lv');toast(`<b>已購買</b>　${esc(r.name)}，去享受吧`)}]])}
  switch(el.id){
@@ -1122,8 +1151,10 @@ $('#view').addEventListener('change',e=>{if(e.target.id==='rsInput'){const f=e.t
 
 /* ---------- 計時 ---------- */
 function tick(){const tm=S.timer;if(!tm)return;const left=tm.end-Date.now();
- if(left<=0){S.timer=null;const t=today(),r=reward(t,'focus'+Date.now(),Math.round(tm.min*.8),'INT','focus');S.focusCount++;dayLog(t).focus.push({min:tm.min,xp:r.xp});hitMinion(tm.min*3,'focus');after();
-  modal(`<h2>[專注討伐] 完成</h2><div style="text-align:center">${minionSvg(dun().floor,130)}</div><div class="bigt">${tm.min} 分鐘專注完成</div><p><b style="color:var(--cyan)">+${r.xp} XP</b>　<span class="gold">+${r.gold} G</span>　智力 +1<br>重擊小怪 <b>${tm.min*3+r.dmg}</b> 點傷害，額外掉落素材</p>`,[['讚','btn pri']]);return}
+ if(left<=0){S.timer=null;const t=today(),fc=FCATS[tm.cat||'study'],L0=dayLog(t),combo=1+Math.min(3,L0.focus.length)*.2;
+  const r=reward(t,'focus'+Date.now(),Math.round(tm.min*.8),fc[2],'focus');S.focusCount++;L0.focus.push({min:tm.min,xp:r.xp,cat:tm.cat});
+  const m=minionOf(dun().floor),weak=m.w===fc[2],hit=Math.round(tm.min*3*combo);hitMinion(hit,'focus',fc[2]);jlog('⚔️',`專注討伐：${fc[1]} ${tm.min} 分鐘`);after();
+  modal(`<h2>[專注討伐] 完成</h2><div style="text-align:center">${minionSvg(dun().floor,140)}</div><div class="bigt" style="text-align:center">${fc[0]} ${fc[1]} ${tm.min} 分鐘</div><p style="text-align:center;line-height:1.8"><b style="color:var(--cyan)">+${r.xp} XP</b>　<span class="gold">+${r.gold} G</span>　${STATS[fc[2]].n} +1<br>重擊 <b>${hit*(weak?2:1)}</b>${weak?'（弱點 ×2）':''}${combo>1?`・連戰 ×${combo.toFixed(1)}`:''}</p>`,[['讚','btn pri']]);return}
  const el=$('#tmr');if(el){const s=Math.ceil(left/1e3);el.textContent=pad(Math.floor(s/60))+':'+pad(s%60)}}
 setInterval(tick,1000);
 let lastDay=today();
