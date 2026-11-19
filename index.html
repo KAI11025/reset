@@ -219,7 +219,7 @@ textarea{min-height:90px;font:12px var(--mono)}
 <div id="toasts"></div>
 <div id="modal"><div class="card" id="mcard"></div></div>
 <script>
-const VER='v12・11/19 17:55';
+const VER='v13・11/19 17:50';
 'use strict';
 /* =====================================================================
    RESET 系統 v4
@@ -901,7 +901,7 @@ function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務]<span>
  <div class="sw"><div><b>🔊 音效</b><div class="muted">iPhone 靜音時不會響</div></div><button class="tog c ${S.sound?'on':''}" id="tSnd"></button></div>
  <div class="sw"><div><b>🌙 一天從幾點開始</b><div class="muted">凌晨勾的任務算前一天</div></div><select id="dayStart" style="width:90px">${[0,2,3,4,5,6].map(x=>`<option value="${x}" ${S.dayStart===x?'selected':''}>${pad(x)}:00</option>`).join('')}</select></div>
  <div class="sw"><div><b>🔴 圖示顯示剩幾項</b><div class="muted">要先加到主畫面，打開 app 時更新</div></div><button class="tog c ${S.badge?'on':''}" id="tBadge"></button></div></div>
- <div class="panel"><div class="ptitle">[每日提醒]<span>用 iPhone 捷徑</span></div><p class="muted" style="line-height:1.7;margin:0">捷徑 → 自動化 → ＋ → 特定時間 → 立即執行 → 動作「打開 URL」→ 貼上網址。建議早上一個、22:00 一個。</p><button class="btn sm cy" id="cpUrl" style="width:100%;margin-top:10px">複製這個 app 的網址</button></div>
+ <div class="panel"><div class="ptitle">[每日提醒]<span>用 iPhone 的「提醒事項」</span></div><p class="muted" style="line-height:1.7;margin:0">提醒事項 app → 新增提醒「RESET 早上任務」→ 點 ⓘ → 打開「日期」跟「時間」→「重複」選每天。<br>再新增一個「RESET 睡前復盤」，設 23:30。<br>時間到會跳通知，點主畫面的 RESET 圖示打開就好。<br><span style="color:var(--gold)">不要用捷徑的「打開 URL」：它會開到 Safari，那邊是另一份空的資料。</span></p></div>
  <div class="panel ${bkDays()>=7?'pen':''}"><div class="ptitle">[備份]<span>${S.lastBackup?'上次備份：'+(bkDays()===0?'今天':bkDays()+' 天前'):'還沒備份過'}</span></div>
  <p class="muted" style="margin:0 0 10px;line-height:1.6;font-size:13px">⚠️ 資料只存在這支手機的這個 app 裡。<b style="color:var(--red)">刪掉主畫面的 app，資料會一起消失。</b>建議每週備份一次到 iCloud 雲碟，換手機或誤刪都救得回來。</p>
  <button class="btn pri" id="bkFile" style="width:100%">💾 備份到檔案（存到 iCloud 雲碟）</button>
