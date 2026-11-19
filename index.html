@@ -362,6 +362,7 @@ function load(){let d=defaults(),r=null;try{r=JSON.parse(localStorage.getItem(KE
  delete S.quests;delete S.safari;delete S.igUntil;
  S.stats=Object.assign({STR:0,VIT:0,INT:0,SPI:0,DIS:0},S.stats);if(S.stats.CHA){S.stats.SPI+=S.stats.CHA;delete S.stats.CHA}
  S.rewards=(S.rewards||[]).filter(x=>!(x.ig>0));const RP={'追劇一集':[50,120],'手搖飲一杯':[80,150],'睡到自然醒':[120,250],'放縱餐':[200,400],'買一個想要的小東西':[400,1000]};S.rewards.forEach(r=>{const p=RP[r.name];if(p&&r.cost===p[0])r.cost=p[1]});S.shift=S.shift||{};S.gear=S.gear||{own:[],eq:{}};S.skills=S.skills||{};S.login=S.login||{last:null,streak:0,best:0};
+ if(!S.d0fix){if(S.start==='2026-11-19')S.start='2026-11-20';S.d0fix=1}
  if(S.dayStart===undefined)S.dayStart=4;if(S.sound===undefined)S.sound=true;if(S.boss.tier===undefined)S.boss.tier=S.bossKills}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
 load();
@@ -376,7 +377,7 @@ const doneCount=d=>{const L=S.log[d];return L&&L.done?actives(d).filter(q=>L.don
 const cleared=d=>doneCount(d)>=need(d);
 const sidesOf=d=>{const n=dayNum(d),C=Math.floor(SIDE.length/3),perm=shuffleSeed(SIDE.length,'side'+Math.floor(n/C)),k=((n%C)+C)%C;return[0,1,2].map(j=>perm[k*3+j])};
 // 原子習慣「不要連續錯過兩次」：錯過一天不斷連勝，連續兩天才斷
-function streak(){let n=0,miss=0,d=today();if(cleared(d))n++;d=addDays(d,-1);
+function streak(){if(diff(S.start,today())<0)return 0;let n=0,miss=0,d=today();if(cleared(d))n++;d=addDays(d,-1);
  while(diff(S.start,d)>=0){if(cleared(d)){n++;miss=0}else if(++miss>=2)break;d=addDays(d,-1)}return n}
 const yMissed=()=>{const y=addDays(today(),-1);return diff(S.start,y)>=0&&!cleared(y)};
 function lvInfo(xp){let lv=1,nd=115;xp=Math.max(0,xp);while(xp>=nd){xp-=nd;lv++;nd=80+lv*35}return{lv,cur:xp,need:nd}}
@@ -699,7 +700,7 @@ function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)
  <div class="day"><div class="big">DAY ${dn>66?((dn-1)%66)+1:dn}<small> / 66</small></div><div class="grow"></div><div style="text-align:right"><div style="font:800 24px var(--mono);color:${dc>=nd?'var(--cyan)':'var(--text)'}">${dc}/${act.length}</div><div class="muted">達標需 ${nd}</div></div></div>
  <div class="bar" style="margin-top:10px"><i style="width:${nd?Math.min(100,dc/nd*100):100}%"></i></div>
  <div class="chips"><span class="chip hot">🔥 連續 ${st} 天</span><span class="chip">📅 簽到 ${S.login.streak||0} 天</span>${yMissed()&&!cleared(t)?'<span class="chip" style="color:var(--gold);border-color:#5a4a18">⚠️ 昨天沒過，今天別再錯過</span>':''}${S.hard?'<span class="chip" style="color:var(--red);border-color:#552030">😈 硬核</span>':''}</div>
- <p class="quote">「${q}」</p></div>`;
+ ${dn<=0?'<p class="quote" style="color:var(--gold)">今天是暖身日，任務照做、XP 照拿，明天正式 DAY 1</p>':`<p class="quote">「${q}」</p>`}</div>`;
  const pp=pendingPen();
  if(pp.length)h+=`<div class="panel pen"><div class="ptitle">[懲罰任務]<span>完成前商店鎖定</span></div>${pp.map(p=>`<button class="q" data-pen="${p.id}"><span class="box"></span><span class="nm">${esc(p.text)}<div class="muted">${p.date.slice(5)} 失敗的代價</div></span></button>`).join('')}</div>`;
  h+=`<div class="panel sys"><div class="ptitle"><span style="display:flex;gap:6px"><button class="btn sm ${viewY?'':'cy'}" data-day="t">今天</button><button class="btn sm ${viewY?'cy':''}" data-day="y">昨天（補登）</button></span><span>${D.slice(5).replace('-','/')} 週${WD[parse(D).getDay()]}</span></div>
