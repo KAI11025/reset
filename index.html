@@ -216,6 +216,7 @@ textarea{min-height:90px;font:12px var(--mono)}
 <div id="toasts"></div>
 <div id="modal"><div class="card" id="mcard"></div></div>
 <script>
+const VER='v11・11/19 17:45';
 'use strict';
 /* =====================================================================
    RESET 系統 v4
@@ -345,6 +346,13 @@ const SIDE_GUIDE={
  '伸展 10 分鐘':{why:'練完的身體需要恢復。柔軟度也會影響你的動作，跟會不會受傷。',how:['大腿後側、髖部、肩膀、背，各伸展 1～2 分鐘','慢慢呼吸，不要用彈的','痠可以，痛就停'],when:'練完之後，或睡前。'}};
 const STAT_WHEN={STR:'今天任何時候都可以，有練習的日子可以接在練完後面。',VIT:'今天任何時候都可以，越早做越不會忘。',INT:'空檔、通勤或睡前都可以。',SPI:'早上或睡前，找個安靜的時候。',DIS:'今天任何時候都可以，越早做完越輕鬆。'};
 
+/* ---------- 現實獎勵（後台，只在這裡改） ---------- */
+const REWARDS=[
+ {id:'r_drama',name:'追劇一集',cost:120},
+ {id:'r_drink',name:'手搖飲一杯',cost:150},
+ {id:'r_sleep',name:'睡到自然醒',cost:250},
+ {id:'r_feast',name:'放縱餐',cost:400},
+ {id:'r_buy',name:'買一個想要的小東西',cost:1000}];
 /* ---------- RPG 資料 ---------- */
 const RANKS=[[1,'E','見習者'],[5,'D','覺醒者'],[10,'C','獵人'],[20,'B','精英獵人'],[35,'A','王牌'],[50,'S','君主']];
 const AURA={E:'#7d8aa6',D:'#3ee08f',C:'#4fd1ff',B:'#b48cff',A:'#f5c451',S:'#ff5d6c'};
@@ -786,7 +794,7 @@ function vShop(){const pp=pendingPen().length,L=lvInfo(S.xp).lv;
  for(const k in GEAR){const G=GEAR[k];h+=`<div class="panel"><div class="ptitle">[${G.n}]<span>${G.eff}加成</span></div>`+G.items.map((it,ix)=>{const own=S.gear.own.includes(it[0]),on=S.gear.eq[k]===it[0],lock=L<it[2];
   return`<div class="item gi ${lock?'lock':''}"><span class="gic">${gearIcon(k,ix+1)}</span><span class="nm">${it[1]} <small class="muted">T${ix+1}</small><div class="muted" style="font-size:12px">${G.eff} +${Math.round(it[4]*100)}%${lock?`・Lv.${it[2]} 解鎖`:''}</div></span>${on?'<span class="chip" style="color:var(--cyan);border-color:var(--cyan)">使用中</span>':own?`<button class="btn sm" data-eq="${it[0]}">裝備</button>`:`<button class="btn sm cy" data-gear="${it[0]}" ${pp||lock||S.gold<it[3]?'disabled':''}>${it[3]} G</button>`}</div>`}).join('')+'</div>'}
  h+=`<div class="panel"><div class="ptitle">[技能]<span>每項最高 Lv.3</span></div>`+SKILLS.map(sk=>{const lv=skl(sk[0]);return`<div class="item"><span class="gic">${sk[1]}</span><span class="nm">${sk[2]} <span class="dots">${[1,2,3].map(n=>`<i class="${n<=lv?'on':''}"></i>`).join('')}</span><div class="muted" style="font-size:12px">${lv?sk[3](lv):sk[3](1).replace(/\+\d+%/,m=>m)+'（Lv.1）'}</div></span>${lv>=3?'<span class="chip">MAX</span>':`<button class="btn sm cy" data-skill="${sk[0]}" ${pp||S.gold<SKILL_COST[lv]?'disabled':''}>${SKILL_COST[lv]} G</button>`}</div>`}).join('')+'</div>';
- h+=`<div class="panel"><div class="ptitle">[現實獎勵]<span>在設定改</span></div>`+(S.rewards.length?S.rewards.map(r=>`<div class="item"><span class="nm">${esc(r.name)}${S.gold<r.cost?`<div class="bar gold" style="height:4px;margin-top:5px"><i style="width:${Math.max(0,S.gold)/r.cost*100}%"></i></div>`:''}</span><button class="btn sm cy" data-buy="${r.id}" ${pp||S.gold<r.cost?'disabled':''}>${r.cost} G</button></div>`).join(''):'<p class="muted">去設定新增想要的獎勵。</p>')+'</div>';
+ h+=`<div class="panel"><div class="ptitle">[現實獎勵]<span>先賺到再享受</span></div>`+(REWARDS.length?REWARDS.map(r=>`<div class="item"><span class="nm">${esc(r.name)}${S.gold<r.cost?`<div class="bar gold" style="height:4px;margin-top:5px"><i style="width:${Math.max(0,S.gold)/r.cost*100}%"></i></div>`:''}</span><button class="btn sm cy" data-buy="${r.id}" ${pp||S.gold<r.cost?'disabled':''}>${r.cost} G</button></div>`).join(''):'<p class="muted">去設定新增想要的獎勵。</p>')+'</div>';
  if(S.buys.length)h+=`<div class="panel"><div class="ptitle">[購買紀錄]</div>${S.buys.slice(0,8).map(b=>{const d=new Date(b.t);return`<div class="item"><span class="nm">${esc(b.name)}</span><span class="muted">${d.getMonth()+1}/${d.getDate()}</span><span class="gold" style="min-width:52px;text-align:right">-${b.cost}</span></div>`}).join('')}</div>`;
  return h}
 function gearIcon(k,t){return{weapon:['','🪵','🗡️','⚔️','🔱','☠️'],armor:['','👕','🦺','⛓️','🛡️','🖤'],acc:['','💍','📿','💎','⚡','👑']}[k][t]}
@@ -829,8 +837,7 @@ function vMe(){const L=lvInfo(S.xp),r=rankOf(L.lv),nx=RANKS.find(x=>x[0]>L.lv);
  return h}
 
 /* ---------- 設定頁 ---------- */
-function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務]<span>後台管理</span></div><p class="muted" style="margin:0;line-height:1.7">任務清單鎖在後台，不能在這裡改，免得一時懶就把任務調簡單。想調整就跟 Claude 說，說「改我的 RESET 系統」。</p></div>`;
- h+=`<div class="panel"><div class="ptitle">[現實獎勵]<span>名稱 / 價格</span></div>`+S.rewards.map(r=>`<div class="edit rw" data-er="${r.id}"><input value="${esc(r.name)}" data-f="name"><input type="number" inputmode="numeric" value="${r.cost}" data-f="cost"><button data-delr="${r.id}">✕</button></div>`).join('')+`<button class="btn sm cy" id="addr" style="margin-top:4px">＋ 新增獎勵</button></div>`;
+function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務]<span>後台管理</span></div><p class="muted" style="margin:0;line-height:1.7">任務跟現實獎勵都鎖在後台，不能在這裡改，免得一時懶就把任務調簡單、把獎勵調便宜。想調整就跟 Claude 說，說「改我的 RESET 系統」。</p></div>`;
  h+=`<div class="panel"><div class="ptitle">[模式]</div>
  <div class="sw"><div><b>😈 硬核模式</b><div class="muted">沒通關（含補登期限）扣 50G＋懲罰任務，做完才能用商店</div></div><button class="tog ${S.hard?'on':''}" id="tHard"></button></div>
  <div class="sw"><div><b>🔊 音效</b><div class="muted">iPhone 靜音時不會響</div></div><button class="tog c ${S.sound?'on':''}" id="tSnd"></button></div>
@@ -839,6 +846,7 @@ function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務]<span>
  <div class="panel"><div class="ptitle">[每日提醒]<span>用 iPhone 捷徑</span></div><p class="muted" style="line-height:1.7;margin:0">捷徑 → 自動化 → ＋ → 特定時間 → 立即執行 → 動作「打開 URL」→ 貼上網址。建議早上一個、22:00 一個。</p><button class="btn sm cy" id="cpUrl" style="width:100%;margin-top:10px">複製這個 app 的網址</button></div>
  <div class="panel"><div class="ptitle">[備份]<span>換手機前一定要做</span></div><div class="row"><button class="btn sm cy grow" id="exp">匯出（複製）</button><button class="btn sm grow" id="imp">匯入</button></div>
  <textarea id="bk" class="hide" style="margin-top:8px"></textarea><button class="btn sm pri hide" id="impGo" style="margin-top:6px;width:100%">確認匯入</button></div>
+ <p class="muted" style="text-align:center;font:12px var(--mono);margin:6px 0 12px">目前版本 ${VER}</p>
  <div class="panel"><div class="ptitle" style="color:var(--red)">[危險區]</div><div class="row"><button class="btn sm grow" id="restart">重開 66 天（保留等級）</button><button class="btn sm red grow" id="wipe">全部清空</button></div></div>`;
  return h}
 
@@ -862,14 +870,12 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-mood],[
  if(d.skill)return buySkill(d.skill);
  if(d.pen){const p=S.penalties.find(x=>x.id===d.pen);return modal(`<h2>[懲罰任務]</h2><div class="bigt">${esc(p.text)}</div><p class="muted">誠實點，真的做完了？</p>`,[['還沒','btn'],['做完了','btn red',()=>{p.done=true;jlog('✅',`完成懲罰任務：${p.text}`);toast('<b>[系統]</b> 懲罰解除，商店開放');after()}]])}
  if(d.focus){S.timer={end:Date.now()+d.focus*6e4,min:+d.focus};save();toast(`<b>[專注地城]</b> 進入 ${d.focus} 分鐘`);return render()}
- if(d.buy){const r=S.rewards.find(x=>x.id===d.buy);if(!r)return;if(pendingPen().length)return toast('先完成懲罰任務');if(S.gold<r.cost)return toast('金幣不夠');
+ if(d.buy){const r=REWARDS.find(x=>x.id===d.buy);if(!r)return;if(pendingPen().length)return toast('先完成懲罰任務');if(S.gold<r.cost)return toast('金幣不夠');
   return modal(`<h2>[確認購買]</h2><div class="bigt">${esc(r.name)}</div><p>花費 <span class="gold">${r.cost} G</span>，剩 <span class="gold">${S.gold-r.cost} G</span></p>`,[['算了','btn'],['買','btn pri',()=>{S.gold-=r.cost;S.buys.unshift({t:Date.now(),name:r.name,cost:r.cost});jlog('🎉',`花 ${r.cost} G 兌換了「${r.name}」`);S.buys=S.buys.slice(0,50);after();sfx('lv');toast(`<b>已購買</b>　${esc(r.name)}，去享受吧`)}]])}
- if(d.delr){S.rewards=S.rewards.filter(q=>q.id!==d.delr);save();return render()}
  switch(el.id){
   case'jSave':{const tx=($('#jtxt').value||'').trim();if(!tx)return toast('先寫點什麼');S.journal=S.journal||[];S.journal.unshift({t:Date.now(),d:today(),type:'user',text:tx.slice(0,2000),mood:S.jm==null?null:S.jm});
    jDraft='';S.jm=null;if(S.jxp!==today()){S.jxp=today();S.stats.SPI=(S.stats.SPI||0)+1;gain(10,0);toast('<b>[勇者日誌]</b> 今天第一篇 +10 XP　心靈 +1')}else toast('<b>已寫入日誌</b>');sfx('done');return after()}
   case'giveup':return modal('<h2>[專注地城]</h2><div class="bigt">確定逃跑？</div><p class="muted">不會有任何獎勵。</p>',[['繼續撐','btn pri'],['逃跑','btn red',()=>{S.timer=null;save();render()}]]);
-  case'addr':S.rewards.push({id:uid(),name:'新獎勵',cost:50});save();return render();
   case'tHard':S.hard=!S.hard;if(S.hard)S.lastClosed=addDays(today(),-1);return after();
   case'tSnd':S.sound=!S.sound;save();sfx('done');return render();
   case'tBadge':{if(!('setAppBadge'in navigator)){toast('這裡不支援，先「加入主畫面」再從主畫面打開');return}
@@ -884,7 +890,7 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-mood],[
   case'wipe':return modal('<h2>[警告]</h2><div class="bigt" style="color:var(--red)">全部清空？</div><p class="muted">無法復原。建議先匯出備份。</p>',[['取消','btn'],['清空','btn red',()=>{S=defaults();S.seen=1;save();render()}]]);
  }});
 $('#view').addEventListener('change',e=>{if(e.target.id==='dayStart'){S.dayStart=+e.target.value;save();return render()}
- const f=e.target.dataset.f,re=e.target.closest('[data-er]');if(!f||!re)return;const r=S.rewards.find(x=>x.id===re.dataset.er);r[f]=f==='name'?e.target.value:Math.max(0,+e.target.value||0);save()});
+});
 
 /* ---------- 計時 ---------- */
 function tick(){const tm=S.timer;if(!tm)return;const left=tm.end-Date.now();
@@ -894,7 +900,7 @@ function tick(){const tm=S.timer;if(!tm)return;const left=tm.end-Date.now();
 setInterval(tick,1000);
 let lastDay=today();
 setInterval(()=>{if(today()!==lastDay){lastDay=today();closeDays();render();checkLogin(askScreen)}},30000);
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&S.seen){closeDays();bossInfo();render();if(!$('#modal').classList.contains('on'))boot()}});
+document.addEventListener('visibilitychange',()=>{try{navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r&&r.update())}catch(e){}if(!document.hidden&&S.seen){closeDays();bossInfo();render();if(!$('#modal').classList.contains('on'))boot()}});
 
 /* ---------- 啟動 ---------- */
 if(!S.journal){S.journal=[];jlog('🌅','冒險開始。66 天後，成為更好的自己。')}
