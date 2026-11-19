@@ -262,7 +262,7 @@ textarea{min-height:90px;font:12px var(--mono)}
 <div id="toasts"></div>
 <div id="modal"><div class="card" id="mcard"></div></div>
 <script>
-const VER='v20・11/20 00:40';
+const VER='v21・11/20 00:50';
 'use strict';
 /* =====================================================================
    RESET 系統 v4
@@ -524,7 +524,7 @@ function openInfo(k,D){const[kind,key]=k.split(':'),L=dayLog(D);
  const h=`<h2>[隨機任務]</h2><div class="bigt" style="font-size:22px">${esc(sd[0])}</div><div class="row" style="gap:8px;margin:0 0 10px">${tag(sd[1])}<span class="muted" style="font:12px var(--mono)">+15 XP</span></div>`+guideHtml(G);
  modal(h,d?[['關閉','btn'],['取消完成','btn red',()=>toggleSide(D,idx)]]:[['關閉','btn'],['完成 ✓','btn pri',()=>toggleSide(D,idx)]])}
 function pickLevel(q,t){const was=cleared(t);
- modal(`<h2>[${esc(q.name)}]</h2><div class="bigt" style="font-size:22px">今天做到哪個程度？</div><p class="muted" style="margin:0 0 4px;font-size:12px">迷你也算完成。狀態差就做迷你，別讓它斷掉。</p><div class="lvpick">${q.lv.map((l,i)=>`<button data-pick="${i}" style="border-color:${ELV[i][2]}66"><b style="color:${ELV[i][2]}">${ELV[i][0]}</b><span>${esc(l)}</span><small>+${Math.round(q.xp*ELV[i][1])} XP</small></button>`).join('')}</div>`,[['取消','btn']]);
+ modal(`<h2>[${esc(q.name)}]</h2><div class="bigt" style="font-size:22px">今天做到哪個程度？</div><div class="lvpick">${q.lv.map((l,i)=>`<button data-pick="${i}" style="border-color:${ELV[i][2]}66"><b style="color:${ELV[i][2]}">${ELV[i][0]}</b><span>${esc(l)}</span><small>+${Math.round(q.xp*ELV[i][1])} XP</small></button>`).join('')}</div>`,[['取消','btn']]);
  $('#mcard').onclick=e=>{const b=e.target.closest('[data-pick]');if(!b)return;$('#modal').classList.remove('on');$('#mcard').onclick=null;doLevel(q,t,+b.dataset.pick)}}
 const hintHtml=h=>h?`<p class="muted" style="line-height:1.7;white-space:pre-line;margin:0 0 4px">${esc(h)}</p>`:'';
 function toggleQuest(id,t,ok){const q=QUESTS.find(x=>x.id===id);if(!q)return;if(q.type==='screen')return openScreen(id,t);
@@ -565,7 +565,7 @@ function checkLogin(then){const t=today();if(S.login.last===t)return false;const
  if(r[0]==='g'){const g=Math.round(r[1]*(1+eqv('armor')));S.gold+=g;res={ic:'💰',txt:`<span class="gold">+${g} G</span>`}}else res=openChest(r[0]==='C');
  sfx('chest');checkAch();save();
  const cal=LOGIN.map((x,i)=>`<div class="cd ${i<k?'got':i===k?'now':''}"><small>D${i+1}</small><span>${x[0]==='g'?'💰':x[0]==='c'?'🎁':'👑'}</span><small>${x[0]==='g'?x[1]+'G':x[0]==='c'?'寶箱':'大寶箱'}</small></div>`).join('');
- modal(`<h2>[每日簽到] 連續 ${S.login.streak} 天</h2><div class="cal">${cal}</div><div class="chestbox"><div class="chest">${r[0]==='g'?'💰':'🎁'}</div><div class="reveal"><div style="font-size:44px">${res.ic}</div><div class="bigt" style="font-size:22px">${res.txt}</div></div></div><p class="muted" style="text-align:center;margin:0">斷簽會從第 1 天重來。第 7 天大寶箱有機會開出裝備。</p>`,[['收下','btn pri',()=>{render();then&&then()}]]);
+ modal(`<h2>[每日簽到] 連續 ${S.login.streak} 天</h2><div class="cal">${cal}</div><div class="chestbox"><div class="chest">${r[0]==='g'?'💰':'🎁'}</div><div class="reveal"><div style="font-size:44px">${res.ic}</div><div class="bigt" style="font-size:22px">${res.txt}</div></div></div>`,[['收下','btn pri',()=>{render();then&&then()}]]);
  return true}
 
 /* ---------- 裝備 / 技能 ---------- */
@@ -705,7 +705,7 @@ function vLog(){const J=S.journal||[],f=S.jf||'all',t=today();
  h+=insightPanel();
  // 過去的你
  const old=mine.filter(e=>diff(e.d,t)>=7);
- if(old.length){const e=old[Math.floor(srand(t+'fb')*old.length)];h+=`<div class="panel past"><div class="ptitle" style="color:var(--gold)">[過去的你]<span>${diff(e.d,t)} 天前</span></div><p class="jq">${e.mood!=null?MOODS[e.mood]+' ':''}${esc(e.text)}</p><p class="muted" style="margin:6px 0 0;font-size:12px">那時候的你，跟現在比起來有什麼不一樣？</p></div>`}
+ if(old.length){const e=old[Math.floor(srand(t+'fb')*old.length)];h+=`<div class="panel past"><div class="ptitle" style="color:var(--gold)">[過去的你]<span>${diff(e.d,t)} 天前</span></div><p class="jq">${e.mood!=null?MOODS[e.mood]+' ':''}${esc(e.text)}</p></div>`}
  // 心情軌跡
  const mood=[];for(let i=13;i>=0;i--){const d=addDays(t,-i),e=mine.find(x=>x.d===d&&x.mood!=null);mood.push([d,e?e.mood:null])}
  if(mood.some(x=>x[1]!=null))h+=`<div class="panel"><div class="ptitle">[心情軌跡]<span>近 14 天</span></div><div class="mtrack">${mood.map(([d,m])=>`<div><span>${m!=null?MOODS[m]:'·'}</span><small>${parse(d).getDate()}</small></div>`).join('')}</div></div>`;
@@ -741,7 +741,7 @@ function insights(){const t=today(),J=(S.journal||[]).filter(e=>e.type==='user'&
 function insightPanel(){const r=insights();let h=`<div class="panel sys"><div class="ptitle">[冒險分析]<span>心情 × 任務紀錄</span></div>`;
  if(r.need)h+=`<p class="muted" style="margin:0 0 10px">再寫 ${r.need} 天有選心情的日誌，就會開始分析你的心情跟睡眠、訓練、螢幕時間的關係。</p>`;
  else if(!r.list.length)h+=`<p class="muted" style="margin:0 0 10px">資料還不夠比較，多寫幾天、多記螢幕時間就會出現。</p>`;
- else h+=r.list.map(x=>`<div class="ins"><b>${x.title}</b><div class="iv">${x.txt}</div><div class="muted">${x.note}</div></div>`).join('')+`<p class="muted" style="font-size:11px;margin:4px 0 10px">根據 ${r.n} 天的心情紀錄算的，天數越多越準。這是統計，不代表一定是因果。</p>`;
+ else h+=r.list.map(x=>`<div class="ins"><b>${x.title}</b><div class="iv">${x.txt}</div><div class="muted">${x.note}</div></div>`).join('')+`<div style="height:8px"></div>`;
  return h+`<button class="btn cy" id="toClaude" style="width:100%">📋 複製最近 30 天紀錄，貼給 Claude 深度分析</button></div>`}
 function exportForClaude(){const t=today(),lines=[];
  lines.push('以下是我「RESET 系統」最近 30 天的紀錄。請用教練的角度分析我的狀況：哪些習慣有在進步、哪裡卡住、心情跟作息／訓練／螢幕時間有什麼關聯、日誌裡有沒有反覆出現的情緒或想法。最後給我下週 1～2 個具體的調整建議。');
@@ -795,7 +795,6 @@ function vExtra(D){const L=dayLog(D),X=L.extra||[],left=Math.max(0,XCAP-extraUse
  let h=`<div class="panel"><div class="ptitle" style="color:var(--green)">[額外修練]<span>今天還能加 ${left} 基礎分</span></div>
  <div class="row"><input id="xtxt" placeholder="做了什麼？例：晨跑 5 公里、閱讀 30 分鐘" style="flex:1"><button class="btn sm cy" id="xJudge">判定</button></div>`;
  if(X.length)h+=X.map((e,i)=>`<div class="item"><span class="nm">${esc(e.text)}<div class="muted" style="font-size:12px">${STATS[e.stat].n}・${esc(e.why)}</div></span><span class="xp" style="color:var(--green)">${e.r?'+'+e.r.xp:'+0'}</span><button class="jdel" data-xdel="${i}">✕</button></div>`).join('');
- else h+=`<p class="muted" style="margin:8px 0 0;font-size:12px">任務以外多做的事寫在這，系統會照類型跟時間判斷加多少分。</p>`;
  return h+'</div>'}
 function openExtra(D,tx,skipQ){if(!tx)return toast('先寫做了什麼');
  if(!skipQ){const L=dayLog(D),hit=actives(D).find(q=>QMATCH[q.id]&&QMATCH[q.id].test(tx)&&!L.done[q.id]);
@@ -881,7 +880,7 @@ function drawFight(){const b=F.b,inv=SPELLS.filter(s=>(S.items[s.id]||0)>0);
  <div class="row" style="justify-content:space-between;font:12px var(--mono);margin-top:8px"><b>你</b><span>${Math.max(0,F.php)} / ${F.pmax} HP${F.shield?'・🛡️'+F.shield:''}${F.rage?'・💢'+F.rage:''}</span></div>${bar(F.php,F.pmax,'')}
  <div class="flog">${F.log.slice(-4).map(x=>`<div>${x}</div>`).join('')}</div>`;
  if(!F.done){h+=`<div class="fact"><button class="btn pri" data-fa="atk">⚔️ 攻擊（${F.atk}${F.rage?'×1.8':''}）</button></div>`;
-  h+=inv.length&&F.used<SPELL_MAX?`<div class="fsp">${inv.map(s=>`<button class="btn sm" data-fa="${s.id}">${s.ic} ${s.n}×${S.items[s.id]}</button>`).join('')}</div><p class="muted" style="font-size:11px;margin:4px 0 0;text-align:center">魔法每場最多用 ${SPELL_MAX} 次（已用 ${F.used}）</p>`:`<p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">${inv.length?'魔法次數用完了':'沒有魔法，可以先去商店買'}</p>`}
+  h+=inv.length&&F.used<SPELL_MAX?`<div class="fsp">${inv.map(s=>`<button class="btn sm" data-fa="${s.id}">${s.ic} ${s.n}×${S.items[s.id]}</button>`).join('')}</div><p class="muted" style="font-size:11px;margin:4px 0 0;text-align:center">魔法 ${F.used}/${SPELL_MAX}</p>`:`<p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">${inv.length?'魔法次數用完了':'沒有魔法，可以先去商店買'}</p>`}
  modal(h,F.done?[['結束','btn pri',()=>{F=null;render()}]]:[]);F.hitFx=false;
  $('#mcard').onclick=e=>{const x=e.target.closest('[data-fa]');if(!x||!F||F.done)return;fightTurn(x.dataset.fa)}}
 function fightTurn(a){const roll=()=>.85+Math.random()*.3;let dmg=0;
@@ -929,7 +928,7 @@ function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)
  if(pp.length)h+=`<div class="panel pen"><div class="ptitle">[懲罰任務]<span>完成前商店鎖定</span></div>${pp.map(p=>`<button class="q" data-pen="${p.id}"><span class="box"></span><span class="nm">${esc(p.text)}<div class="muted">${p.date.slice(5)} 失敗的代價</div></span></button>`).join('')}</div>`;
  h+=`<div class="panel sys"><div class="ptitle"><span style="display:flex;gap:6px"><button class="btn sm ${viewY?'':'cy'}" data-day="t">今天</button><button class="btn sm ${viewY?'cy':''}" data-day="y">昨天（補登）</button></span><span>${D.slice(5).replace('-','/')} 週${WD[parse(D).getDay()]}</span></div>
  <div class="shift"><span>${viewY?'昨天':'今天'}有上班嗎？</span><div class="seg"><button class="${isShift(D)?'':'on'}" data-shift="0">沒班</button><button class="${isShift(D)?'on':''}" data-shift="1">🍸 有班</button></div></div>`;
- h+=`<p class="muted" style="margin:0 0 4px;font-size:12px">${viewY?'忘記勾的可以補，只開放昨天。':''}點方框＝完成，點名稱＝看怎麼做</p>`;
+ if(viewY)h+=`<p class="muted" style="margin:0 0 4px;font-size:12px">只能補登昨天</p>`;
  const row=q=>{const d=L.done[q.id];
   if(q.type==='screen'){const v=L.scr,over=v!=null&&!d;return`<div class="q ${d?'done':''}"><button class="box" data-q="${q.id}" style="${over?'border-color:var(--red);color:var(--red)':''}">${d?'✓':over?'✕':''}</button><button class="nm" data-info="q:${q.id}"><span class="qn">📱 ${esc(q.name)}</span><span class="cntw">${v!=null?`<b style="color:${over?'var(--red)':'var(--cyan)'}">${fmtMin(v)}</b><span class="muted">/ 目標 ${fmtMin(q.goal)}</span>`:`<span class="muted">目標 ${fmtMin(q.goal)} 內</span>`}</span></button>${tag(q.stat)}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+'+q.xp+'↑'}</span></div>`}
   const lb=d&&d.lv!=null&&q.lv?`<span class="lvb" style="color:${ELV[d.lv][2]};border-color:${ELV[d.lv][2]}66">${ELV[d.lv][0]}・${esc(q.lv[d.lv])}</span>`:'';
@@ -963,11 +962,10 @@ function vBattle(){const b=bossInfo(),D=dun(),m=minionOf(D.floor),fd=isFightDay(
  <h3>${b.name}${b.rematch?' <span class="chip" style="color:var(--red);border-color:#552030">復仇戰</span>':''}</h3><p class="muted bt">「${b.title}」</p>
  ${S.stolen&&b.rematch&&!b.dead?`<p style="color:var(--gold);margin:0 0 6px">打倒牠就能奪回 ${gearById(S.stolen).it[1]}</p>`:''}
  <div class="fstat"><div><small>Boss HP</small><b style="color:var(--red)">${b.hp}</b></div><div><small>Boss 攻擊</small><b>${bossStats(b).atk}</b></div><div><small>你的 HP</small><b style="color:var(--green)">${p.hp}</b></div><div><small>你的攻擊</small><b>${p.atk}</b></div></div>
- <div class="chg"><span>💥 本週蓄力</span><div class="bar gold"><i style="width:${Math.min(100,ch/b.hp*100)}%"></i></div><b>${ch}</b></div>
- <p class="muted sm">開場一擊的傷害，這週每做一個任務就多一點</p>`;
+ <div class="chg"><span>💥 本週蓄力</span><div class="bar gold"><i style="width:${Math.min(100,ch/b.hp*100)}%"></i></div><b>${ch}</b></div>`;
  if(b.dead)h+=`<div class="bstate" style="color:var(--green)">✅ 已擊破，下週一換更強的</div>`;
  else if(S.boss.fought)h+=`<div class="bstate" style="color:var(--red)">這週挑戰過了，下週復仇</div>`;
- else if(fd)h+=`<div class="bstate">預估 <b style="color:${pr[1]}">${pr[0]}</b>・魔法 ${SPELLS.reduce((a,s)=>a+(S.items[s.id]||0),0)} 個</div><button class="btn pri" id="fight" style="width:100%;font-size:17px">⚔️ 開始決戰</button><p class="muted sm" style="text-align:center">每週一次・週日沒來打算棄權</p>`;
+ else if(fd)h+=`<div class="bstate">預估 <b style="color:${pr[1]}">${pr[0]}</b>・魔法 ${SPELLS.reduce((a,s)=>a+(S.items[s.id]||0),0)} 個</div><button class="btn pri" id="fight" style="width:100%;font-size:17px">⚔️ 開始決戰</button>`;
  else h+=`<div class="bstate">⏳ 再 <b>${toSat}</b> 天開戰・預估 <b style="color:${pr[1]}">${pr[0]}</b></div>`;
  h+=`</div><div class="panel sys"><div class="ptitle">[地城]<span>第 ${D.floor} 層・擊倒 ${D.kills} 隻</span></div>
  <div class="dun"><div class="dsv">${minionSvg(D.floor,130)}</div><div class="dinfo">
@@ -975,7 +973,6 @@ function vBattle(){const b=bossInfo(),D=dun(),m=minionOf(D.floor),fd=isFightDay(
   <span class="weak">弱點：<b style="color:${STATS[m.w].c}">${STATS[m.w].n}</b>　傷害 ×2</span>
   <div class="bar red" style="height:10px;margin:8px 0 4px"><i style="width:${(1-D.dmg/m.hp)*100}%"></i></div>
   <span class="muted sm">HP ${m.hp-D.dmg} / ${m.hp}</span></div></div>
- <p class="muted sm" style="margin:8px 0 0">任務、隨機任務、額外修練都會自動攻擊。用弱點屬性打，傷害加倍。</p>
  <div class="mats">${Object.entries(MATS).map(([k,v])=>`<div><span>${v[0]}</span><b>${S.mats[k]||0}</b><small>${v[1]}</small></div>`).join('')}</div></div>`;
  const tm=S.timer;
  const wk=focusMin(0,7);
@@ -1018,7 +1015,7 @@ function realData(){const t=today(),cnt=(ids,a,b)=>{let n=0;for(let i=a;i<b;i++)
  const s1=avg(0,7),s0=avg(7,14);
  if(s1!=null)h+=`<div class="rd"><span class="nm">螢幕時間（日均）</span><b>${fmtMin(s1)}</b><span class="dl ${s0!=null&&s1<s0?'up':s0!=null&&s1>s0?'dn':''}">${s0==null?'—':s1<s0?'▼'+(s0-s1)+'m':s1>s0?'▲'+(s1-s0)+'m':'—'}</span><span class="muted">${s0!=null?'上週 '+fmtMin(s0):''}</span></div>`;
  h+=`<div class="rd"><span class="nm">隨機任務</span><b>${S.sideCount}</b><span class="dl"></span><span class="muted">累計個</span></div>`;
- return h+`<p class="muted" style="margin:6px 0 0;font-size:12px">▲ 綠色 = 比上週進步（螢幕時間是越少越好）</p></div>`}
+ return h+`</div>`}
 function scrChart(){const g=180,t=today(),days=[];for(let i=6;i>=0;i--){const d=addDays(t,-i);days.push([d,S.log[d]&&S.log[d].scr])}
  if(!days.some(x=>x[1]!=null))return'';const mx=Math.max(g*1.3,...days.map(x=>x[1]||0)),H=110,W=300,bw=30;
  let svg=`<svg viewBox="0 0 ${W} ${H+22}" style="width:100%">`;days.forEach(([d,v],i)=>{const x=12+i*41;if(v!=null){const hh=v/mx*H;svg+=`<rect x="${x}" y="${H-hh}" width="${bw}" height="${hh}" rx="5" fill="${v<=g?'#4fd1ff':'#ff5d6c'}" opacity=".85"/><text x="${x+bw/2}" y="${H-hh-4}" fill="#e6eefc" font-size="10" text-anchor="middle">${(v/60).toFixed(1)}</text>`}svg+=`<text x="${x+bw/2}" y="${H+16}" fill="#7d8aa6" font-size="11" text-anchor="middle">${WD[parse(d).getDay()]}</text>`});
@@ -1035,8 +1032,7 @@ function focusStats(){const t=today(),all=[];let quit=0,longest=0;const cat={};
  const dl=w0-w1;
  return`<div class="panel"><div class="ptitle">[專注統計]<span>近 7 天（分鐘）</span></div>${svg}
  <div class="stats" style="grid-template-columns:repeat(4,1fr);margin-top:8px"><div><b>${fmtHM(w0)}</b><span class="muted">本週${dl?`<br><small style="color:${dl>0?'var(--green)':'var(--red)'}">${dl>0?'▲':'▼'}${fmtHM(Math.abs(dl))}</small>`:''}</span></div><div><b>${fmtHM(tot)}</b><span class="muted">累計</span></div><div><b>${rate}%</b><span class="muted">完成率</span></div><div><b>${fmtHM(longest)}</b><span class="muted">最長一場</span></div></div>
- <div style="margin-top:10px">${Object.entries(FCATS).filter(([k])=>cat[k]).map(([k,v])=>`<div class="rate"><span class="nm">${v[0]} ${v[1]}</span><div class="bar"><i style="width:${cat[k]/Math.max(...Object.values(cat))*100}%"></i></div><span class="muted" style="width:52px;text-align:right">${fmtHM(cat[k])}</span></div>`).join('')}</div>
- <p class="muted sm" style="margin:6px 0 0">完成 ${done} 場・放棄 ${quit} 場。app 鎖不了手機，這些數字只對自己誠實就好。</p></div>`}
+ <div style="margin-top:10px">${Object.entries(FCATS).filter(([k])=>cat[k]).map(([k,v])=>`<div class="rate"><span class="nm">${v[0]} ${v[1]}</span><div class="bar"><i style="width:${cat[k]/Math.max(...Object.values(cat))*100}%"></i></div><span class="muted" style="width:52px;text-align:right">${fmtHM(cat[k])}</span></div>`).join('')}</div></div>`}
 function vMe(){const L=lvInfo(S.xp),r=rankOf(L.lv),nx=RANKS.find(x=>x[0]>L.lv);
  let h=`<div class="panel sys" style="text-align:center"><div class="ptitle">[狀態欄]<span>${esc(S.start)} 開始</span></div>
  <div class="avatar">${avatarSvg(320)}</div>
@@ -1050,15 +1046,15 @@ function vMe(){const L=lvInfo(S.xp),r=rankOf(L.lv),nx=RANKS.find(x=>x[0]>L.lv);
  return h}
 
 /* ---------- 設定頁 ---------- */
-function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務]<span>後台管理</span></div><p class="muted" style="margin:0;line-height:1.7">任務跟現實獎勵都鎖在後台，不能在這裡改，免得一時懶就把任務調簡單、把獎勵調便宜。想調整就跟 Claude 說，說「改我的 RESET 系統」。</p></div>`;
+function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務・獎勵]<span>後台管理</span></div><p class="muted" style="margin:0">要改跟 Claude 說。</p></div>`;
  h+=`<div class="panel"><div class="ptitle">[模式]</div>
- <div class="sw"><div><b>😈 硬核模式</b><div class="muted">沒通關（含補登期限）扣 50G＋懲罰任務，做完才能用商店</div></div><button class="tog ${S.hard?'on':''}" id="tHard"></button></div>
- <div class="sw"><div><b>🔊 音效</b><div class="muted">iPhone 靜音時不會響</div></div><button class="tog c ${S.sound?'on':''}" id="tSnd"></button></div>
+ <div class="sw"><div><b>😈 硬核模式</b><div class="muted">沒通關扣 50G＋懲罰任務</div></div><button class="tog ${S.hard?'on':''}" id="tHard"></button></div>
+ <div class="sw"><div><b>🔊 音效</b></div><button class="tog c ${S.sound?'on':''}" id="tSnd"></button></div>
  <div class="sw"><div><b>🌙 一天從幾點開始</b><div class="muted">凌晨勾的任務算前一天</div></div><select id="dayStart" style="width:90px">${[0,2,3,4,5,6].map(x=>`<option value="${x}" ${S.dayStart===x?'selected':''}>${pad(x)}:00</option>`).join('')}</select></div>
- <div class="sw"><div><b>🔴 圖示顯示剩幾項</b><div class="muted">要先加到主畫面，打開 app 時更新</div></div><button class="tog c ${S.badge?'on':''}" id="tBadge"></button></div></div>
- <div class="panel"><div class="ptitle">[每日提醒]<span>用 iPhone 的「提醒事項」</span></div><p class="muted" style="line-height:1.7;margin:0">提醒事項 app → 新增提醒「RESET 早上任務」→ 點 ⓘ → 打開「日期」跟「時間」→「重複」選每天。<br>再新增一個「RESET 睡前復盤」，設 23:30。<br>時間到會跳通知，點主畫面的 RESET 圖示打開就好。<br><span style="color:var(--gold)">不要用捷徑的「打開 URL」：它會開到 Safari，那邊是另一份空的資料。</span></p></div>
+ <div class="sw"><div><b>🔴 圖示顯示剩幾項</b></div><button class="tog c ${S.badge?'on':''}" id="tBadge"></button></div></div>
+ <div class="panel"><div class="ptitle">[每日提醒]<span>用 iPhone 的「提醒事項」</span></div><p class="muted" style="margin:0">提醒事項 app 設每天重複就好，別用捷徑「打開 URL」。</p></div>
  <div class="panel ${bkDays()>=7?'pen':''}"><div class="ptitle">[備份]<span>${S.lastBackup?'上次備份：'+(bkDays()===0?'今天':bkDays()+' 天前'):'還沒備份過'}</span></div>
- <p class="muted" style="margin:0 0 10px;line-height:1.6;font-size:13px">⚠️ 資料只存在這支手機的這個 app 裡。<b style="color:var(--red)">刪掉主畫面的 app，資料會一起消失。</b>建議每週備份一次到 iCloud 雲碟，換手機或誤刪都救得回來。</p>
+ <p style="margin:0 0 10px;font-size:13px;color:var(--red)">⚠️ 刪掉 app 資料會一起消失</p>
  <button class="btn pri" id="bkFile" style="width:100%">💾 備份到檔案（存到 iCloud 雲碟）</button>
  <div class="row" style="margin-top:8px"><button class="btn sm grow" id="rsFile">📂 從檔案還原</button><button class="btn sm grow" id="exp">📋 複製文字</button><button class="btn sm grow" id="imp">貼上還原</button></div>
  <input type="file" id="rsInput" accept=".json,application/json,text/plain" class="hide">
