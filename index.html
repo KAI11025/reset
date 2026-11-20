@@ -90,9 +90,11 @@ header.top{display:flex;align-items:center;gap:12px;padding:12px 14px 6px;max-wi
 .item:first-child{border-top:0}
 .item .nm{flex:1}
 .ach{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.ach div{border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;font-size:12px;background:#070c18}
-.ach div b{display:block;font-size:24px;margin-bottom:4px}
-.ach div.off{opacity:.3;filter:grayscale(1)}
+.ach>*{border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;font-size:12px;background:#070c18;color:var(--text);line-height:1.35}
+.ach>* b{display:block;font-size:24px;margin-bottom:4px}
+.ach>.off{opacity:.3;filter:grayscale(1)}
+.ach>.sec{border-color:#6b4fa8;background:linear-gradient(160deg,#1a1230,#070c18)}
+.ach>.eqt{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold),0 0 14px #f5c45155}
 .stats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;text-align:center;margin-top:6px}
 .stats b{display:block;font:800 20px var(--mono)}
 nav{position:fixed;left:0;right:0;bottom:0;background:rgba(5,7,13,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);
@@ -283,6 +285,18 @@ nav button i{display:grid;place-items:center;height:24px}nav button i svg{displa
 .calg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}.calg em{font-style:normal;font-size:11px;color:var(--mute)}
 .cd2{aspect-ratio:1;border-radius:10px;border:1px solid var(--line);font:600 13px var(--mono);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;background:#070c18}
 .cd2 span{font-size:12px;line-height:1}.cd2.has{border-color:#8a7350;background:#1a160f;color:#e6d5b0}.cd2.today{outline:2px solid var(--cyan)}.cd2:disabled{opacity:.25}
+
+.enc{border-color:#5a4a30;background:linear-gradient(160deg,#1c160c,#0b1120 70%)}
+.encb{display:flex;gap:12px;align-items:center}.encb b{font-size:16px;color:#f3e3bd}
+.enci{font-size:40px;width:58px;height:58px;display:grid;place-items:center;border-radius:16px;background:#2a2112;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-4px)}}
+.avatar{cursor:pointer;-webkit-tap-highlight-color:transparent}.avatar.shake{animation:shake .35s}
+@keyframes shake{20%{transform:translateX(-6px) rotate(-3deg)}40%{transform:translateX(6px) rotate(3deg)}60%{transform:translateX(-4px)}80%{transform:translateX(3px)}}
+.lore p{opacity:0;animation:lore .8s forwards;font-family:"Noto Serif TC","Songti TC",serif;line-height:1.8;margin:6px 0;color:#e6d5b0;text-align:center}
+@keyframes lore{to{opacity:1}}
+body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:1;background-image:radial-gradient(2px 2px at 20px 30px,#fff,transparent),radial-gradient(2px 2px at 120px 80px,#fff,transparent),radial-gradient(1.5px 1.5px at 200px 150px,#fff,transparent),radial-gradient(2px 2px at 300px 40px,#fff,transparent),radial-gradient(1.5px 1.5px at 60px 200px,#fff,transparent);background-size:340px 260px;opacity:.5;animation:snow 12s linear infinite}
+@keyframes snow{to{background-position:40px 260px,-30px 260px,20px 260px,-20px 260px,30px 260px}}
+.wcmp{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;text-align:center}.wcmp>div{display:flex;flex-direction:column;gap:2px;background:#070c18;border:1px solid var(--line);border-radius:10px;padding:8px 2px}.wcmp span{font-size:11px}.wcmp b{font:800 15px var(--mono);white-space:nowrap}.wcmp i{font-style:normal;font-size:11px}.wcmp small{font-size:10px}
 </style>
 </head>
 <body>
@@ -305,7 +319,8 @@ nav button i{display:grid;place-items:center;height:24px}nav button i svg{displa
 <div id="toasts"></div>
 <div id="modal"><div class="card" id="mcard"></div></div>
 <script>
-const VER='v23・11/20 13:30';
+
+const VER='v24・11/20 21:10';
 'use strict';
 /* =====================================================================
    RESET 系統 v4
@@ -540,17 +555,17 @@ function gain(xp,gold){const before=lvInfo(S.xp).lv;S.xp+=xp;S.gold+=gold;const 
  if(after>before){sfx('lv');const r0=rankOf(before),r1=rankOf(after);jlog('⬆️',`升到 Lv.${after}`);if(r1[1]!==r0[1])jlog('👑',`晉升 ${r1[1]} 級・${r1[2]}`);
   setTimeout(()=>modal(`<h2>[系統] LEVEL UP</h2><div style="text-align:center">${avatarSvg(120)}</div><div class="bigt" style="text-align:center">Lv.${before} → <span style="color:var(--cyan)">Lv.${after}</span></div>${r1[1]!==r0[1]?`<p style="text-align:center">階級提升：<b style="color:var(--gold)">${r1[1]} 級・${r1[2]}</b></p>`:''}<p class="muted" style="text-align:center">${newUnlocks(before,after)}</p>`,[['繼續','btn pri']]),250)}}
 function newUnlocks(a,b){const u=[];for(const k in GEAR)for(const it of GEAR[k].items)if(it[2]>a&&it[2]<=b)u.push(it[1]);return u.length?'商店解鎖：'+u.join('、'):'繼續變強。'}
-function reward(t,key,base,stat,kind){let m=1;if(kind==='quest'&&skl('grit')&&streak()>=7)m+=.05*skl('grit');if(kind==='side')m+=.2*skl('curio');if(kind==='focus')m+=.25*skl('focus');
- const crit=srand(t+key+'c')<critRate(),xp=Math.round(base*m*(crit?2:1));
+function reward(t,key,base,stat,kind){let m=1+(t===today()?buffOn('x'):0);if(kind==='quest'&&t===today()){const n=new Date(),hh=n.getHours()+n.getMinutes()/60;if(hh>=4&&hh<6.5)setEgg('dawn')}if(kind==='quest'&&skl('grit')&&streak()>=7)m+=.05*skl('grit');if(kind==='side')m+=.2*skl('curio');if(kind==='focus')m+=.25*skl('focus');
+ const crit=srand(t+key+'c')<critRate()+(t===today()?buffOn('crit'):0),xp=Math.round(base*m*(crit?2:1));
  const loot=srand(t+key+'l')<.1?Math.round((10+Math.floor(srand(t+key+'a')*31))*(1+.3*skl('luck'))):0;
- const gold=Math.round(base/2*(1+eqv('armor')))+loot,dmg=Math.round(xp*(1+eqv('weapon')));
+ const gold=Math.round(base/2*(1+eqv('armor'))*goldMul(t))+loot,dmg=Math.round(xp*(1+eqv('weapon')));
  const r={xp,gold,loot,crit,stat,dmg,kind};if(crit)S.crits++;S.stats[stat]=(S.stats[stat]||0)+1;if(kind==='side')S.sideCount++;else if(kind==='quest')S.questCount++;
  gain(xp,gold);hitMinion(dmg,kind,stat);
  if(crit){sfx('crit');toast(`<b>CRITICAL!</b> 經驗值 ×2　+${xp} XP`,'crit')}else{sfx('done');toast(`<b>+${xp} XP</b>　+${gold-loot} G　${STATS[stat].n} +1`)}
  if(loot)toast(`<b>寶箱掉落！</b> +${loot} G`,'crit');return r}
 function undo(r){S.xp-=r.xp;S.gold-=r.gold;const st=STATS[r.stat]?r.stat:'SPI';S.stats[st]=Math.max(0,(S.stats[st]||0)-1-(r.ups||0));
  if(r.kind==='side')S.sideCount--;else if(r.kind==='quest')S.questCount--;if(r.crit)S.crits--;dun();S.dun.dmg=Math.max(0,S.dun.dmg-(r.dmg||r.xp))}
-function settle(t,was){if(!was&&cleared(t)){if(t===today())setTimeout(()=>toast(`<b>[系統]</b> 今日任務達成，連續 ${streak()} 天 🔥`),500);
+function settle(t,was){if(!was&&cleared(t)){if(diff(S.start,t)>=2&&!cleared(addDays(t,-1))&&!cleared(addDays(t,-2))&&setEgg('comeback'))jlog('🔥','斷掉之後，重新站起來');if(t===today())setTimeout(()=>toast(`<b>[系統]</b> 今日任務達成，連續 ${streak()} 天 🔥`),500);
  else setTimeout(()=>toast(`<b>[系統]</b> ${t.slice(5).replace('-','/')} 補登通關`),500)}}
 function doLevel(q,t,i){const was=cleared(t),L=dayLog(t);const r=reward(t,q.id+'L'+i,Math.round(q.xp*ELV[i][1]),q.stat,'quest');r.lv=i;r.amt=q.amt?q.amt[i]:1;L.done[q.id]=r;settle(t,was);after()}
 const lvButtons=q=>`<div class="lvpick">${q.lv.map((l,i)=>`<button data-pick="${i}" style="border-color:${ELV[i][2]}66"><b style="color:${ELV[i][2]}">${ELV[i][0]}</b><span>${esc(l)}</span><small>+${Math.round(q.xp*ELV[i][1])} XP</small></button>`).join('')}</div>`;
@@ -649,8 +664,8 @@ const ACH=[
  ['q100','💯','百戰','累計完成 100 個任務',()=>S.questCount>=100],
  ['hard','😈','自找苦吃','開啟硬核模式',()=>S.hard],
  ['detox','🧘','數位排毒','螢幕時間連續 7 天達標',()=>{let n=0;for(let i=0;i<60;i++){const L=S.log[addDays(today(),-i)];if(L&&L.scr!=null&&L.scr<=180){if(++n>=7)return true}else if(i>0)return false}return false}]];
-function checkAch(){for(const a of ACH)if(!S.ach[a[0]]&&a[4]()){S.ach[a[0]]=Date.now();jlog('🏆',`成就解鎖：${a[1]} ${a[2]}`);setTimeout(()=>toast(`<b>🏆 成就解鎖</b>　${a[1]} ${a[2]}`,'crit'),700)}}
-function after(){S.best=Math.max(S.best||0,streak());streakMs();checkAch();save();render();updBadge()}
+function checkAch(){for(const a of ACH.concat(SECRET))if(!S.ach[a[0]]&&a[4]()){S.ach[a[0]]=Date.now();const sec=SECRET.includes(a);jlog('🏆',`${sec?'隱藏':''}成就解鎖：${a[1]} ${a[2]}`);setTimeout(()=>toast(`<b>🏆 ${sec?'隱藏成就':'成就解鎖'}</b>　${a[1]} ${a[2]}<br><small>獲得稱號「${TITLES[a[0]]||a[2]}」</small>`,'crit'),700)}}
+function after(){S.best=Math.max(S.best||0,streak());{const t=today(),Lt=S.log[t],a=actives(t);if(a.length&&Lt&&Lt.done&&a.every(q=>Lt.done[q.id]))setEgg('perfect')}if(S.gold===777)setEgg('lucky');checkChal();streakMs();checkAch();save();render();updBadge()}
 function updBadge(){if(!S.badge||!('setAppBadge'in navigator))return;try{const t=today(),L=S.log[t],n=actives(t).filter(q=>!(L&&L.done&&L.done[q.id])).length;(n?navigator.setAppBadge(n):navigator.clearAppBadge()).catch(()=>{})}catch(e){}}
 
 /* ---------- 圖像：角色房間 ---------- */
@@ -752,7 +767,7 @@ const dateCN=d=>{const x=parse(d);return`${x.getMonth()+1} 月 ${x.getDate()} �
 const hm=t=>{const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes())};
 function vLog(){const t=today(),sub=S.jtab||'book';
  let h=`<div class="seg jtab">${[['book','📖 日記本'],['ana','📊 分析']].map(([k,n])=>`<button class="${sub===k?'on':''}" data-jt="${k}">${n}</button>`).join('')}</div>`;
- if(sub==='ana'){h+=insightPanel();const mood=[];for(let i=13;i>=0;i--){const d=addDays(t,-i),p=S.diary&&S.diary[d];mood.push([d,p&&p.mood!=null?p.mood:null])}
+ if(sub==='ana'){h+=weekCmp()+lifetime()+insightPanel();const mood=[];for(let i=13;i>=0;i--){const d=addDays(t,-i),p=S.diary&&S.diary[d];mood.push([d,p&&p.mood!=null?p.mood:null])}
   if(mood.some(x=>x[1]!=null))h+=`<div class="panel"><div class="ptitle">[心情軌跡]<span>近 14 天</span></div><div class="mtrack">${mood.map(([d,m])=>`<div><span>${m!=null?MOODS[m]:'·'}</span><small>${parse(d).getDate()}</small></div>`).join('')}</div></div>`;
   return h}
  return h+vBook()}
@@ -885,7 +900,7 @@ function hitMinion(x,src,stat){const D=dun();if(x<=0)return;let left=x,drops=[],
   if(eff<need){D.dmg+=Math.round(eff);left=0;break}
   left-=need/mul;D.dmg=0;D.kills++;D.floor++;const rm=m.rare?2:1,g=(5+Math.floor(Math.random()*8))*rm,keys=Object.keys(MATS),mk=keys[Math.floor(Math.random()*3)],n=(Math.random()<.15?2:1)*rm;
   S.gold+=g;S.mats[mk]+=n;drops.push(`${MATS[mk][0]}×${n}`);
-  if(m.rare){drops.unshift('✨稀有');jlog('🌟',`擊倒稀有怪「金色${m.n}」`)}
+  if(m.rare){S.rareKills=(S.rareKills||0)+1;drops.unshift('✨稀有');jlog('🌟',`擊倒稀有怪「金色${m.n}」`)}
   if(D.kills%10===0)jlog('🗝️',`地城突破第 ${D.floor} 層，累計擊倒 ${D.kills} 隻小怪`)}
  if(drops.length)setTimeout(()=>toast(`<b>擊倒小怪！</b>　${drops.join(' ')}`,'crit'),350);
  else if(weakHit)setTimeout(()=>toast('<b>打中弱點！</b>　傷害 ×2'),350)}
@@ -960,7 +975,7 @@ const hasPage=d=>{const p=S.diary&&S.diary[d];return!!(p&&((p.text||'').trim()||
 let dTimer=null;
 function diaryInput(d,v){const p=dpage(d);p.text=v;p.upd=Date.now();clearTimeout(dTimer);
  const st=$('#dsave');if(st)st.textContent='儲存中…';
- dTimer=setTimeout(()=>{save();const s2=$('#dsave');if(s2)s2.textContent='✓ 已自動儲存 '+hm(Date.now());
+ dTimer=setTimeout(()=>{diaryWords(d,v);save();const s2=$('#dsave');if(s2)s2.textContent='✓ 已自動儲存 '+hm(Date.now());
   if(d===today()&&S.jxp!==d&&v.trim().length>=10){S.jxp=d;S.stats.SPI=(S.stats.SPI||0)+1;gain(10,0);save();header();toast('<b>[日記]</b> 今天第一頁 +10 XP　心靈 +1')}},700)}
 document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(dTimer);save()}});window.addEventListener('pagehide',()=>save());
 function growTA(ta){ta.style.height='auto';ta.style.height=Math.max(180,ta.scrollHeight+2)+'px'}
@@ -1005,6 +1020,92 @@ function migrateDiary(){if(S.diaryMig)return;S.diary=S.diary||{};const U=(S.jour
  S.journal=(S.journal||[]).filter(e=>e.type!=='user');S.diaryMig=1}
 async function photoBundle(){const out={};for(const d in S.diary||{})for(const id of S.diary[d].photos||[]){try{const v=await PDB.get(id);if(v)out[id]=v}catch(e){}}return out}
 
+/* ---------- v24：稱號・隱藏成就・奇遇・季節祭典・嚮導 ---------- */
+const TITLES={first:'初心者',s3:'不熄之火',s7:'七日戰士',s21:'習慣鍛造師',s66:'重生者',lv10:'獵人',lv20:'精英獵人',boss1:'弒魔者',boss4:'屠龍者',gear1:'持劍者',full3:'鋼鐵之軀',dun50:'地城行者',crit:'暴擊之子',side50:'冒險狂',login7:'全勤者',focus:'心流行者',rich:'黃金守護者',q100:'百戰老兵',hard:'自找苦吃的人',detox:'斷網修行者',
+ owl:'不眠者',dawn:'黎明行者',poke:'被戳醒的人',ver:'越界者',lucky:'幸運七',marathon:'時間之主',perfect:'完美的一天',writer:'吟遊詩人',photo:'記錄者',golden:'淘金者',comeback:'浴火重生',word:'不屈者',gamble:'賭神',season:'祭典參加者',lore:'讀完傳說的人'};
+const egg=k=>S.eggs&&S.eggs[k];
+const setEgg=k=>{S.eggs=S.eggs||{};if(!S.eggs[k]){S.eggs[k]=Date.now();return true}return false};
+const SECRET=[
+ ['owl','🦉','夜貓子','？',()=>egg('owl')],
+ ['dawn','🌄','黎明行者','？',()=>egg('dawn')],
+ ['poke','👆','別戳了','？',()=>egg('poke')],
+ ['ver','🚪','隱藏的房間','？',()=>egg('ver')],
+ ['lucky','🍀','777','？',()=>S.gold===777||egg('lucky')],
+ ['marathon','⏳','時間之主','？',()=>(S.maxFocus||0)>=120],
+ ['perfect','💎','完美的一天','？',()=>egg('perfect')],
+ ['writer','📜','吟遊詩人','？',()=>diaryRun()>=7],
+ ['photo','📸','留影','？',()=>Object.values(S.diary||{}).some(p=>(p.photos||[]).length)],
+ ['golden','🌟','淘金者','？',()=>(S.rareKills||0)>=1],
+ ['comeback','🔥','浴火重生','？',()=>egg('comeback')],
+ ['word','🗡️','不屈','？',()=>egg('word')],
+ ['gamble','🎲','賭神','？',()=>egg('gamble')],
+ ['season','🎉','祭典參加者','？',()=>egg('season')],
+ ['lore','📕','傳說','？',()=>egg('lore')]];
+const SECRET_HINT={owl:'深夜還醒著',dawn:'天亮前完成任務',poke:'一直戳角色',ver:'設定頁最下面的版本號',lucky:'剛好 777 G',marathon:'單次專注 120 分鐘',perfect:'一天全部任務都完成',writer:'連續 7 天寫日記',photo:'日記放照片',golden:'打倒金色小怪',comeback:'斷掉之後重新通關',word:'在日記裡寫下「放棄」',gamble:'贏過賭徒哥布林',season:'參加季節祭典',lore:'在隱藏房間讀完傳說'};
+function diaryRun(){let n=0,d=today();if(!hasPage(d))d=addDays(d,-1);while(hasPage(d)&&n<400){n++;d=addDays(d,-1)}return n}
+
+/* 季節祭典 */
+const SEASONS=[['12-20','12-26','🎄','聖誕祭','金幣 ×1.5','snow',1.5],['12-31','01-02','🎆','跨年祭','金幣 ×1.5','spark',1.5],['2027-02-05','2027-02-11','🧧','新春祭','金幣 ×2','spark',2],['04-01','04-01','🤡','愚人節','小怪全部換造型','',1]];
+function season(d){d=d||today();const md=d.slice(5);for(const s of SEASONS){if(s[0].length>5){if(d>=s[0]&&d<=s[1])return s}else if(s[0]<=s[1]?md>=s[0]&&md<=s[1]:md>=s[0]||md<=s[1])return s}return null}
+const goldMul=d=>{const s=season(d);return s?s[6]:1};
+
+/* 奇遇：每天最多一次 */
+const ENC=[
+ {id:'fountain',ic:'⛲',n:'神秘泉水',d:'泉水泛著藍光。喝下去，今天經驗值 +15%。',a:[['喝下去',()=>{S.buff={d:today(),x:.15,n:'⛲ 泉水祝福・經驗 +15%'};return'一股力量湧上來。今天經驗值 +15%'}]]},
+ {id:'shrine',ic:'⛩️',n:'古老祭壇',d:'獻上 30G，今天暴擊率 +10%。',a:[['算了',()=>'你默默走過祭壇。'],['獻上 30G',()=>{if(S.gold<30)return null;S.gold-=30;S.buff={d:today(),crit:.1,n:'⛩️ 祭壇加護・暴擊 +10%'};return'祭壇亮了起來。今天暴擊率 +10%'}]]},
+ {id:'merchant',ic:'🧙',n:'流浪商人',d:'「三種素材各一份，只要 60G。」',a:[['不用',()=>'商人聳聳肩走了。'],['買 (60G)',()=>{if(S.gold<60)return null;S.gold-=60;Object.keys(MATS).forEach(k=>S.mats[k]++);return'獲得 💎🦷✨ 各 1'}]]},
+ {id:'goblin',ic:'🎲',n:'賭徒哥布林',d:'「賭 50G？擲出偶數，我給你 100。」',a:[['不賭',()=>'哥布林罵了一聲膽小鬼。'],['賭了',()=>{if(S.gold<50)return null;const r=1+Math.floor(Math.random()*6);if(r%2===0){S.gold+=50;setEgg('gamble');jlog('🎲',`擲出 ${r}，贏了賭徒哥布林 +50G`);return`🎲 擲出 ${r}！贏了 +50G`}S.gold-=50;return`🎲 擲出 ${r}……輸了 50G`}]]},
+ {id:'chest',ic:'🎁',n:'路邊的寶箱',d:'看起來沒有陷阱……吧？',a:[['不開',()=>'謹慎也是一種美德。'],['打開',()=>{if(Math.random()<.2){const g=Math.min(S.gold,20);S.gold-=g;return`是寶箱怪！被咬走 ${g}G`}const r=openChest(false);return r.txt.replace(/<[^>]+>/g,'')}]]},
+ {id:'sage',ic:'📜',n:'隱居賢者',d:'',a:[['接受',()=>{const q=sageQuest();if(!q)return'賢者睡著了。';S.chal={d:today(),q:q.id,lv:2,g:80};return`委託成立：今天把「${q.name}」做到精英 → 80G`}]]}];
+function sageQuest(){const t=today(),L=dayLog(t);return actives(t).filter(q=>q.lv&&!(L.done[q.id]&&L.done[q.id].lv>=2))[Math.floor(srand(t+'sq')*9)%Math.max(1,actives(t).filter(q=>q.lv&&!(L.done[q.id]&&L.done[q.id].lv>=2)).length)]}
+function encToday(){const t=today();if(diff(S.start,t)<0)return null;if(S.enc&&S.enc.d===t)return S.enc.done?null:ENC.find(e=>e.id===S.enc.id);
+ if(srand(t+'enc')>.45)return null;let e=ENC[Math.floor(srand(t+'encw')*ENC.length)];if(e.id==='sage'&&!sageQuest())e=ENC[0];S.enc={d:t,id:e.id,done:0};save();return e}
+function encCard(){const e=encToday();if(!e)return'';const d=e.id==='sage'?(q=>q?`「今天把『${esc(q.name)}』做到精英，我送你 80G。」`:'')(sageQuest()):e.d;
+ return`<div class="panel enc"><div class="ptitle">[奇遇]<span>今天限定</span></div><div class="encb"><div class="enci">${e.ic}</div><div><b>${e.n}</b><div class="muted">${d}</div></div></div><div class="row" style="margin-top:10px">${e.a.map((a,i)=>`<button class="btn sm grow ${i===e.a.length-1?'pri':''}" data-enc="${i}">${a[0]}</button>`).join('')}</div></div>`}
+function doEnc(i){const e=encToday();if(!e)return;const r=e.a[i][1]();if(r==null)return toast('金幣不夠');S.enc.done=1;sfx('chest');jlog(e.ic,`奇遇「${e.n}」：${r}`);toast(`<b>${e.ic} ${e.n}</b>　${r}`,'crit');after()}
+function checkChal(){const c=S.chal,t=today();if(!c||c.d!==t||c.paid)return;const d=dayLog(t).done[c.q];if(d&&d.lv!=null&&d.lv>=c.lv){c.paid=1;S.gold+=c.g;jlog('📜',`完成賢者的委託 +${c.g}G`);setTimeout(()=>toast(`<b>📜 賢者的委託完成</b>　+${c.g} G`,'crit'),900)}}
+const buffOn=k=>S.buff&&S.buff.d===today()?S.buff[k]||0:0;
+
+/* 嚮導台詞：取代每日一句，看時間和狀態講話 */
+function npcLine(){const h=new Date().getHours(),t=today(),dc=doneCount(t),nd=need(t),st=streak(),s=season(t);
+ if(h>=1&&h<4)return'這個時間還醒著？睡覺也是任務。';
+ if(cleared(t))return st>=7?`連續 ${st} 天。你已經不是 ${st} 天前的你了。`:'今日通關。剩下的時間是你的。';
+ if(s&&h<12)return`${s[2]} ${s[3]}期間，${s[4]}。`;
+ if(h>=21&&nd-dc>0)return`還差 ${nd-dc} 項。做迷你版也算數。`;
+ if(h>=4&&h<9)return dc?'起得早，已經領先了。':'早安。先拿下第一個任務，今天就贏一半。';
+ if(S.buff&&S.buff.d===t)return`${S.buff.n}　生效中`;
+ return QUOTES[((dayNum(t)%QUOTES.length)+QUOTES.length)%QUOTES.length]}
+
+/* 戳角色 */
+const POKE=['……幹嘛？','我在修練。','別戳了，經驗值不會變多。','再戳我就要放火球了。','……','（裝死中）','你是不是很閒？去做任務。','最後警告。','我數到三。','💢 好啦！被你戳醒了！'];
+let pokeN=0,pokeT=0;
+function poke(){const now=Date.now();if(now-pokeT>4000)pokeN=0;pokeT=now;const l=POKE[Math.min(pokeN,POKE.length-1)];pokeN++;
+ const av=document.querySelector('.avatar');if(av){av.classList.remove('shake');void av.offsetWidth;av.classList.add('shake')}
+ toast(`<b>${esc(l)}</b>`);if(pokeN>=POKE.length&&setEgg('poke')){after()}}
+
+/* 隱藏房間：版本號點 7 下 */
+let verN=0,verT=0;
+const LORE=['很久以前，有一個人發現自己的時間被一塊發光的小方塊吃掉了。','他打造了一套系統，把每一天變成一場冒險。','規則是他自己寫的，沒有人逼他遵守。','但他每天還是回來，勾下一個又一個任務。','因為他知道：真正的 Boss 從來不在螢幕裡。','——你，就是那個人。'];
+function verTap(){const now=Date.now();if(now-verT>1500)verN=0;verT=now;verN++;if(verN<7){if(verN>=4)toast(`還差 ${7-verN} 下……`);return}verN=0;
+ const first=setEgg('ver');if(first){S.gold+=77;jlog('🚪','找到隱藏的房間 +77G')}
+ const tf=Object.values(S.log).reduce((a,L)=>a+(L.focus||[]).reduce((x,f)=>x+(f.min||0),0),0);
+ modal(`<h2>[？？？] 隱藏的房間</h2><div class="lore">${LORE.map((l,i)=>`<p style="animation-delay:${i*.6}s">${l}</p>`).join('')}</div>${first?'<p class="gold" style="text-align:center;margin:8px 0 0">+77 G</p>':''}<p class="muted" style="text-align:center;font-size:11px;margin-top:8px">已冒險 ${Math.max(0,diff(S.start,today())+1)} 天${tf?'・專注 '+fmtHM(tf):''}</p>`,[['離開','btn pri',()=>{if(setEgg('lore'))after()}]])}
+
+/* 日記裡的咒語 */
+const WORDS=[[/放棄/,'word','[系統] 偵測到「放棄」。已自動抵銷。休息可以，別放棄。'],[/好累|累死/,null,'[系統] 累了就做迷你版，也算數。'],[/謝謝|感謝|感恩/,null,'[系統] 感謝的心，心靈 +1。']];
+function diaryWords(d,v){if(d!==today())return;S.eggSeen=S.eggSeen||{};for(const[re,k,msg]of WORDS){const key=d+re.source;if(re.test(v)&&!S.eggSeen[key]){S.eggSeen[key]=1;if(/心靈 \+1/.test(msg))S.stats.SPI++;if(k)setEgg(k);setTimeout(()=>toast(`<b>${msg}</b>`,'crit'),900);save();if(k)checkAch()}}}
+
+/* 本週 vs 上週 */
+function weekCmp(){const t=today(),wk=weekKey(t),agg=(st,n)=>{let c=0,q=0,f=0,x=0;for(let i=0;i<n;i++){const d=addDays(st,i);if(d>t||diff(S.start,d)<0)continue;const L=S.log[d];if(!L)continue;if(cleared(d))c++;q+=actives(d).filter(z=>L.done&&L.done[z.id]).length;f+=(L.focus||[]).reduce((a,z)=>a+(z.min||0),0);
+  for(const k in L.done||{})x+=L.done[k].xp||0;(L.extra||[]).forEach(e=>{if(e.r)x+=e.r.xp})}return{c,q,f,x}};
+ const n=diff(wk,t)+1,a=agg(wk,n),b=agg(addDays(wk,-7),n),ar=(x,y)=>x>y?'<i style="color:var(--green,#3ee08f)">▲</i>':x<y?'<i style="color:var(--red)">▼</i>':'';
+ const rows=[['通關天數',a.c,b.c,v=>v],['完成任務',a.q,b.q,v=>v],['專注',a.f,b.f,v=>v?fmtHM(v):'—'],['獲得 XP',a.x,b.x,v=>v]];
+ return`<div class="panel"><div class="ptitle">[本週戰報]<span>對比上週同期（${n} 天）</span></div><div class="wcmp">${rows.map(r=>`<div><span class="muted">${r[0]}</span><b>${r[3](r[1])} ${ar(r[1],r[2])}</b><small class="muted">上週 ${r[3](r[2])}</small></div>`).join('')}</div></div>`}
+/* 冒險總覽（分析頁） */
+function lifetime(){const L=Object.values(S.log),tf=L.reduce((a,x)=>a+(x.focus||[]).reduce((y,f)=>y+(f.min||0),0),0),pages=Object.keys(S.diary||{}).filter(hasPage),words=Object.values(S.diary||{}).reduce((a,p)=>a+(p.text||'').replace(/\s/g,'').length,0),ph=Object.values(S.diary||{}).reduce((a,p)=>a+(p.photos||[]).length,0),
+ found=SECRET.filter(a=>S.ach[a[0]]).length,cells=[[Math.max(0,diff(S.start,today())+1),'冒險天數'],[S.questCount,'完成任務'],[tf?fmtHM(tf):'—','專注總時'],[pages.length,'日記頁數'],[words,'日記字數'],[ph,'照片'],[(S.dun&&S.dun.kills)||0,'擊倒小怪'],[S.bossKills,'擊敗 Boss'],[`${found}/${SECRET.length}`,'隱藏成就']];
+ return`<div class="panel"><div class="ptitle">[冒險總覽]</div><div class="stats" style="grid-template-columns:repeat(3,1fr)">${cells.map(c=>`<div><b>${c[0]}</b><span class="muted">${c[1]}</span></div>`).join('')}</div></div>`}
+
 /* ---------- UI 基礎 ---------- */
 function toast(h,c=''){const box=$('#toasts');while(box.children.length>=3)box.firstChild.remove();const el=document.createElement('div');el.className='toast '+c;el.innerHTML=h;box.appendChild(el);setTimeout(()=>el.remove(),2600)}
 let mActs=[];
@@ -1013,7 +1114,7 @@ function modal(html,acts){mActs=acts||[['OK','btn pri']];$('#mcard').onclick=nul
 $('#modal').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b){const a=mActs[+b.dataset.m];$('#modal').classList.remove('on');if(a&&a[2])a[2]()}});
 let tab='today',viewY=false;
 $('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.t;document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));window.scrollTo(0,0);render()});
-function header(){const L=lvInfo(S.xp),r=rankOf(L.lv);$('#hRank').textContent=r[1];$('#hRank').style.color=AURA[r[1]];$('#hRank').style.borderColor=AURA[r[1]];$('#hLv').textContent='Lv.'+L.lv;$('#hTitle').textContent=r[2];$('#hGold').textContent=S.gold+' G';$('#hBar').style.width=(L.cur/L.need*100)+'%'}
+function header(){const L=lvInfo(S.xp),r=rankOf(L.lv);$('#hRank').textContent=r[1];$('#hRank').style.color=AURA[r[1]];$('#hRank').style.borderColor=AURA[r[1]];$('#hLv').textContent='Lv.'+L.lv;$('#hTitle').textContent=S.title&&S.ach[S.title]?TITLES[S.title]:r[2];$('#hGold').textContent=S.gold+' G';$('#hBar').style.width=(L.cur/L.need*100)+'%'}
 const tag=s=>`<span class="tag" style="color:${(STATS[s]||STATS.SPI).c};border-color:${(STATS[s]||STATS.SPI).c}55">${(STATS[s]||STATS.SPI).n}</span>`;
 
 /* ---------- 任務頁 ---------- */
@@ -1022,8 +1123,8 @@ function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)
  let h=`<div class="panel sys"><div class="ptitle">[RESET PROGRAM]<span>${dn>66?'第 '+Math.ceil(dn/66)+' 輪':'66 天計畫'}</span></div>
  <div class="day"><div class="big">DAY ${dn>66?((dn-1)%66)+1:dn}<small> / 66</small></div><div class="grow"></div><div style="text-align:right"><div style="font:800 24px var(--mono);color:${dc>=nd?'var(--cyan)':'var(--text)'}">${dc}/${act.length}</div><div class="muted">達標需 ${nd}</div></div></div>
  <div class="bar" style="margin-top:10px"><i style="width:${nd?Math.min(100,dc/nd*100):100}%"></i></div>
- <div class="chips"><span class="chip hot">🔥 連續 ${st} 天</span><span class="chip">📅 簽到 ${S.login.streak||0} 天</span>${!(S.diary&&S.diary[t]&&(S.diary[t].text||'').trim())&&new Date().getHours()>=18&&!viewY?'<button class="chip" data-gotab="log" onclick="S.jday=null" style="color:#e6d5b0;border-color:#5a4a30">✎ 今天還沒寫日誌</button>':''}${yMissed()&&!cleared(t)?'<span class="chip" style="color:var(--gold);border-color:#5a4a18">⚠️ 昨天沒過，今天別再錯過</span>':''}${S.hard?'<span class="chip" style="color:var(--red);border-color:#552030">😈 硬核</span>':''}</div>
- ${dn<=0?'<p class="quote" style="color:var(--gold)">今天是暖身日，任務照做、XP 照拿，明天正式 DAY 1</p>':`<p class="quote">「${q}」</p>`}</div>`;
+ <div class="chips"><span class="chip hot">🔥 連續 ${st} 天</span><span class="chip">📅 簽到 ${S.login.streak||0} 天</span>${season()?`<span class="chip" style="color:var(--gold);border-color:#5a4a18">${season()[2]} ${season()[3]}</span>`:''}${buffOn('x')||buffOn('crit')?`<span class="chip" style="color:var(--cyan)">${esc(S.buff.n)}</span>`:''}${S.chal&&S.chal.d===t&&!S.chal.paid?`<span class="chip" style="color:#e6d5b0;border-color:#5a4a30">📜 委託：${esc((QUESTS.find(x=>x.id===S.chal.q)||{}).name||'')}精英</span>`:''}${!(S.diary&&S.diary[t]&&(S.diary[t].text||'').trim())&&new Date().getHours()>=18&&!viewY?'<button class="chip" data-gotab="log" onclick="S.jday=null" style="color:#e6d5b0;border-color:#5a4a30">✎ 今天還沒寫日誌</button>':''}${yMissed()&&!cleared(t)?'<span class="chip" style="color:var(--gold);border-color:#5a4a18">⚠️ 昨天沒過，今天別再錯過</span>':''}${S.hard?'<span class="chip" style="color:var(--red);border-color:#552030">😈 硬核</span>':''}</div>
+ ${dn<=0?'<p class="quote" style="color:var(--gold)">今天是暖身日，任務照做、XP 照拿，明天正式 DAY 1</p>':`<p class="quote">「${esc(npcLine())}」</p>`}</div>`+(viewY?'':encCard());
  const pp=pendingPen();
  if(pp.length)h+=`<div class="panel pen"><div class="ptitle">[懲罰任務]<span>完成前商店鎖定</span></div>${pp.map(p=>`<button class="q" data-pen="${p.id}"><span class="box"></span><span class="nm">${esc(p.text)}<div class="muted">${p.date.slice(5)} 失敗的代價</div></span></button>`).join('')}</div>`;
  h+=`<div class="panel sys"><div class="ptitle"><span style="display:flex;gap:6px"><button class="btn sm ${viewY?'':'cy'}" data-day="t">今天</button><button class="btn sm ${viewY?'cy':''}" data-day="y">昨天（補登）</button></span><span>${D.slice(5).replace('-','/')} 週${WD[parse(D).getDay()]}</span></div>
@@ -1137,14 +1238,16 @@ function focusStats(){const t=today(),all=[];let quit=0,longest=0;const cat={};
  <div style="margin-top:10px">${Object.entries(FCATS).filter(([k])=>cat[k]).map(([k,v])=>`<div class="rate"><span class="nm">${v[0]} ${v[1]}</span><div class="bar"><i style="width:${cat[k]/Math.max(...Object.values(cat))*100}%"></i></div><span class="muted" style="width:52px;text-align:right">${fmtHM(cat[k])}</span></div>`).join('')}</div></div>`}
 function vMe(){const L=lvInfo(S.xp),r=rankOf(L.lv),nx=RANKS.find(x=>x[0]>L.lv);
  let h=`<div class="panel sys" style="text-align:center"><div class="ptitle">[狀態欄]<span>${esc(S.start)} 開始</span></div>
- <div class="avatar">${avatarSvg(320)}</div>
+ <div class="avatar" data-poke="1">${avatarSvg(320)}</div>
  <div style="font-size:20px;font-weight:800"><span style="color:${AURA[r[1]]}">${r[1]} 級</span>・Lv.${L.lv} ${r[2]}</div>
  <div class="pw">戰力 <b>${power()}</b></div><p class="muted" style="margin:4px 0 10px">${nx?`Lv.${nx[0]} 晉升 ${nx[1]} 級`:'已達最高階級'}</p>
  <div class="eqrow">${['weapon','armor','acc'].map(k=>{const g=eqItem(k);return`<div><span>${g?gearIcon(k,g.tier):'—'}</span><small>${GEAR[k].n}</small><b>${g?g.it[1]:'空'}</b></div>`}).join('')}</div>
  ${radar()}<div class="stats">${Object.keys(STATS).map(k=>`<div><b style="color:${STATS[k].c}">${S.stats[k]||0}</b><span class="muted">${STATS[k].n}</span></div>`).join('')}</div></div>`;
  h+=realData()+focusStats()+scrChart()+rates();
  h+=`<div class="panel"><div class="ptitle">[戰績]</div><div class="stats" style="grid-template-columns:repeat(4,1fr)"><div><b>${S.questCount}</b><span class="muted">任務</span></div><div><b>${S.best||0}</b><span class="muted">最佳連續</span></div><div><b>${S.bossKills}</b><span class="muted">Boss</span></div><div><b>${S.crits}</b><span class="muted">暴擊</span></div></div></div>`;
- h+=`<div class="panel"><div class="ptitle">[成就]<span>${Object.keys(S.ach).length}/${ACH.length}</span></div><div class="ach">${ACH.map(a=>`<div class="${S.ach[a[0]]?'':'off'}"><b>${a[1]}</b>${a[2]}<div class="muted" style="font-size:10px;margin-top:2px">${a[3]}</div></div>`).join('')}</div></div>`;
+ const an=ACH.filter(a=>S.ach[a[0]]).length,sn=SECRET.filter(a=>S.ach[a[0]]).length;
+ h+=`<div class="panel"><div class="ptitle">[成就・稱號]<span>${an}/${ACH.length}</span></div><p class="muted" style="margin:-4px 0 8px;font-size:12px">點已解鎖的成就，裝上稱號${S.title&&S.ach[S.title]?`・目前：<b style="color:var(--gold)">${TITLES[S.title]}</b>`:''}</p><div class="ach">${ACH.map(a=>`<button data-title="${a[0]}" class="${S.ach[a[0]]?'':'off'} ${S.title===a[0]?'eqt':''}"><b>${a[1]}</b>${a[2]}<div class="muted" style="font-size:10px;margin-top:2px">${a[3]}</div></button>`).join('')}</div>
+ <div class="ptitle" style="margin-top:14px">[隱藏成就]<span>${sn}/${SECRET.length}</span></div><div class="ach">${SECRET.map(a=>S.ach[a[0]]?`<button data-title="${a[0]}" class="sec ${S.title===a[0]?'eqt':''}"><b>${a[1]}</b>${a[2]}<div class="muted" style="font-size:10px;margin-top:2px">${SECRET_HINT[a[0]]}</div></button>`:`<div class="off"><b>❔</b>？？？</div>`).join('')}</div></div>`;
  return h}
 
 /* ---------- 設定頁 ---------- */
@@ -1161,20 +1264,24 @@ function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務・獎�
  <div class="row" style="margin-top:8px"><button class="btn sm grow" id="rsFile">📂 從檔案還原</button><button class="btn sm grow" id="exp">📋 複製文字</button><button class="btn sm grow" id="imp">貼上還原</button></div>
  <input type="file" id="rsInput" accept=".json,application/json,text/plain" class="hide">
  <textarea id="bk" class="hide" style="margin-top:8px"></textarea><button class="btn sm pri hide" id="impGo" style="margin-top:6px;width:100%">確認匯入</button></div>
- <p class="muted" style="text-align:center;font:12px var(--mono);margin:6px 0 4px">目前版本 ${VER}</p><p class="muted" style="text-align:center;font-size:11px;margin:0 0 12px">怪物圖示：game-icons.net（Lorc、Delapouite、Cathelineau），CC BY 3.0</p>
+ <p class="muted" data-ver="1" style="text-align:center;font:12px var(--mono);margin:6px 0 4px;user-select:none">目前版本 ${VER}</p><p class="muted" style="text-align:center;font-size:11px;margin:0 0 12px">怪物圖示：game-icons.net（Lorc、Delapouite、Cathelineau），CC BY 3.0</p>
  <div class="panel"><div class="ptitle" style="color:var(--red)">[危險區]</div><div class="row"><button class="btn sm grow" id="restart">重開 66 天（保留等級）</button><button class="btn sm red grow" id="wipe">全部清空</button></div></div>`;
  return h}
 
 const VIEWS={today:vToday,battle:vBattle,shop:vShop,me:vMe,log:vLog,set:vSet};
 let jDraft='',xDraft='';
-function render(){header();$('#view').innerHTML=VIEWS[tab]();if(tab==='log')bindBook();if(tab==='set')photoBundle().then(b=>{window.__pb=b}).catch(()=>{});const ta=$('#jtxt');if(ta){ta.value=jDraft;ta.oninput=()=>{jDraft=ta.value}}const xt=$('#xtxt');if(xt){xt.value=xDraft;xt.oninput=()=>{xDraft=xt.value}}tick()}
+function render(){const se=season();document.body.classList.toggle('snow',!!(se&&se[5]==='snow'));header();$('#view').innerHTML=VIEWS[tab]();if(tab==='log')bindBook();if(tab==='set')photoBundle().then(b=>{window.__pb=b}).catch(()=>{});const ta=$('#jtxt');if(ta){ta.value=jDraft;ta.oninput=()=>{jDraft=ta.value}}const xt=$('#xtxt');if(xt){xt.value=xDraft;xt.oninput=()=>{xDraft=xt.value}}tick()}
 
 /* ---------- 事件 ---------- */
-$('#view').addEventListener('click',e=>{const el=e.target.closest('[data-dnav],[data-ph],[data-dgo],[data-gotab],[data-jt],[data-jedit],[data-fstep],[data-fcat],[data-spell],[data-xdel],[data-mood],[data-jf],[data-jdel],[data-info],[data-q],[data-side],[data-day],[data-shift],[data-pen],[data-focus],[data-buy],[data-gear],[data-eq],[data-skill],[data-delr],button[id]');if(!el||el.disabled)return;const d=el.dataset;
+$('#view').addEventListener('click',e=>{const el=e.target.closest('[data-poke],[data-ver],[data-enc],[data-title],[data-dnav],[data-ph],[data-dgo],[data-gotab],[data-jt],[data-jedit],[data-fstep],[data-fcat],[data-spell],[data-xdel],[data-mood],[data-jf],[data-jdel],[data-info],[data-q],[data-side],[data-day],[data-shift],[data-pen],[data-focus],[data-buy],[data-gear],[data-eq],[data-skill],[data-delr],button[id]');if(!el||el.disabled)return;const d=el.dataset;
  const D=viewY?addDays(today(),-1):today();
  if(d.spell){const sp=SPELLS.find(x=>x.id===d.spell);if(S.gold<sp.g||!Object.entries(sp.m).every(([k,n])=>(S.mats[k]||0)>=n))return toast('金幣或素材不夠');
   S.gold-=sp.g;Object.entries(sp.m).forEach(([k,n])=>S.mats[k]-=n);S.items[sp.id]=(S.items[sp.id]||0)+1;sfx('chest');toast(`<b>${sp.ic} ${sp.n}</b> 製作完成`);return after()}
  if(d.xdel!==undefined){const L=dayLog(D),e=(L.extra||[])[+d.xdel];if(!e)return;return modal(`<h2>[額外修練]</h2><div class="bigt" style="font-size:22px">刪除「${esc(e.text)}」？</div><p class="muted">加的分會扣回來。</p>`,[['取消','btn'],['刪除','btn red',()=>{if(e.r)undo(e.r);L.extra.splice(+d.xdel,1);after()}]])}
+ if(d.poke)return poke();
+ if(d.ver)return verTap();
+ if(d.enc!==undefined)return doEnc(+d.enc);
+ if(d.title){if(!S.ach[d.title])return;S.title=S.title===d.title?null:d.title;sfx('tap');toast(S.title?`稱號：<b>${TITLES[S.title]}</b>`:'已卸下稱號');save();header();return render()}
  if(d.dnav)return flipDay(+d.dnav);
  if(d.ph)return viewPhoto(d.ph,S.jday&&S.jday<=today()?S.jday:today());
  if(d.dgo){S.jday=d.dgo;window.scrollTo(0,0);return render()}
@@ -1233,7 +1340,7 @@ $('#view').addEventListener('change',e=>{if(e.target.id==='jsys'){S.jsys=e.targe
 
 /* ---------- 計時 ---------- */
 function tick(){const tm=S.timer;if(!tm)return;const left=tm.end-Date.now();
- if(left<=0){S.timer=null;const t=today(),fc=FCATS[tm.cat||'study'],L0=dayLog(t),combo=1+Math.min(3,L0.focus.length)*.2,q=fTask(tm.cat||'study',t);S.focusCount++;
+ if(left<=0){S.timer=null;S.maxFocus=Math.max(S.maxFocus||0,tm.min);const t=today(),fc=FCATS[tm.cat||'study'],L0=dayLog(t),combo=1+Math.min(3,L0.focus.length)*.2,q=fTask(tm.cat||'study',t);S.focusCount++;
   const qid=FQ[tm.cat||'study'],qq=qid&&QUESTS.find(x=>x.id===qid);L0.mins=L0.mins||{};
   if(qq&&activeOn(qq,t)){const dd=L0.done[qid];L0.mins[qid]=(L0.mins[qid]!=null?L0.mins[qid]:(dd&&dd.amt||0))+tm.min}
   const cum=qq?L0.mins[qid]||tm.min:tm.min;
@@ -1263,10 +1370,13 @@ if(S.bossKills===undefined)S.bossKills=0;S.chap=S.chap||{};if(S.boss.week&&S.cha
 dun();migrateDiary();closeDays();bossInfo();checkAch();save();render();updBadge();
 try{if('serviceWorker'in navigator&&location.protocol==='https:'&&!/claude/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
 function boot(){try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
+ {const h=new Date().getHours();if(h>=1&&h<4&&S.seen){const f=setEgg('owl');setTimeout(()=>toast(`<b>[系統] 偵測到熬夜</b>　${f?'獲得稱號「不眠者」……但快去睡。':'快去睡。'}`,'crit'),2500);checkAch()}
+  const se=season();if(se&&S.seen&&S.seasonSeen!==today()){S.seasonSeen=today();if(setEgg('season'))checkAch();jlog(se[2],`${se[3]}開始！${se[4]}`);setTimeout(()=>toast(`<b>${se[2]} ${se[3]}</b>　${se[4]}`,'crit'),3000);save()}}
 if(S.pendingMsg){const h=S.pendingMsg;S.pendingMsg=null;save();sfx('bad');modal(h,[['可惡','btn red',()=>{if(!checkLogin(askScreen))askScreen()}]]);return}
  if(!checkLogin(()=>{askScreen()}))askScreen();setTimeout(()=>{if(!$('#modal').classList.contains('on'))askBackup()},1500)}
 if(!S.seen)modal(`<h2>[系統] 玩家覺醒</h2><div style="text-align:center">${avatarSvg(220)}</div><div class="bigt" style="text-align:center">歡迎來到 RESET</div><p class="muted" style="line-height:1.7">每天完成 75% 任務 = 通關，錯過一天不會斷，連續兩天才會。<br>有些任務分迷你／標準／精英，狀態差做迷你也算。<br>任務 → XP 升級、金幣買裝備和技能；你練什麼，房間和角色就長成什麼樣。<br>平日打地城小怪收集素材、做魔法；週六日跟 Boss 決戰，打贏換更強的，打輸會被搶東西。<br>有上班的日子記得切「有班」。</p>`,[['開始','btn pri',()=>{S.seen=1;save();boot()}]]);
 else boot();
+
 
 </script>
 </body>
