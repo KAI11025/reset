@@ -321,6 +321,10 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 .mhead{display:flex;align-items:center;gap:12px;margin:2px 0 4px}.mreg{width:56px;height:56px;border-radius:14px;display:grid;place-items:center;background:color-mix(in srgb,var(--rc) 14%,#070c18);border:1px solid color-mix(in srgb,var(--rc) 45%,transparent)}
 .regart{display:grid;place-items:center;margin:4px auto 6px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--rc) 22%,transparent),transparent 70%)}
 .story{font-family:"Noto Serif TC","Songti TC",serif;line-height:1.85;color:#e6d5b0;text-align:center;margin:6px 4px 10px}
+
+.bact{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.bact button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border-radius:12px;border:1px solid var(--line);background:#070c18;color:var(--text);font-size:11px}.bact button span{font-size:22px}.bact button.on{border-color:var(--cyan);background:#0b2233;color:var(--cyan)}
+.bint{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.bint button{display:flex;flex-direction:column;gap:2px;padding:8px 4px;border-radius:12px;border:1px solid var(--line);background:#070c18;color:var(--text)}.bint small{font-size:10px;color:var(--mute)}.bint button.on{border-color:var(--cyan);background:#0b2233}.bint button.on b{color:var(--cyan)}
+.bprev{text-align:center;margin:12px 0 2px}
 </style>
 </head>
 <body>
@@ -345,7 +349,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v25・11/20 22:30';
+const VER='v26・11/20 22:10';
 'use strict';
 /* =====================================================================
    RESET 系統 v4
@@ -382,7 +386,7 @@ const QUESTS=[
  {id:'woop',name:'今天的 1 件事＋卡關對策',stat:'SPI',xp:15,slot:'am',hint:'1. 今天最重要的 1 件事\n2. 最可能讓你做不到的是什麼（通常是自己：累、想滑手機）\n3. 寫一句：「如果＿＿發生，我就＿＿」\n\n例：如果下班回家想躺著滑手機，我就先把手機放書桌、坐下開西文 5 分鐘。',unit:'次'},
  {id:'esp',name:'西文',stat:'INT',xp:20,slot:'pm',hint:'上課、背單字、跟室友講都算',lv:['5 分鐘','15 分鐘','30 分鐘'],amt:[5,15,30],unit:'分鐘'},
  {id:'study',name:'讀書（課業）',stat:'INT',xp:25,slot:'pm',lv:['10 分鐘','45 分鐘','90 分鐘'],amt:[10,45,90],unit:'分鐘'},
- {id:'train',name:'訓練',stat:'STR',xp:30,slot:'night',days:[1,2,3,4,5],shift:'off',hint:'平日 19:30–21:00',lv:['有到場','完整練完','練完再加練 20 分'],unit:'次'},
+ {id:'train',name:'身體修練',stat:'STR',xp:30,slot:'night',hint:'道館、跑步、游泳、重訓都算',lv:['15 點','40 點','80 點'],amt:[15,40,80],unit:'點',old:{until:'2026-11-21',days:[1,2,3,4,5],shift:'off'}},
  {id:'screen',name:'螢幕時間',stat:'DIS',xp:20,slot:'night',type:'screen',goal:180},
  {id:'nophone',name:'睡前 30 分鐘不滑手機',stat:'DIS',xp:20,slot:'night',hint:'手機放房間外充電',unit:'天'},
  {id:'sleep_off',name:'00:30 前上床',stat:'VIT',xp:30,slot:'night',shift:'off',group:'sleep',gname:'準時上床',unit:'天'},
@@ -427,9 +431,10 @@ const GUIDE={
   how:['先決定今天要做哪一種：複習、預習，還是寫作業','手機放遠一點，開一場 25 分鐘的專注討伐','複習的時候先闔上課本，自己回想重點，想不起來的再翻書（主動回想比重讀有效）','結束前寫一行：今天讀到哪、下次從哪裡開始'],
   when:'下課後或沒課的下午，趁腦袋還清醒的時候。有班的日子做迷你 10 分鐘就好。',
   tip:'作業先挑最難的那題做，簡單的留到最後。'},
- train:{why:'恆毅力裡講的「刻意練習」，重點不是練得越久越好，而是每次都針對一個弱點練。',
-  how:['練之前先想好：今天要改善哪一個地方','練的時候專心在那一點上','練完記一句：今天哪裡有進步、哪裡還卡卡的'],
-  when:'平日 19:30–21:00。真的很累，就做迷你：有到場就算。'},
+ train:{why:'身體不是只有道館。用「時間 × 強度」換成修練點數，道館、跑步、游泳、重訓都能公平比較，哪天沒去道館也有路可以走。',
+  how:['做完運動，點這個任務：選項目、時間、強度','強度用講話測試：還能唱歌＝輕鬆 ×0.5、能講話不能唱歌＝中等 ×1、只能講幾個字＝高強度 ×2','一天可以記好幾筆，點數會累加，自動升級'],
+  when:'迷你 15 點：散步或伸展 30 分鐘。標準 40 點：慢跑 40 分鐘、間歇 20 分鐘。精英 80 點：道館完整一堂。休息日做伸展、滾筒也算迷你，恢復也是訓練。',
+  tip:'每週累積 300 點，開週常寶箱。'},
  screen:{why:'看到真實的數字才會有感覺。追蹤不是為了罵自己，是為了看趨勢有沒有在往下。',
   how:['打開 iPhone 設定 → 螢幕使用時間 → 查看所有活動','看最上面的總時數','回來 app 輸入，低於目標就算完成，用得越少 XP 越多'],
   when:'每天早上 app 會問你昨天用了多久，直接填就好。',
@@ -524,7 +529,7 @@ load();
 /* ---------- 規則 ---------- */
 const dayLog=d=>{const L=S.log[d]||(S.log[d]={});L.done=L.done||{};L.cnt=L.cnt||{};L.side=L.side||{};L.focus=L.focus||[];return L};
 const isShift=d=>!!S.shift[d];
-const activeOn=(q,d)=>!(q.days&&!q.days.includes(parse(d).getDay()))&&!(q.shift==='off'&&isShift(d))&&!(q.shift==='on'&&!isShift(d));
+const activeOn=(q,d)=>{const r=q.old&&d<q.old.until?q.old:q;return!(r.days&&!r.days.includes(parse(d).getDay()))&&!(r.shift==='off'&&isShift(d))&&!(r.shift==='on'&&!isShift(d))};
 const actives=d=>QUESTS.filter(q=>activeOn(q,d));
 const need=d=>Math.ceil(actives(d).length*0.75);
 const doneCount=d=>{const L=S.log[d];return L&&L.done?actives(d).filter(q=>L.done[q.id]).length:0};
@@ -604,6 +609,8 @@ function openInfo(k,D){const[kind,key]=k.split(':'),L=dayLog(D);
  if(kind==='q'){const q=QUESTS.find(x=>x.id===key),G=GUIDE[key]||{why:q.hint},d=L.done[key];
   let h=`<h2>[任務說明]</h2><div class="bigt" style="font-size:22px">${q.type==='screen'?'📱 ':''}${esc(q.name)}</div><div class="row" style="gap:8px;margin:0 0 10px">${tag(q.stat)}<span class="muted" style="font:12px var(--mono)">${q.lv?`+${Math.round(q.xp*.5)}~${Math.round(q.xp*1.6)} XP`:`+${q.xp} XP`}${q.days?'・週'+q.days.map(x=>WD[x]).join(''):''}</span></div>`+guideHtml(G);
   if(q.type==='screen')return modal(h,[['關閉','btn'],[L.scr!=null?'修改時數':'輸入時數','btn pri',()=>openScreen(key,D)]]);
+  if(key==='train'){const w=bodyWeek(D),tot=bodyTotal(D),top=`<div class="bigt" style="font-size:22px">身體修練</div><p class="muted" style="margin:0 0 4px">今天 <b style="color:var(--text)">${tot}</b> 點${d?`・${ELV[d.lv][0]}`:''}　｜　本週 ${w.p}/${BODY_WK}</p>`+bodyList(D);modal((tot?h.replace('<div class="bigt" style="font-size:22px">身體修練</div>',top+'<div style="height:10px"></div>'):h),d?[['取消完成','btn red',()=>toggleQuest(key,D)],['再記一筆','btn pri',()=>openBody(D)]]:[['關閉','btn'],['記錄運動','btn pri',()=>openBody(D)]]);
+   $('#mcard').onclick=e=>{const b=e.target.closest('[data-bdel]');if(!b)return;$('#modal').classList.remove('on');$('#mcard').onclick=null;bodyDel(D,+b.dataset.bdel)};return}
   if(d){const up=q.lv&&d.lv!=null&&d.lv<2;
    modal(h+`<p class="muted" style="text-align:center;margin:0 0 6px">已完成${d.lv!=null&&q.lv?`：${ELV[d.lv][0]}${q.amt&&d.amt?`・累計 ${d.amt} 分鐘`:''}`:''}</p>${up?`<div class="gd"><h4>做更多了？升級</h4></div><div class="lvpick">${[1,2].filter(i=>i>d.lv).map(i=>`<button data-up="${i}" style="border-color:${ELV[i][2]}66"><b style="color:${ELV[i][2]}">${ELV[i][0]}</b><span>${esc(q.lv[i])}</span><small>+${Math.round(q.xp*(ELV[i][1]-ELV[d.lv][1]))} XP</small></button>`).join('')}</div>`:''}`,[['關閉','btn'],['取消完成','btn red',()=>toggleQuest(key,D)]]);
    if(up)$('#mcard').onclick=e=>{const b=e.target.closest('[data-up]');if(!b)return;$('#modal').classList.remove('on');$('#mcard').onclick=null;const u=upgradeQuest(q,D,+b.dataset.up,1);if(u)toast(`<b>升級！</b>　${q.name} → ${ELV[+b.dataset.up][0]}`);after()};return}
@@ -618,6 +625,7 @@ function pickLevel(q,t){const was=cleared(t);
  $('#mcard').onclick=e=>{const b=e.target.closest('[data-pick]');if(!b)return;$('#modal').classList.remove('on');$('#mcard').onclick=null;doLevel(q,t,+b.dataset.pick)}}
 const hintHtml=h=>h?`<p class="muted" style="line-height:1.7;white-space:pre-line;margin:0 0 4px">${esc(h)}</p>`:'';
 function toggleQuest(id,t,ok){const q=QUESTS.find(x=>x.id===id);if(!q)return;if(q.type==='screen')return openScreen(id,t);
+ if(id==='train'){const L=dayLog(t);if(!L.done.train)return openBody(t);const was=cleared(t);undo(L.done.train);delete L.done.train;L.body=[];settle(t,was);return after()}
  if(q.lv&&!dayLog(t).done[id])return pickLevel(q,t);
  const L=dayLog(t),was=cleared(t),tg=Math.max(1,+q.target||1);
  if(L.done[id]){undo(L.done[id]);delete L.done[id];L.cnt[id]=tg>1?tg-1:0}
@@ -872,7 +880,7 @@ function judgeExtra(tx){let stat='SPI';for(const[k,re]of XKW)if(re.test(tx)){sta
  if(/間歇|HIIT|衝刺|高強度|對打|sparring|比賽|爬坡/i.test(tx)){base=Math.round(base*1.3);notes.push('高強度 ×1.3')}
  else if(/散步|慢走|伸展|輕鬆|放鬆/.test(tx)){base=Math.round(base*.8);notes.push('低強度 ×0.8')}
  return{stat,base,why:notes.join('・'),raw:base,min}}
-const QMATCH={study:/讀書|作業|複習|預習|課本|考試|報告/,esp:/西文|西班牙/,med:/冥想/,train:/訓練|練拳|練柔術|去練|上課練/,review:/復盤/};
+const QMATCH={study:/讀書|作業|複習|預習|課本|考試|報告/,esp:/西文|西班牙/,med:/冥想/,train:/訓練|練拳|練柔術|去練|上課練|道館|跑步|慢跑|晨跑|夜跑|游泳|重訓|健身|間歇|HIIT|騎車|單車|籃球|羽球|排球|足球|網球|打球|健行|爬山|瑜伽|伸展|滾筒/i,review:/復盤/};
 function dimMul(D,stat){const n=(dayLog(D).extra||[]).filter(e=>e.stat===stat).length;return[1,.8,.6,.5][Math.min(n,3)]}
 const extraUsed=t=>(dayLog(t).extra||[]).reduce((a,e)=>a+(e.base||0),0);
 function vExtra(D){const L=dayLog(D),X=L.extra||[],left=Math.max(0,XCAP-extraUsed(D));
@@ -881,7 +889,8 @@ function vExtra(D){const L=dayLog(D),X=L.extra||[],left=Math.max(0,XCAP-extraUse
  if(X.length)h+=X.map((e,i)=>`<div class="item"><span class="nm">${esc(e.text)}<div class="muted" style="font-size:12px">${STATS[e.stat].n}・${esc(e.why)}</div></span><span class="xp" style="color:var(--green)">${e.r?'+'+e.r.xp:'+0'}</span><button class="jdel" data-xdel="${i}">✕</button></div>`).join('');
  return h+'</div>'}
 function openExtra(D,tx,skipQ){if(!tx)return toast('先寫做了什麼');
- if(!skipQ){const L=dayLog(D),jm=judgeExtra(tx).min,up=jm&&actives(D).find(q=>q.lv&&q.amt&&QMATCH[q.id]&&QMATCH[q.id].test(tx)&&L.done[q.id]&&L.done[q.id].lv!=null&&fLv(q,(L.done[q.id].amt||0)+jm)>L.done[q.id].lv);
+ if(!skipQ&&QMATCH.train.test(tx)&&activeOn(QUESTS.find(q=>q.id==='train'),D)){const g=guessBody(tx);return modal(`<h2>[額外修練]</h2><div class="bigt" style="font-size:22px">這是運動，記進「身體修練」</div><p class="muted" style="line-height:1.7">用時間 × 強度換成修練點數，會算進每日任務和週常。</p>`,[['還是當額外修練','btn',()=>openExtra(D,tx,true)],['記錄','btn pri',()=>openBody(D,g)]])}
+ if(!skipQ){const L=dayLog(D),jm=judgeExtra(tx).min,up=jm&&actives(D).find(q=>q.id!=='train'&&q.lv&&q.amt&&QMATCH[q.id]&&QMATCH[q.id].test(tx)&&L.done[q.id]&&L.done[q.id].lv!=null&&fLv(q,(L.done[q.id].amt||0)+jm)>L.done[q.id].lv);
   if(up){const dd=L.done[up.id],cum=(dd.amt||0)+jm,nl=fLv(up,cum);return modal(`<h2>[額外修練]</h2><div class="bigt" style="font-size:22px">「${esc(up.name)}」可以升級到${ELV[nl][0]}</div><p class="muted">今天累計 ${cum} 分鐘。</p>`,[['還是當額外修練','btn',()=>openExtra(D,tx,true)],['升級','btn pri',()=>{xDraft='';upgradeQuest(up,D,nl,1,cum);toast(`<b>升級！</b>　${up.name} → ${ELV[nl][0]}`);after()}]])}
   const hit=actives(D).find(q=>QMATCH[q.id]&&QMATCH[q.id].test(tx)&&!L.done[q.id]);
   if(hit)return modal(`<h2>[額外修練]</h2><div class="bigt" style="font-size:22px">這個可以直接算「${esc(hit.name)}」</div><p class="muted" style="line-height:1.7">今天的「${esc(hit.name)}」還沒完成。用它完成每日任務，分數比較多，也會算進通關。</p>`,[['還是當額外修練','btn',()=>openExtra(D,tx,true)],['完成任務','btn pri',()=>{xDraft='';toggleQuest(hit.id,D)}]])}
@@ -1262,6 +1271,45 @@ function vMap(){const m=mapInfo(),R=REGIONS[m.r],cols=6,W=340,gx=52,gy=64,x0=40,
 function regionStory(k){const m=mapInfo();if(k==='end')return modal(`<h2>[塔頂]</h2><p class="story">${m.lap>0||m.step>=MAP_N?MAP_END:'？？？'}</p>`,[['關閉','btn pri']]);
  const i=+k,R=REGIONS[i],seen=m.lap>0||m.step>=R.at;modal(`<h2>[${seen?R.n:'？？？'}]</h2><div class="regart" style="--rc:${seen?R.c:'#33435f'}"><svg viewBox="0 0 512 512" width="100">${icoPaths(R.ic,seen?R.c:'#33435f')}</svg></div><p class="story">${seen?R.s:`主線第 ${R.at} 步。還沒走到這裡。`}</p>`,[['關閉','btn pri']])}
 
+/* ---------- 身體修練：時間 × 強度 = 修練點數 ---------- */
+const ACTS=[['dojo','🥋','道館訓練',90,1],['run','🏃','跑步',30,1],['swim','🏊','游泳',30,1],['gym','🏋️','重訓',45,1],['hiit','🔥','間歇・衝刺',20,2],['ball','🏀','球類',60,1],['bike','🚴','騎車',40,1],['walk','🚶','走路・健行',40,0],['mob','🧘','伸展・滾筒',20,0],['other','✨','其他',30,1]];
+const INT=[['輕鬆',.5,'還能唱歌'],['中等',1,'能講話、不能唱歌'],['高強度',2,'只能講幾個字']];
+const BODY_WK=300;
+const bodyPts=(min,i)=>Math.round(min*INT[i][1]);
+const bodyTotal=t=>((S.log[t]&&S.log[t].body)||[]).reduce((a,x)=>a+x.pts,0);
+function bodyWeek(t){const wk=weekKey(t);let p=0;for(let i=0;i<7;i++)p+=bodyTotal(addDays(wk,i));return{wk,p}}
+function bodyApply(t){const q=QUESTS.find(x=>x.id==='train'),L=dayLog(t),was=cleared(t),tot=bodyTotal(t),d=L.done.train;
+ if(d){undo(d);delete L.done.train}
+ if(tot>=q.amt[0]){const lv=fLv(q,tot),r=reward(t,'trainL'+lv,Math.round(q.xp*ELV[lv][1]),q.stat,'quest');r.lv=lv;r.amt=tot;L.done.train=r}
+ settle(t,was)}
+function bodyAdd(t,s){const q=QUESTS.find(x=>x.id==='train'),L=dayLog(t);L.body=L.body||[];const before=bodyTotal(t),wk0=bodyWeek(t).p;
+ L.body.push(s);const tot=before+s.pts,d=L.done.train,was=cleared(t);
+ if(!d){if(tot>=q.amt[0]){const lv=fLv(q,tot),r=reward(t,'trainL'+lv,Math.round(q.xp*ELV[lv][1]),q.stat,'quest');r.lv=lv;r.amt=tot;L.done.train=r;settle(t,was)}
+  else toast(`<b>+${s.pts} 點</b>　還差 ${q.amt[0]-tot} 點完成迷你`)}
+ else{const nl=fLv(q,tot);if(nl>d.lv){upgradeQuest(q,t,nl,1,tot);toast(`<b>升級！</b>　身體修練 → ${ELV[nl][0]}（${tot} 點）`)}else{d.amt=tot;toast(`<b>+${s.pts} 點</b>　今天累計 ${tot} 點`)}}
+ jlog(s.ic,`身體修練：${s.n} ${s.min} 分鐘・${INT[s.i][0]}（+${s.pts} 點）`);
+ const w=bodyWeek(t);S.bodyWk=S.bodyWk||{};if(wk0<BODY_WK&&w.p>=BODY_WK&&!S.bodyWk[w.wk]){S.bodyWk[w.wk]=1;S.gold+=60;jlog('🏆',`週常達成：本週修練 ${w.p} 點`);
+  qModal(`<h2>[週常任務] 達成</h2><div class="bigt" style="text-align:center">本週修練 ${w.p} 點</div><p class="muted" style="text-align:center">WHO 建議每週 150～300 分鐘中等強度運動，你做到了。</p><p class="gold" style="text-align:center">+60 G　＋週常寶箱</p>`,[['打開寶箱','btn pri',()=>{dropLoot('bodywk'+w.wk,true,'週常寶箱');after()}]])}
+ after()}
+function bodyDel(t,i){const L=dayLog(t);if(!L.body||!L.body[i])return;const s=L.body.splice(i,1)[0];bodyApply(t);jlog('↩️',`刪除修練紀錄：${s.n} ${s.min} 分鐘`);after()}
+function openBody(t,pre){const q=QUESTS.find(x=>x.id==='train');pre=pre||{};let a=ACTS.find(x=>x[0]===pre.act)||null,min=pre.min||(a?a[3]:30),it=pre.i!=null?pre.i:(a?a[4]:1);
+ const draw=()=>{const pts=bodyPts(min,it),cur=bodyTotal(t),tot=cur+pts,lv=tot>=q.amt[0]?fLv(q,tot):-1,w=bodyWeek(t);
+  $('#bact').innerHTML=ACTS.map(x=>`<button class="${a&&a[0]===x[0]?'on':''}" data-ba="${x[0]}"><span>${x[1]}</span>${x[2]}</button>`).join('');
+  $('#bmin').textContent=min;$('#bint').innerHTML=INT.map((x,i)=>`<button class="${i===it?'on':''}" data-bi="${i}"><b>${x[0]}</b><small>${x[2]}</small></button>`).join('');
+  $('#bprev').innerHTML=`<b style="font:800 26px var(--mono);color:var(--cyan)">+${pts}</b> 點　<span class="muted">${min} 分 × ${INT[it][1]}</span><div style="margin-top:4px;font-size:13px">今天累計 <b>${tot}</b> 點 → ${lv<0?`<span class="muted">還差 ${q.amt[0]-tot} 點完成迷你</span>`:`<b style="color:${ELV[lv][2]}">${ELV[lv][0]}</b>`}</div><div class="muted" style="font-size:11px;margin-top:2px">迷你 ${q.amt[0]}・標準 ${q.amt[1]}・精英 ${q.amt[2]}　｜　本週 ${w.p+pts}/${BODY_WK}</div>`;
+  const ok=$('#modal [data-m="1"]');if(ok)ok.disabled=!a};
+ modal(`<h2>[身體修練]</h2><div class="gd"><h4>做了什麼</h4></div><div class="bact" id="bact"></div>
+ <div class="gd"><h4>多久</h4></div><div class="fset"><button class="fstep" data-bm="-5">−</button><div class="fval"><b id="bmin">${min}</b> <small class="muted">分鐘</small></div><button class="fstep" data-bm="5">＋</button></div>
+ <div class="gd"><h4>強度（講話測試）</h4></div><div class="bint" id="bint"></div><div class="bprev" id="bprev"></div>`,
+ [['取消','btn'],['記錄','btn pri',()=>{if(!a)return toast('先選項目');xDraft='';bodyAdd(t,{act:a[0],ic:a[1],n:a[2],min,i:it,pts:bodyPts(min,it),at:Date.now()})}]]);
+ draw();$('#mcard').onclick=e=>{const b=e.target.closest('[data-ba],[data-bm],[data-bi]');if(!b)return;const d=b.dataset;
+  if(d.ba){const nx=ACTS.find(x=>x[0]===d.ba);if(!a||a[0]!==nx[0]){a=nx;if(!pre.min)min=nx[3];it=nx[4]}}
+  if(d.bm)min=Math.max(5,Math.min(240,min+ +d.bm));if(d.bi!==undefined)it=+d.bi;draw()}}
+function bodyList(t){const L=S.log[t],B=(L&&L.body)||[];if(!B.length)return'';
+ return`<div class="gd"><h4>今天的紀錄</h4></div>${B.map((s,i)=>`<div class="item" style="padding:8px 0"><span class="gic">${s.ic}</span><span class="nm">${esc(s.n)} <small class="muted">${s.min} 分・${INT[s.i][0]}</small></span><b style="font-family:var(--mono)">+${s.pts}</b><button class="btn sm" data-bdel="${i}" style="margin-left:8px">刪除</button></div>`).join('')}`}
+function guessBody(tx){const map=[[/道館|練拳|練柔術|MMA|拳擊|柔術|摔角|泰拳|去練|訓練/i,'dojo'],[/跑步|慢跑|晨跑|夜跑|跑/,'run'],[/游泳|游/,'swim'],[/重訓|健身|舉重|臥推|深蹲/,'gym'],[/間歇|HIIT|衝刺|tabata/i,'hiit'],[/籃球|羽球|排球|足球|網球|桌球|打球/,'ball'],[/騎車|單車|腳踏車|自行車/,'bike'],[/走路|散步|健行|爬山/,'walk'],[/伸展|瑜伽|滾筒|拉筋|放鬆/,'mob']];
+ const f=map.find(m=>m[0].test(tx)),j=judgeExtra(tx);return{act:f?f[1]:'other',min:j.min?Math.max(5,Math.min(240,Math.round(j.min/5)*5)):null}}
+
 /* ---------- UI 基礎 ---------- */
 function toast(h,c=''){const box=$('#toasts');while(box.children.length>=3)box.firstChild.remove();const el=document.createElement('div');el.className='toast '+c;el.innerHTML=h;box.appendChild(el);setTimeout(()=>el.remove(),2600)}
 let mActs=[];
@@ -1288,7 +1336,7 @@ function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)
  if(viewY)h+=`<p class="muted" style="margin:0 0 4px;font-size:12px">只能補登昨天</p>`;
  const row=q=>{const d=L.done[q.id];
   if(q.type==='screen'){const v=L.scr,over=v!=null&&!d;return`<div class="q ${d?'done':''}"><button class="box" data-q="${q.id}" style="${over?'border-color:var(--red);color:var(--red)':''}">${d?'✓':over?'✕':''}</button><button class="nm" data-info="q:${q.id}"><span class="qn">📱 ${esc(q.name)}</span><span class="cntw">${v!=null?`<b style="color:${over?'var(--red)':'var(--cyan)'}">${fmtMin(v)}</b><span class="muted">/ 目標 ${fmtMin(q.goal)}</span>`:`<span class="muted">目標 ${fmtMin(q.goal)} 內</span>`}</span></button>${tag(q.stat)}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+'+q.xp+'↑'}</span></div>`}
-  const lb=d&&d.lv!=null&&q.lv?`<span class="lvb" style="color:${ELV[d.lv][2]};border-color:${ELV[d.lv][2]}66">${ELV[d.lv][0]}・${q.amt&&d.amt?d.amt+' 分鐘':esc(q.lv[d.lv])}</span>`:'';
+  const lb=d&&d.lv!=null&&q.lv?`<span class="lvb" style="color:${ELV[d.lv][2]};border-color:${ELV[d.lv][2]}66">${ELV[d.lv][0]}・${q.amt&&d.amt?d.amt+' '+(q.unit||'分鐘'):esc(q.lv[d.lv])}</span>`:'';
   return`<div class="q ${d?'done':''}"><button class="box" data-q="${q.id}">${d?'✓':''}</button><button class="nm" data-info="q:${q.id}"><span class="qn">${esc(q.name)}</span>${lb}</button>${tag(q.stat)}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:(q.lv?'+'+Math.round(q.xp*.5)+'~':'+')+(q.lv?Math.round(q.xp*1.6):q.xp)}</span></div>`};
  h+=act.length?Object.keys(SLOTS).map(k=>{const g=act.filter(q=>q.slot===k);return g.length?`<div class="slot">${SLOTS[k]}</div>`+g.map(row).join(''):''}).join(''):'<p class="muted">今天沒有排任務 😴</p>';
  h+='</div>';
