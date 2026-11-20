@@ -334,6 +334,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 .mnav{display:flex;align-items:center;gap:8px}.mnav button{color:var(--cyan);font-size:18px;padding:0 4px}.mnav button:disabled{opacity:.2}
 .lg{display:inline-block;width:10px;height:3px;border-radius:2px;vertical-align:3px;margin:0 2px 0 6px}
 .tdel{color:var(--mute);font-size:18px;padding:0 4px 0 10px}
+.psteps{margin:0 0 6px;padding-left:20px;line-height:1.8;font-size:13px}.psteps a{color:var(--cyan)}.psteps code{background:#0b2233;padding:1px 6px;border-radius:6px;color:var(--cyan)}
 </style>
 </head>
 <body>
@@ -358,7 +359,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v27・11/21 00:30';
+const VER='v28・11/21 01:10';
 'use strict';
 /* =====================================================================
    RESET 系統 v4
@@ -532,7 +533,7 @@ function load(){let d=defaults(),r=null;try{r=JSON.parse(localStorage.getItem(KE
  S.rewards=(S.rewards||[]).filter(x=>!(x.ig>0));const RP={'追劇一集':[50,120],'手搖飲一杯':[80,150],'睡到自然醒':[120,250],'放縱餐':[200,400],'買一個想要的小東西':[400,1000]};S.rewards.forEach(r=>{const p=RP[r.name];if(p&&r.cost===p[0])r.cost=p[1]});S.shift=S.shift||{};S.gear=S.gear||{own:[],eq:{}};S.skills=S.skills||{};S.login=S.login||{last:null,streak:0,best:0};
  if(!S.d0fix){if(S.start==='2026-11-19')S.start='2026-11-20';S.d0fix=1}
  if(S.dayStart===undefined)S.dayStart=4;if(S.sound===undefined)S.sound=true;if(S.boss.tier===undefined)S.boss.tier=S.bossKills}
-function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}try{pushStatus()}catch(e){}}
 load();
 
 /* ---------- 規則 ---------- */
@@ -1385,6 +1386,38 @@ function mindChart(y,m,N){const t=today(),dd=k=>`${y}-${pad(m)}-${pad(k)}`,W=340
  return`<div class="panel"><div class="ptitle">[心態追蹤]<span><i class="lg" style="background:#f5c451"></i>心情　<i class="lg" style="background:#4fd1ff"></i>完成率</span></div><svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">${g}</svg>${md.length<2?'<p class="muted" style="margin:4px 0 0;font-size:12px">在日記選心情，這裡就會畫出心情曲線。</p>':''}</div>`}
 const tSeg=()=>`<div class="seg jtab tseg">${[['day','今天'],['week','本週'],['month','本月']].map(([k,n])=>`<button class="${(S.ttab||'day')===k?'on':''}" data-tt="${k}">${n}</button>`).join('')}</div>`;
 
+/* ---------- 推播通知（GitHub 排程 → Web Push → 主畫面 app） ---------- */
+const QSHORT={woop:'1 件事',study:'讀書',train:'身體修練',screen:'螢幕時間',nophone:'睡前不滑手機',sleep:'準時上床',review:'睡前復盤',weekly:'每週回顧'};
+const PUSH_REPO='https://github.com/KAI11025/reset';
+const b64u=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+const ub64=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
+function metaPut(k,v){try{const r=indexedDB.open('reset_meta',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>{try{r.result.transaction('kv','readwrite').objectStore('kv').put(v,k)}catch(e){}}}catch(e){}}
+var stT=null;
+function pushStatus(){clearTimeout(stT);stT=setTimeout(()=>{try{const t=today(),act=actives(t),L=S.log[t],left=act.filter(q=>!(L&&L.done&&L.done[q.id])).map(q=>QSHORT[q.group||q.id]||q.gname||q.name),c=S.pet&&petCalc(),hatched=!!(S.pet&&S.pet.sp&&c&&c.stage>=1);
+ metaPut('status',{d:t,ds:S.dayStart||0,left:[...new Set(left)],total:act.length,done:doneCount(t),need:need(t),cleared:cleared(t),streak:streak(),pet:hatched?petName():'',weak:hatched&&c.mood===0,at:Date.now()})}catch(e){}},600)}
+const pushOK=()=>'serviceWorker'in navigator&&'PushManager'in window&&'Notification'in window;
+const isApp=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
+const pushState=()=>!pushOK()?'none':Notification.permission==='denied'?'denied':Notification.permission==='granted'&&S.pushCfg?'on':'off';
+async function pushEnable(){
+ if(!pushOK())return modal(`<h2>[通知]</h2><p class="muted" style="line-height:1.7">${isApp()?'這台裝置的系統版本不支援網頁推播。iPhone／iPad 要 iOS 16.4 以上。':'要從<b>主畫面的 RESET 圖示</b>打開才能開通知（Safari 分頁不行）。'}</p>`,[['好','btn pri']]);
+ try{const p=await Notification.requestPermission();if(p!=='granted')return modal(`<h2>[通知]</h2><p class="muted" style="line-height:1.7">通知被拒絕了。到 iPhone 的 設定 → 通知 → RESET，把「允許通知」打開，再回來按一次。</p>`,[['好','btn pri']]);
+  const reg=await Promise.race([navigator.serviceWorker.ready,new Promise((_,rj)=>setTimeout(()=>rj(new Error('背景程式還沒準備好，關掉 app 重開再試')),8000))]);
+  if(!S.vapid){const kp=await crypto.subtle.generateKey({name:'ECDSA',namedCurve:'P-256'},true,['sign']);S.vapid={pub:b64u(await crypto.subtle.exportKey('raw',kp.publicKey)),priv:(await crypto.subtle.exportKey('jwk',kp.privateKey)).d};save()}
+  let sub=await reg.pushManager.getSubscription();
+  if(sub){const k=sub.options&&sub.options.applicationServerKey;if(k&&b64u(k)!==S.vapid.pub){await sub.unsubscribe();sub=null}}
+  if(!sub)sub=await reg.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:ub64(S.vapid.pub)});
+  S.pushCfg=btoa(JSON.stringify({s:sub.toJSON(),pub:S.vapid.pub,priv:S.vapid.priv}));save();pushStatus();render();showPushCfg()}
+ catch(e){modal(`<h2>[通知]</h2><p class="muted" style="line-height:1.7">開啟失敗：${esc(String(e&&e.message||e))}<br>確認是從主畫面的 RESET 打開，再試一次。</p>`,[['好','btn pri']])}}
+function showPushCfg(){if(!S.pushCfg)return;
+ modal(`<h2>[通知] 最後一步</h2><p class="muted" style="line-height:1.7;margin:0 0 8px">把這串設定碼存到 GitHub，排程就會準時推播給你。只要做一次。</p>
+ <ol class="psteps"><li>按下面「複製設定碼」</li><li>打開 <a href="${PUSH_REPO}/settings/secrets/actions/new" target="_blank" rel="noopener">GitHub 新增 Secret</a></li><li>Name 填 <code>PUSH</code>，Secret 貼上，按 Add secret</li><li>打開 <a href="${PUSH_REPO}/actions/workflows/notify.yml" target="_blank" rel="noopener">RESET 通知</a> → Run workflow → 直接按綠色的 Run workflow，幾十秒內收到「通知測試成功」</li></ol>
+ <textarea readonly id="pcfg" style="width:100%;height:64px;font:10px var(--mono);margin-top:4px">${S.pushCfg}</textarea>`,[['關閉','btn'],['複製設定碼','btn pri',()=>{const v=S.pushCfg;(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast('<b>已複製</b>　去 GitHub 貼上')).catch(()=>{showPushCfg();setTimeout(()=>{const a=$('#pcfg');if(a){a.focus();a.select()}},300);toast('請長按設定碼全選複製')})}]])}
+async function pushLocalTest(){try{const reg=await navigator.serviceWorker.ready;await reg.showNotification('🔔 本機測試',{body:'看到這則，代表通知權限開好了。',icon:'icon.png',tag:'local'});toast('已送出本機測試通知')}catch(e){toast('送不出去：'+esc(String(e&&e.message||e)))}}
+function pushPanel(){const st=pushState();
+ return`<div class="panel"><div class="ptitle">[通知]<span>${st==='on'?'<b style="color:var(--green,#3ee08f)">已開啟</b>':st==='denied'?'被拒絕':'未開啟'}</span></div>
+ <p class="muted" style="margin:0 0 8px;font-size:12px;line-height:1.6">每天 08:23 早安、21:17 提醒還差哪幾項、23:47 叫你放下手機。內容依你當下的進度自動變化。</p>
+ ${st==='on'?`<div class="row"><button class="btn sm grow" id="pTest">本機測試</button><button class="btn sm grow" id="pCfg">設定碼</button></div>`:`<button class="btn cy" id="pOn" style="width:100%">🔔 開啟通知</button>`}</div>`}
+
 /* ---------- UI 基礎 ---------- */
 function toast(h,c=''){const box=$('#toasts');while(box.children.length>=3)box.firstChild.remove();const el=document.createElement('div');el.className='toast '+c;el.innerHTML=h;box.appendChild(el);setTimeout(()=>el.remove(),2600)}
 let mActs=[];
@@ -1479,8 +1512,7 @@ function vShop(){const pp=pendingPen().length,L=lvInfo(S.xp).lv;
  h+=`<div class="panel sys"><div class="ptitle">[魔法]<span>決戰時用・每場最多 ${SPELL_MAX} 次</span></div><div class="mats" style="margin:0 0 6px">${Object.entries(MATS).map(([k,v])=>`<div><span>${v[0]}</span><b>${S.mats[k]||0}</b><small>${v[1]}</small></div>`).join('')}</div>`+SPELLS.map(sp=>{const can=!pp&&S.gold>=sp.g&&Object.entries(sp.m).every(([k,n])=>(S.mats[k]||0)>=n);
   return`<div class="item"><span class="gic">${sp.ic}</span><span class="nm">${sp.n} <small class="muted">持有 ${S.items[sp.id]||0}</small><div class="muted" style="font-size:12px">${sp.d}</div><div style="font-size:12px;margin-top:2px">${sp.g}G ${Object.entries(sp.m).map(([k,n])=>MATS[k][0]+'×'+n).join(' ')}</div></span><button class="btn sm cy" data-spell="${sp.id}" ${can?'':'disabled'}>製作</button></div>`}).join('')+'</div>';
  h+=`<div class="panel"><div class="ptitle">[技能]<span>每項最高 Lv.3</span></div>`+SKILLS.map(sk=>{const lv=skl(sk[0]);return`<div class="item"><span class="gic">${sk[1]}</span><span class="nm">${sk[2]} <span class="dots">${[1,2,3].map(n=>`<i class="${n<=lv?'on':''}"></i>`).join('')}</span><div class="muted" style="font-size:12px">${lv?sk[3](lv):sk[3](1).replace(/\+\d+%/,m=>m)+'（Lv.1）'}</div></span>${lv>=3?'<span class="chip">MAX</span>':`<button class="btn sm cy" data-skill="${sk[0]}" ${pp||S.gold<SKILL_COST[lv]?'disabled':''}>${SKILL_COST[lv]} G</button>`}</div>`}).join('')+'</div>';
- h+=`<div class="panel"><div class="ptitle">[現實獎勵]<span>先賺到再享受</span></div>`+(REWARDS.length?REWARDS.map(r=>`<div class="item"><span class="nm">${esc(r.name)}${S.gold<r.cost?`<div class="bar gold" style="height:4px;margin-top:5px"><i style="width:${Math.max(0,S.gold)/r.cost*100}%"></i></div>`:''}</span><button class="btn sm cy" data-buy="${r.id}" ${pp||S.gold<r.cost?'disabled':''}>${r.cost} G</button></div>`).join(''):'<p class="muted">去設定新增想要的獎勵。</p>')+'</div>';
- if(S.buys.length)h+=`<div class="panel"><div class="ptitle">[購買紀錄]</div>${S.buys.slice(0,8).map(b=>{const d=new Date(b.t);return`<div class="item"><span class="nm">${esc(b.name)}</span><span class="muted">${d.getMonth()+1}/${d.getDate()}</span><span class="gold" style="min-width:52px;text-align:right">-${b.cost}</span></div>`}).join('')}</div>`;
+  if(S.buys.length)h+=`<div class="panel"><div class="ptitle">[購買紀錄]</div>${S.buys.slice(0,8).map(b=>{const d=new Date(b.t);return`<div class="item"><span class="nm">${esc(b.name)}</span><span class="muted">${d.getMonth()+1}/${d.getDate()}</span><span class="gold" style="min-width:52px;text-align:right">-${b.cost}</span></div>`}).join('')}</div>`;
  return h}
 function gearIcon(k,t){return{weapon:['','🪵','🗡️','⚔️','🔱','☠️'],armor:['','👕','🦺','⛓️','🛡️','🖤'],acc:['','💍','📿','💎','⚡','👑']}[k][t]}
 
@@ -1535,6 +1567,7 @@ function vMe(){const L=lvInfo(S.xp),r=rankOf(L.lv),nx=RANKS.find(x=>x[0]>L.lv);
 
 /* ---------- 設定頁 ---------- */
 function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務・獎勵]<span>後台管理</span></div><p class="muted" style="margin:0">要改跟 Claude 說。</p></div>`;
+ h+=pushPanel();
  h+=`<div class="panel"><div class="ptitle">[模式]</div>
  <div class="sw"><div><b>😈 硬核模式</b><div class="muted">沒通關扣 50G＋懲罰任務</div></div><button class="tog ${S.hard?'on':''}" id="tHard"></button></div>
  <div class="sw"><div><b>🔊 音效</b></div><button class="tog c ${S.sound?'on':''}" id="tSnd"></button></div>
@@ -1606,6 +1639,9 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-tt],[da
    try{navigator.clipboard.writeText(tx).then(done,fb)}catch(e){fb()}return}
   case'xJudge':return openExtra(D,($('#xtxt').value||'').trim());
   case'dcal':return openCal();
+  case'pOn':return pushEnable();
+  case'pTest':return pushLocalTest();
+  case'pCfg':return showPushCfg();
   case'todoAdd':{const v=$('#todotx').value,dd=$('#todod').value;return todoAdd(v,dd||null)}
   case'jSave':{const tx=($('#jtxt').value||'').trim();if(!tx)return toast('先寫點什麼');S.journal=S.journal||[];S.journal.unshift({t:Date.now(),d:today(),type:'user',text:tx.slice(0,2000),mood:S.jm==null?null:S.jm});
    jDraft='';S.jm=null;if(S.jxp!==today()){S.jxp=today();S.stats.SPI=(S.stats.SPI||0)+1;gain(10,0);toast('<b>[勇者日誌]</b> 今天第一篇 +10 XP　心靈 +1')}else toast('<b>已寫入日誌</b>');sfx('done');return after()}

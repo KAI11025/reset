@@ -1,0 +1,25 @@
+name: RESET 通知
+on:
+  schedule:
+    - cron: '23 0 * * *'    # 08:23 台灣
+    - cron: '17 13 * * *'   # 21:17 台灣
+    - cron: '47 15 * * *'   # 23:47 台灣
+  workflow_dispatch:
+    inputs:
+      type:
+        description: 'test / morning / evening / night'
+        default: 'test'
+jobs:
+  push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm i web-push@3 --no-save --no-audit --no-fund
+      - run: node .github/notify.mjs
+        env:
+          PUSH: ${{ secrets.PUSH }}
+          SCHED: ${{ github.event.schedule }}
+          TYPE: ${{ github.event.inputs.type }}
