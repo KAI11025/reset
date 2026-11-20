@@ -373,6 +373,45 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 .fdone .slash.d1 path{animation-delay:.3s}.fdone .slash.d2 path{animation-delay:.5s}.fdone .fnum.d3{left:50%;top:30%;opacity:0;animation:fnum 1.5s ease-out .55s forwards}
 .fko{position:absolute;left:0;right:0;top:40%;text-align:center;font:900 28px var(--mono);color:#ff5d6c;letter-spacing:.3em;text-shadow:0 0 14px #ff5d6c;opacity:0;animation:fban 2s .7s forwards}
 .brk{display:flex;align-items:center;gap:10px;background:#1a160f;border:1px solid #5a4a30;border-radius:14px;padding:10px 12px;margin-bottom:12px}.brk span{color:#e6d5b0}.brk b{font:800 26px var(--mono);flex:1;color:#f3e3bd}
+#mcard.pkcard{padding:12px}
+.pkb{position:relative;height:300px;border-radius:16px;overflow:hidden;background:radial-gradient(ellipse at 70% 30%,color-mix(in srgb,var(--bg) 60%,#4fd1ff22),var(--bg) 60%),linear-gradient(180deg,var(--bg),#05070d);border:1px solid #1f3352}
+.pkb::after{content:"";position:absolute;left:-10%;right:-10%;bottom:-40px;height:110px;background:radial-gradient(ellipse at 50% 0%,rgba(255,255,255,.06),transparent 70%)}
+.pkfoe{position:absolute;left:10px;top:12px;width:52%;z-index:3}
+.pkplate{background:rgba(5,9,18,.82);border:1px solid #2a3a5c;border-radius:12px 12px 12px 4px;padding:7px 10px;box-shadow:0 4px 0 rgba(0,0,0,.35)}
+.pkplate b{font-size:13px}.pkplate small{float:right;font:700 11px var(--mono);color:var(--mute)}.pkplate .bar{margin-top:5px}
+.pkplate.me{border-radius:12px 12px 4px 12px}.pkhp{text-align:right;font:700 11px var(--mono);color:#cfe3ff;margin-top:3px}
+.pkboss{position:absolute!important;right:6px;top:22px;width:160px;z-index:2}.pkboss::before{content:"";position:absolute;left:10px;right:10px;bottom:-6px;height:26px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.55),transparent 70%)}
+.pkboss svg{background:transparent!important}
+.pkme{position:absolute;left:0;right:0;bottom:8px;display:flex;align-items:flex-end;justify-content:space-between;padding:0 10px;z-index:3}
+.pkhero{position:relative;width:110px;height:118px;display:flex;align-items:flex-end;justify-content:center}.pkhero::before{content:"";position:absolute;left:0;right:0;bottom:-4px;height:22px;border-radius:50%;background:radial-gradient(ellipse,rgba(0,0,0,.5),transparent 70%)}
+.pkhero>svg{max-height:118px;width:auto}.pkpet{position:absolute;right:-26px;bottom:0}
+.pkme .pkplate{width:52%}
+.pkbox{margin-top:8px;border:2px solid #2a3a5c;border-radius:14px;background:#070c18;overflow:hidden}
+.pkmsg{min-height:46px;padding:10px 12px;font-size:14px;line-height:1.5;color:#e6eefc;border-bottom:1px solid #16223a}
+.pkmenu{padding:8px}#mcard.fbusy .pkmenu{opacity:.25;pointer-events:none}
+.pkgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.pkgrid button{display:flex;flex-direction:column;align-items:flex-start;gap:1px;padding:9px 10px;border-radius:10px;border:1px solid #2a3a5c;background:#0b1424;color:var(--text);text-align:left}
+.pkgrid button b{font-size:14px}.pkgrid button small{font:11px var(--mono);color:var(--mute)}.pkgrid button:disabled{opacity:.35}
+.pkgrid.main button{align-items:center;font-size:15px;font-weight:800;padding:12px}
+.pk-f{border-color:#ff5d6c88!important;background:#2a0f16!important}.pk-b{border-color:#f5c45188!important;background:#2a220c!important}.pk-p{border-color:#3ee08f88!important;background:#0c2a1c!important}.pk-r{border-color:#4fd1ff66!important;background:#0b2233!important}
+.pkback{display:block;width:100%;margin-top:6px;padding:7px;text-align:left;color:var(--cyan);font-size:13px}
+.fnum.poison{color:#a3e635}
+.clsnow{display:flex;gap:12px;align-items:center;margin-bottom:8px}.clsnow>span{font-size:34px}
+.mvlist{display:grid;grid-template-columns:1fr 1fr;gap:6px}.mvlist>div{background:#070c18;border:1px solid var(--line);border-radius:10px;padding:7px 9px;display:flex;flex-direction:column;gap:2px}.mvlist b{font-size:13px}.mvlist small{font-size:10.5px;color:var(--mute);line-height:1.35}.mvlist .off{opacity:.4}
+.clspick{display:flex;flex-direction:column;gap:6px;max-height:56vh;overflow:auto}
+.clspick button{display:grid;grid-template-columns:40px 1fr;grid-template-rows:auto auto auto;column-gap:8px;text-align:left;padding:9px 10px;border-radius:12px;border:1px solid #2a3a5c;background:#0b1424;color:var(--text)}
+.clspick button span{grid-row:1/4;font-size:28px;align-self:center}.clspick button b{color:var(--cc)}.clspick small{font-size:11.5px;color:#a9b6cf;line-height:1.4}.clspick i{font-style:normal;font-size:11px;color:var(--mute)}
+.clspick button.on{border-color:var(--cc);box-shadow:0 0 0 1px var(--cc)}
+.heat{grid-template-columns:repeat(10,1fr)!important}
+.pkb #pbox.pkme{position:absolute;padding:0 10px;border-radius:0}
+.pkhero>svg{border-radius:14px}
+.toast{font-size:15px!important;padding:11px 16px!important;max-width:92vw;pointer-events:auto;cursor:pointer;line-height:1.45}
+.toast small{font-size:13px}
+.mx{position:absolute;right:10px;top:8px;width:34px;height:34px;border-radius:50%;font-size:22px;line-height:1;color:var(--mute);background:#0b1424;border:1px solid #1f3352;z-index:2}
+#mcard{position:relative}
+.ntc{text-align:center;padding:14px 4px 4px}.ntci{font-size:52px;line-height:1.1;animation:pop .5s cubic-bezier(.3,1.6,.5,1)}.ntct{font-size:21px;font-weight:800;margin:8px 0 4px}.ntcb{font-size:15px;color:#cfe3ff;line-height:1.6}
+.ntc.gold .ntct{color:var(--gold)}.ntc.red .ntct{color:var(--red)}.ntc.purple .ntct{color:#b48cff}
+.pkboss svg>rect:first-of-type,.pkhero svg>rect:first-of-type{fill:transparent}
 </style>
 </head>
 <body>
@@ -397,7 +436,8 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v31・11/21 02:40';
+const VER='v33・11/21 04:30';
+const PROG=100;
 'use strict';
 /* =====================================================================
    RESET 系統 v4
@@ -410,6 +450,7 @@ const fmt=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
 const parse=s=>{const[y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
 const today=()=>fmt(new Date(Date.now()-((S&&S.dayStart)||0)*36e5));
 const addDays=(s,n)=>{const d=parse(s);d.setDate(d.getDate()+n);return fmt(d)};
+const nextMon=d=>{const w=parse(d).getDay();return w===1?d:addDays(d,(8-w)%7)};
 const diff=(a,b)=>Math.round((parse(b)-parse(a))/864e5);
 const weekKey=s=>{const d=parse(s);d.setDate(d.getDate()-((d.getDay()+6)%7));return fmt(d)};
 const dayNum=d=>diff('2024-01-01',d);
@@ -558,7 +599,7 @@ function sfx(type){if(!S||!S.sound)return;try{AC=AC||new(window.AudioContext||wi
  for(const[f,d]of seq){const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.06,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d);t+=d*.9}}catch(e){}}
 
 /* ---------- 存檔 ---------- */
-function defaults(){return{v:4,start:today(),hard:false,sound:true,badge:false,dayStart:4,gold:0,xp:0,best:0,seen:0,
+function defaults(){return{v:4,start:nextMon(today()),hard:false,sound:true,badge:false,dayStart:4,gold:0,xp:0,best:0,seen:0,
  rewards:[{id:uid(),name:'追劇一集',cost:120},{id:uid(),name:'手搖飲一杯',cost:150},{id:uid(),name:'睡到自然醒',cost:250},{id:uid(),name:'放縱餐',cost:400},{id:uid(),name:'買一個想要的小東西',cost:1000}],
  log:{},lastClosed:null,penalties:[],stats:{STR:0,VIT:0,INT:0,SPI:0,DIS:0},
  boss:{week:null,dmg:0,dead:false,tier:0},bossKills:0,crits:0,focusCount:0,questCount:0,sideCount:0,
@@ -570,6 +611,7 @@ function load(){let d=defaults(),r=null;try{r=JSON.parse(localStorage.getItem(KE
  S.stats=Object.assign({STR:0,VIT:0,INT:0,SPI:0,DIS:0},S.stats);if(S.stats.CHA){S.stats.SPI+=S.stats.CHA;delete S.stats.CHA}
  S.rewards=(S.rewards||[]).filter(x=>!(x.ig>0));const RP={'追劇一集':[50,120],'手搖飲一杯':[80,150],'睡到自然醒':[120,250],'放縱餐':[200,400],'買一個想要的小東西':[400,1000]};S.rewards.forEach(r=>{const p=RP[r.name];if(p&&r.cost===p[0])r.cost=p[1]});S.shift=S.shift||{};S.gear=S.gear||{own:[],eq:{}};S.skills=S.skills||{};S.login=S.login||{last:null,streak:0,best:0};
  if(!S.d0fix){if(S.start==='2026-11-19')S.start='2026-11-20';S.d0fix=1}
+ if(!S.wk1fix){S.wk1fix=1;if(S.pet&&!S.pet.born)S.pet.born=S.start;S.pet=S.pet||{born:S.start,max:0,sp:null};if(parse(S.start).getDay()!==1&&diff(S.start,today())<7){const o=S.start;S.start=nextMon(o);S.warm0=o}}
  if(S.dayStart===undefined)S.dayStart=4;if(S.sound===undefined)S.sound=true;if(S.boss.tier===undefined)S.boss.tier=S.bossKills}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}try{pushStatus()}catch(e){}}
 load();
@@ -630,16 +672,17 @@ function hitBoss(){}
 
 /* ---------- 獎勵 ---------- */
 function gain(xp,gold){const before=lvInfo(S.xp).lv;S.xp+=xp;S.gold+=gold;const after=lvInfo(S.xp).lv;
- if(after>before){sfx('lv');const r0=rankOf(before),r1=rankOf(after);jlog('⬆️',`升到 Lv.${after}`);if(r1[1]!==r0[1])jlog('👑',`晉升 ${r1[1]} 級・${r1[2]}`);
+ if(after>=CLS_LV&&before<CLS_LV&&!S.cls)setTimeout(()=>qModal(`<h2>[系統] 轉職的時刻</h2><div class="bigt" style="text-align:center">你到 Lv.${CLS_LV} 了</div><p class="muted" style="text-align:center;line-height:1.7">選一個職業，會決定你在 Boss 戰的招式。<br>系統依你最強的屬性推薦：<b style="color:${CLASSES[recCls()].c}">${CLASSES[recCls()].ic} ${CLASSES[recCls()].n}</b></p>`,[['之後再說','btn'],['選職業','btn pri',()=>clsPick()]]),400);
+ if(after>before){sfx('lv');haptic(3);const r0=rankOf(before),r1=rankOf(after);jlog('⬆️',`升到 Lv.${after}`);if(r1[1]!==r0[1])jlog('👑',`晉升 ${r1[1]} 級・${r1[2]}`);
   setTimeout(()=>qModal(`<h2>[系統] LEVEL UP</h2><div style="text-align:center">${avatarSvg(120)}</div><div class="bigt" style="text-align:center">Lv.${before} → <span style="color:var(--cyan)">Lv.${after}</span></div>${r1[1]!==r0[1]?`<p style="text-align:center">階級提升：<b style="color:var(--gold)">${r1[1]} 級・${r1[2]}</b></p>`:''}<p class="muted" style="text-align:center">${newUnlocks(before,after)}</p>`,[['繼續','btn pri']]),250)}}
 function newUnlocks(a,b){const u=[];for(const k in GEAR)for(const it of GEAR[k].items)if(it[2]>a&&it[2]<=b)u.push(it[1]);return u.length?'商店解鎖：'+u.join('、'):'繼續變強。'}
-function reward(t,key,base,stat,kind){let m=1+(t===today()?buffOn('x'):0)+affix('xp')+(S.pet&&S.pet.sp&&PETS[S.pet.sp].stat===stat?petBuff():0);if(kind==='quest'&&t===today()){const n=new Date(),hh=n.getHours()+n.getMinutes()/60;if(hh>=4&&hh<6.5)setEgg('dawn')}if(kind==='quest'&&skl('grit')&&streak()>=7)m+=.05*skl('grit');if(kind==='side')m+=.2*skl('curio');if(kind==='focus')m+=.25*skl('focus');
+function reward(t,key,base,stat,kind){let m=1+(t===today()?buffOn('x'):0)+affix('xp')+(S.pet&&S.pet.sp&&PETS[S.pet.sp].stat===stat?petBuff():0)+(S.cls&&CLASSES[S.cls]&&CLASSES[S.cls].stat===stat&&kind!=='up'?.1:0);if(kind==='quest'&&t===today()){const n=new Date(),hh=n.getHours()+n.getMinutes()/60;if(hh>=4&&hh<6.5)setEgg('dawn')}if(kind==='quest'&&skl('grit')&&streak()>=7)m+=.05*skl('grit');if(kind==='side')m+=.2*skl('curio');if(kind==='focus')m+=.25*skl('focus');
  const crit=srand(t+key+'c')<critRate()+(t===today()?buffOn('crit'):0),xp=Math.round(base*m*(crit?2:1));
  const loot=srand(t+key+'l')<.1?Math.round((10+Math.floor(srand(t+key+'a')*31))*(1+.3*skl('luck'))):0;
  const gold=Math.round(base/2*(1+eqv('armor')+affix('gold'))*goldMul(t))+loot,dmg=Math.round(xp*(1+eqv('weapon')));
  const r={xp,gold,loot,crit,stat,dmg,kind};if(crit)S.crits++;S.stats[stat]=(S.stats[stat]||0)+1;if(kind==='side')S.sideCount++;else if(kind==='quest')S.questCount++;
  gain(xp,gold);hitMinion(dmg,kind,stat);
- if(crit){sfx('crit');toast(`<b>CRITICAL!</b> 經驗值 ×2　+${xp} XP`,'crit')}else{sfx('done');toast(`<b>+${xp} XP</b>　+${gold-loot} G　${STATS[stat].n} +1`)}
+ haptic(crit?2:1);if(crit){sfx('crit');toast(`<b>CRITICAL!</b> 經驗值 ×2　+${xp} XP`,'crit')}else{sfx('done');toast(`<b>+${xp} XP</b>　+${gold-loot} G　${STATS[stat].n} +1`)}
  if(loot)toast(`<b>寶箱掉落！</b> +${loot} G`,'crit');maybeDrop(t,key,kind);return r}
 function undo(r){S.xp-=r.xp;S.gold-=r.gold;const st=STATS[r.stat]?r.stat:'SPI';S.stats[st]=Math.max(0,(S.stats[st]||0)-1-(r.ups||0));
  if(r.kind==='side')S.sideCount--;else if(r.kind==='quest')S.questCount--;if(r.crit)S.crits--;dun();S.dun.dmg=Math.max(0,S.dun.dmg-(r.dmg||r.xp))}
@@ -743,13 +786,15 @@ const ACH=[
  ['focus','🎯','心流','完成 10 次專注',()=>S.focusCount>=10],
  ['rich','💰','守財奴','同時持有 1000G',()=>S.gold>=1000],
  ['q100','💯','百戰','累計完成 100 個任務',()=>S.questCount>=100],
+ ['cls','🎭','轉職','選擇第一個職業',()=>!!S.cls],
+ ['s100','💯','百日重生','連續通關 100 天',()=>S.best>=100],
  ['hatch','🐣','夥伴誕生','孵化你的夥伴',()=>!!(S.pet&&S.pet.sp)],
  ['pet4','🐉','究極進化','夥伴進化到第 4 階',()=>!!(S.pet&&S.pet.max>=4)],
  ['epic','🟣','史詩級','拿到史詩以上的裝備',()=>Object.values(S.loot||{}).some(x=>x.rar>=2)],
- ['mapdone','🏰','踏破終焉','走完 66 天主線',()=>!!egg('mapdone')],
+ ['mapdone','🏰','踏破終焉','走完 100 天主線',()=>!!egg('mapdone')],
  ['hard','😈','自找苦吃','開啟硬核模式',()=>S.hard],
  ['detox','🧘','數位排毒','螢幕時間連續 7 天達標',()=>{let n=0;for(let i=0;i<60;i++){const L=S.log[addDays(today(),-i)];if(L&&L.scr!=null&&L.scr<=180){if(++n>=7)return true}else if(i>0)return false}return false}]];
-function checkAch(){for(const a of ACH.concat(SECRET))if(!S.ach[a[0]]&&a[4]()){S.ach[a[0]]=Date.now();const sec=SECRET.includes(a);jlog('🏆',`${sec?'隱藏':''}成就解鎖：${a[1]} ${a[2]}`);setTimeout(()=>toast(`<b>🏆 ${sec?'隱藏成就':'成就解鎖'}</b>　${a[1]} ${a[2]}<br><small>獲得稱號「${TITLES[a[0]]||a[2]}」</small>`,'crit'),700)}}
+function checkAch(){for(const a of ACH.concat(SECRET))if(!S.ach[a[0]]&&a[4]()){S.ach[a[0]]=Date.now();const sec=SECRET.includes(a);jlog('🏆',`${sec?'隱藏':''}成就解鎖：${a[1]} ${a[2]}`);setTimeout(()=>{fxSound('win');haptic(2);notice(a[1],`${sec?'隱藏成就':'成就解鎖'}：${a[2]}`,`${sec?'':esc(a[3])+'<br>'}獲得稱號「${TITLES[a[0]]||a[2]}」，可以到角色頁裝上。`,sec?'purple':'gold')},700)}}
 function after(){S.best=Math.max(S.best||0,streak());{const t=today(),Lt=S.log[t],a=actives(t);if(a.length&&Lt&&Lt.done&&a.every(q=>Lt.done[q.id]))setEgg('perfect')}if(S.gold===777)setEgg('lucky');checkChal();petCheck();mapCheck();streakMs();checkAch();save();render();updBadge()}
 function updBadge(){if(!S.badge||!('setAppBadge'in navigator))return;try{const t=today(),L=S.log[t],n=actives(t).filter(q=>!(L&&L.done&&L.done[q.id])).length;(n?navigator.setAppBadge(n):navigator.clearAppBadge()).catch(()=>{})}catch(e){}}
 
@@ -1012,36 +1057,11 @@ function predict(b){const p=pStats(),ch=chargeOf(S.boss.week),est=ch+p.atk*FIGHT
 /* ---------- Boss 決戰 ---------- */
 let F=null;
 function startFight(){const b=bossInfo();if(S.boss.fought)return toast('這週已經挑戰過了');if(!isFightDay())return toast('決戰日是週六、週日');
- const p=pStats();F={L:p.L,b,bs:bossStats(b),php:p.hp,pmax:p.hp,atk:p.atk,crit:p.crit,bhp:b.hp,sb:b.hp,sp:p.hp,turn:0,used:0,shield:0,rage:0,stun:0,log:[],done:false,fx:[{k:'intro'}]};
+ const p=pStats();F={L:p.L,b,bs:bossStats(b),php:p.hp,pmax:p.hp,atk:p.atk,crit:p.crit,bhp:b.hp,sb:b.hp,sp:p.hp,turn:0,used:0,shield:0,rage:0,stun:0,log:[],done:false,fx:[{k:'intro',msg:`${b.name}出現了！`}]};fightInit();
  S.boss.fought=true;save();const ch=chargeOf(S.boss.week);
- F.log.push(`⚔️ 決戰開始！`);if(ch>0){F.bhp=Math.max(0,F.bhp-ch);F.log.push(`💥 蓄力一擊！本週的努力化成 <b>${ch}</b> 點傷害`);fxEv({k:'charge',dmg:ch,bTo:F.bhp})}
+ F.log.push(`⚔️ 決戰開始！`);if(ch>0){F.bhp=Math.max(0,F.bhp-ch);F.log.push(`💥 蓄力一擊！本週的努力化成 <b>${ch}</b> 點傷害`);fxEv({k:'charge',dmg:ch,bTo:F.bhp,msg:`蓄力一擊！這週的努力化成 ${ch} 點傷害`})}
  sfx('crit');drawFight();if(F.bhp<=0)endFight(true)}
-function drawFight(){const b=F.b,inv=SPELLS.filter(s=>(S.items[s.id]||0)>0);
- const fbar=(id,v,m,c)=>`<div class="bar fbar ${c}" id="${id}" style="height:10px"><u style="width:${Math.max(0,v/m*100)}%"></u><i style="width:${Math.max(0,v/m*100)}%"></i></div>`;
- let h=`<h2>[BOSS 決戰]　第 ${Math.min(F.turn+1,FIGHT_TURNS)}/${FIGHT_TURNS} 回合</h2><div class="fstage"><div id="fbw">${bossSvg(b.i,b.t,170,F.done&&F.bhp<=0&&!(F.fx&&F.fx.length))}</div><div class="ffx" id="ffx"></div></div>
- <div class="row" style="justify-content:space-between;font:12px var(--mono)"><b>${b.name}</b><span>${Math.max(0,F.bhp)} / ${b.hp}</span></div>${fbar('bbar',F.sb,b.hp,'red')}
- <div id="pbox"><div class="row" style="justify-content:space-between;font:12px var(--mono);margin-top:8px"><b>你</b><span>${Math.max(0,F.php)} / ${F.pmax} HP${F.shield?'・🛡️'+F.shield:''}${F.rage?'・💢'+F.rage:''}</span></div>${fbar('pbar',F.sp,F.pmax,'')}</div>
- <div class="flog">${F.log.slice(-4).map(x=>`<div>${x}</div>`).join('')}</div>`;
- if(!F.done){h+=`<div class="fact"><button class="btn pri" data-fa="atk">⚔️ 攻擊（${F.atk}${F.rage?'×1.8':''}）</button></div>`;
-  h+=inv.length&&F.used<SPELL_MAX?`<div class="fsp">${inv.map(s=>`<button class="btn sm" data-fa="${s.id}">${s.ic} ${s.n}×${S.items[s.id]}</button>`).join('')}</div><p class="muted" style="font-size:11px;margin:4px 0 0;text-align:center">魔法 ${F.used}/${SPELL_MAX}</p>`:`<p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">${inv.length?'魔法次數用完了':'沒有魔法，可以先去商店買'}</p>`}
- modal(h,F.done?[['結束','btn pri',()=>{F=null;render()}]]:[]);$('#mcard').classList.remove('fgray');
- $('#mcard').onclick=e=>{const x=e.target.closest('[data-fa]');if(!x||!F||F.done||F.busy)return;fightTurn(x.dataset.fa)};
- if(F.fx&&F.fx.length)playFx();else{fxBar('bbar',F.bhp,b.hp);fxBar('pbar',F.php,F.pmax)}F.sb=F.bhp;F.sp=F.php}
-function fightTurn(a){if(!F||F.busy)return;const roll=()=>.85+Math.random()*.3;let dmg=0,crit=false,hv=0;
- if(a==='atk'){const c=Math.random()<F.crit;crit=c;dmg=Math.round(F.atk*(F.rage?1.8:1)*roll()*(c?2:1));F.log.push(`${c?'⚡ 暴擊！':'⚔️ '}你造成 <b>${dmg}</b> 點傷害`);sfx(c?'crit':'done')}
- else{const sp=SPELLS.find(s=>s.id===a);if(!S.items[a]||F.used>=SPELL_MAX)return;S.items[a]--;F.used++;
-  if(a==='fire'){dmg=60+F.L*4;F.log.push(`🔥 火球術！<b>${dmg}</b> 點傷害`)}
-  if(a==='bolt'){dmg=30+F.L*2;F.stun=1;F.log.push(`⚡ 雷擊！<b>${dmg}</b> 點傷害，Boss 麻痺了`)}
-  if(a==='heal'){hv=60+F.L*3;F.php=Math.min(F.pmax,F.php+hv);fxEv({k:'heal',hv,pTo:F.php});F.log.push(`💚 治癒術，回復 ${hv} HP`)}
-  if(a==='shield'){F.shield=2;fxEv({k:'shield'});F.log.push('🛡️ 護盾展開，2 回合傷害減半')}
-  if(a==='rage'){F.rage=3;fxEv({k:'rage'});F.log.push('💢 狂暴！3 回合攻擊力 ×1.8')}sfx('chest')}
- if(dmg){F.bhp-=dmg;fxEv({k:a==='atk'?'atk':a,dmg,crit,bTo:Math.max(0,F.bhp)})}
- if(a==='atk'&&F.rage)F.rage--;
- if(F.bhp<=0)return endFight(true);
- if(F.stun){F.stun=0;F.log.push(`${F.b.name} 麻痺中，無法行動`);fxEv({k:'stun'})}
- else{const big=(F.turn+1)%3===0;let bd=Math.round(F.bs.atk*(big?1.8:1)*roll());if(F.shield){bd=Math.round(bd/2);F.shield--}F.php-=bd;F.log.push(`${big?'☄️ '+F.b.name+' 放出大招！':'👊 '+F.b.name+' 攻擊'}，你受到 <b>${bd}</b> 傷害`);fxEv({k:'boss',dmg:bd,big,pTo:Math.max(0,F.php)})}
- F.turn++;if(F.php<=0)return endFight(false);if(F.turn>=FIGHT_TURNS)return endFight(false,true);drawFight()}
-function endFight(win,timeout){F.done=true;const b=F.b;fxEv({k:win?'win':'lose'});
+function endFight(win,timeout){F.done=true;const b=F.b;fxEv({k:win?'win':'lose',msg:win?`${b.name}倒下了！`:timeout?`${b.name}逃走了……`:'你倒下了……'});
  if(win){S.boss.dead=true;S.bossKills++;jlog('💀',`決戰勝利！擊敗 ${b.name}（第 ${S.bossKills} 隻）`);gain(b.xp,b.gold);sfx('lv');
   F.log.push(`🏆 勝利！<span class="gold">+${b.gold} G</span> <b style="color:var(--cyan)">+${b.xp} XP</b>`);
   if(S.boss.rematch&&S.stolen){const gg=gearById(S.stolen);giveGear(S.stolen);jlog('🛡️',`復仇成功，奪回「${gg.it[1]}」`);F.log.push(`🛡️ 奪回了 ${gg.it[1]}！`);S.stolen=null}
@@ -1109,7 +1129,7 @@ async function photoBundle(){const out={};for(const d in S.diary||{})for(const i
 
 /* ---------- v24：稱號・隱藏成就・奇遇・季節祭典・嚮導 ---------- */
 const TITLES={first:'初心者',s3:'不熄之火',s7:'七日戰士',s21:'習慣鍛造師',s66:'重生者',lv10:'獵人',lv20:'精英獵人',boss1:'弒魔者',boss4:'屠龍者',gear1:'持劍者',full3:'鋼鐵之軀',dun50:'地城行者',crit:'暴擊之子',side50:'冒險狂',login7:'全勤者',focus:'心流行者',rich:'黃金守護者',q100:'百戰老兵',hard:'自找苦吃的人',detox:'斷網修行者',
- owl:'不眠者',dawn:'黎明行者',poke:'被戳醒的人',ver:'越界者',lucky:'幸運七',marathon:'時間之主',perfect:'完美的一天',writer:'吟遊詩人',photo:'記錄者',golden:'淘金者',comeback:'浴火重生',word:'不屈者',gamble:'賭神',season:'祭典參加者',lore:'讀完傳說的人',hatch:'馴獸師',pet4:'龍騎士',epic:'寶物獵人',mapdone:'終焉踏破者',legend:'天選之人'};
+ owl:'不眠者',dawn:'黎明行者',poke:'被戳醒的人',ver:'越界者',lucky:'幸運七',marathon:'時間之主',perfect:'完美的一天',writer:'吟遊詩人',photo:'記錄者',golden:'淘金者',comeback:'浴火重生',word:'不屈者',gamble:'賭神',season:'祭典參加者',lore:'讀完傳說的人',hatch:'馴獸師',cls:'轉職者',s100:'百日重生者',pet4:'龍騎士',epic:'寶物獵人',mapdone:'終焉踏破者',legend:'天選之人'};
 const egg=k=>S.eggs&&S.eggs[k];
 const setEgg=k=>{S.eggs=S.eggs||{};if(!S.eggs[k]){S.eggs[k]=Date.now();return true}return false};
 const SECRET=[
@@ -1260,7 +1280,7 @@ function petSvg(w,big){const P=S.pet,c=petCalc();if(!P)return'';const g=rid();
 function petCheck(){const P=S.pet;if(!P)return;const c=petCalc();if(c.stage<=(P.max||0))return;const from=P.max||0;P.max=c.stage;save();
  if(from===0&&!P.sp){sfx('lv');jlog('🥚','蛋裂開了');return qModal(`<h2>[系統] 蛋裂開了</h2><div style="text-align:center">${petSvg(140)}</div><div class="bigt" style="text-align:center;font-size:20px">選擇你的夥伴</div><p style="text-align:center;margin:6px 0">${Object.values(PETS).map(p=>`<b style="color:${p.c}">${p.n}</b><small class="muted">＝${STATS[p.stat].n}</small>`).join('　')}</p><p class="muted" style="text-align:center;font-size:12px;margin:4px 0 0">選了就不能換。你通關，牠就長大；你斷掉，牠會變虛弱。</p>`,
   Object.entries(PETS).map(([k,p])=>[p.n,'btn',()=>{S.pet.sp=k;jlog('🐣',`夥伴誕生：${p.sn[0]}（${p.n}）`);checkAch();save();render();qModal(`<h2>[夥伴誕生]</h2><div style="text-align:center">${petSvg(170,1)}</div><div class="bigt" style="text-align:center">${p.sn[0]}</div><p class="muted" style="text-align:center">${STATS[p.stat].n}系任務 XP +5%，越長大越多。</p>`,[['以後請多指教','btn pri']])}]))}
- if(!P.sp)return;const p=PETS[P.sp];sfx('lv');jlog('✨',`${p.sn[from-1]||'夥伴'}進化成「${p.sn[c.stage-1]}」`);
+ if(!P.sp)return;const p=PETS[P.sp];sfx('lv');jlog('✨',`${p.sn[from-1]||'夥伴'}進化成「${p.sn[c.stage-1]}」`);setTimeout(()=>{fxSound('win');haptic(3)},300);
  qModal(`<h2>[系統] 進化</h2><div class="evo">${petSvg(170,1)}</div><div class="bigt" style="text-align:center">${p.sn[from-1]} → <span style="color:${p.c}">${p.sn[c.stage-1]}</span></div><p class="muted" style="text-align:center">${STATS[p.stat].n}系任務 XP +${c.stage*5}%</p>`,[['太帥了','btn pri',()=>{checkAch();render()}]])}
 function petLine(){const P=S.pet,c=petCalc(),t=today();if(!P)return null;
  if(!P.sp||c.stage<1){const left=Math.max(1,PSTAGE[1]-c.b);return`（蛋裡傳來心跳聲。再通關 ${left} 天就會孵化）`}
@@ -1272,7 +1292,7 @@ function petModal(){const P=S.pet,c=petCalc();if(!P)return;const p=P.sp&&PETS[P.
  <div class="petrow"><span>${PMOOD[c.mood][1]} 心情</span><b>${PMOOD[c.mood][0]}</b></div>
  <div class="petrow"><span>💞 羈絆</span><b>${c.b}${nx?` / ${nx}`:''}</b></div><div class="bar" style="margin:4px 0 10px"><i style="width:${pct}%"></i></div>
  ${p&&c.stage>=1?`<div class="petrow"><span>✨ 加成</span><b>${c.mood>0?`${STATS[p.stat].n}系 XP +${c.stage*5}%`:'虛弱中，加成消失'}</b></div>`:''}
- <p class="muted" style="font-size:12px;line-height:1.6;margin:8px 0 0">通關一天羈絆 +1，沒通關（過了補登期限）−2。羈絆夠了就進化，進化過的不會退回去。</p>`,[['摸摸牠','btn',()=>{toast(`<b>${petName()}</b>　${['蹭了蹭你的手','開心地轉圈','打了個哈欠','用頭頂你','（呼嚕呼嚕）'][Math.floor(Math.random()*5)]}`)}],['關閉','btn pri']])}
+ <p class="muted" style="font-size:12px;line-height:1.6;margin:8px 0 0">通關一天羈絆 +1，沒通關（過了補登期限）−2。羈絆夠了就進化，進化過的不會退回去。</p>`,[['摸摸牠','btn',()=>{fxSound('pet');haptic(1);toast(`<b>${petName()}</b>　${['蹭了蹭你的手','開心地轉圈','打了個哈欠','用頭頂你','（呼嚕呼嚕）'][Math.floor(Math.random()*5)]}`)}],['關閉','btn pri']])}
 
 function bagPanel(){const ids=bagIds().sort((a,b)=>{const x=S.loot[a],y=S.loot[b];return x.slot.localeCompare(y.slot)||y.rar-x.rar||y.v-x.v});
  if(!ids.length)return`<div class="panel"><div class="ptitle">[背包]<span>0/${BAG_MAX}</span></div><p class="muted" style="margin:0;font-size:13px">做任務、打小怪、打 Boss、走主線都有機會掉裝備。</p></div>`;
@@ -1286,15 +1306,15 @@ function petPanel(){const P=S.pet;if(!P)return'';const c=petCalc(),p=P.sp&&PETS[
  return`<button class="panel petp" data-pet="1"><div class="ptitle">[夥伴]<span>${PMOOD[c.mood][1]} ${PMOOD[c.mood][0]}</span></div><div class="petpr"><span>${petSvg(84)}</span><div><b style="font-size:17px;color:${p&&c.stage>=1?p.c:'#dbeafe'}">${petName()}</b><div class="muted" style="font-size:12px">羈絆 ${c.b}${c.next!=null?` / ${c.next}`:''}${p&&c.stage>=1?`・${STATS[p.stat].n}系 XP +${c.mood>0?c.stage*5:0}%`:''}</div></div></div></button>`}
 /* ---------- 主線地圖：通關一天前進一步 ---------- */
 const REGIONS=[
- {n:'晨曦之村',ic:'village',c:'#3ee08f',at:0,s:'你在晨曦之村醒來。村長說：「魔王住在終焉之塔，66 天的路。每通關一天，就能前進一步。」'},
- {n:'迷霧森林',ic:'pine-tree',c:'#22c55e',at:7,s:'霧很濃，看不清前方。但你已經學會了：看不清的時候，就先走一步。'},
- {n:'鏽蝕礦坑',ic:'mine-wagon',c:'#d97706',at:14,s:'礦坑裡堆滿被丟下的工具。很多人走到這裡就停了。你沒有。'},
- {n:'灼熱荒漠',ic:'great-pyramid',c:'#f59e0b',at:21,s:'烈日下每一步都很重。習慣最容易在這裡斷掉——撐過去，它就是你的了。'},
- {n:'永凍山脈',ic:'mountaintop',c:'#7dd3fc',at:30,s:'山頂的風很冷，但看得很遠。回頭看，你已經走了 30 天。'},
- {n:'沉沒古城',ic:'ancient-ruins',c:'#38bdf8',at:40,s:'古城石碑上刻著：「重複，就是力量。」你在旁邊刻下自己的名字。'},
- {n:'暗影沼澤',ic:'swamp',c:'#a78bfa',at:50,s:'沼澤會吞掉猶豫的人。你的腳步比以前穩多了。'},
- {n:'終焉之塔',ic:'evil-tower',c:'#ef4444',at:60,s:'塔就在眼前。魔王不是別人——是那個想放棄的自己。'}];
-const MAP_N=66,MAP_END='你推開塔頂的門，裡面只有一面鏡子。鏡子裡的人，已經不是 66 天前的你。';
+ {n:'晨曦之村',ic:'village',c:'#3ee08f',at:0,s:'你在晨曦之村醒來。村長說：「魔王住在終焉之塔，100 天的路。每通關一天，就能前進一步。」'},
+ {n:'迷霧森林',ic:'pine-tree',c:'#22c55e',at:10,s:'霧很濃，看不清前方。但你已經學會了：看不清的時候，就先走一步。'},
+ {n:'鏽蝕礦坑',ic:'mine-wagon',c:'#d97706',at:20,s:'礦坑裡堆滿被丟下的工具。很多人走到這裡就停了。你沒有。'},
+ {n:'灼熱荒漠',ic:'great-pyramid',c:'#f59e0b',at:32,s:'烈日下每一步都很重。習慣最容易在這裡斷掉——撐過去，它就是你的了。'},
+ {n:'永凍山脈',ic:'mountaintop',c:'#7dd3fc',at:45,s:'山頂的風很冷，但看得很遠。回頭看，你已經走了 45 天。'},
+ {n:'沉沒古城',ic:'ancient-ruins',c:'#38bdf8',at:60,s:'古城石碑上刻著：「重複，就是力量。」你在旁邊刻下自己的名字。'},
+ {n:'暗影沼澤',ic:'swamp',c:'#a78bfa',at:75,s:'沼澤會吞掉猶豫的人。你的腳步比以前穩多了。'},
+ {n:'終焉之塔',ic:'evil-tower',c:'#ef4444',at:90,s:'塔就在眼前。魔王不是別人——是那個想放棄的自己。'}];
+const MAP_N=PROG,MAP_END='你推開塔頂的門，裡面只有一面鏡子。鏡子裡的人，已經不是 100 天前的你。';
 function mapPos(){const t=today();let p=0,d=S.start,n=0;while(d<=t&&n<3000){if(cleared(d))p++;d=addDays(d,1);n++}return p}
 const regionOf=step=>{let r=0;REGIONS.forEach((x,i)=>{if(step>=x.at)r=i});return r};
 function mapInfo(){const pos=mapPos(),lap=Math.floor(pos/MAP_N),step=pos-lap*MAP_N,r=regionOf(step),nx=REGIONS[r+1];return{pos,lap,step,r,nx,left:nx?nx.at-step:MAP_N-step}}
@@ -1304,7 +1324,7 @@ function mapCheck(){const m=mapInfo();S.mapGot=S.mapGot||{};const K=i=>S.start+'
   qModal(`<h2>[主線] 抵達新區域</h2><div class="regart" style="--rc:${R.c}"><svg viewBox="0 0 512 512" width="120">${icoPaths(R.ic,R.c)}</svg></div><div class="bigt" style="text-align:center;color:${R.c}">${R.n}</div><p class="story">${R.s}</p><p style="text-align:center" class="gold">+${g} G　＋區域寶箱</p>`,[['打開寶箱','btn pri',()=>{dropLoot('map'+K(i),true,'區域寶箱');after()}]])}}
 function finishMap(lp){S.gold+=500;setEgg('mapdone');jlog('👑',`主線完成：踏破終焉之塔${lp?`（第 ${lp+1} 輪）`:''}`);
  qModal(`<h2>[主線] 終章</h2><div class="regart" style="--rc:#f5c451"><svg viewBox="0 0 512 512" width="120">${icoPaths('evil-tower','#f5c451')}</svg></div><p class="story">${MAP_END}</p><p style="text-align:center" class="gold">+500 G　＋傳說級寶箱機率提升</p>`,[['繼續前進','btn pri',()=>{dropLoot('mapend'+S.start+lp,true,'終章寶箱');checkAch();after()}]])}
-function vMap(){const m=mapInfo(),R=REGIONS[m.r],cols=6,W=340,gx=52,gy=64,x0=40,y0=46,rows=Math.ceil((MAP_N+1)/cols);
+function vMap(){const m=mapInfo(),R=REGIONS[m.r],cols=7,W=340,gx=44,gy=58,x0=38,y0=46,rows=Math.ceil((MAP_N+1)/cols);
  const pt=i=>{const r=Math.floor(i/cols),c=i%cols,cc=r%2?cols-1-c:c;return[x0+cc*gx,y0+r*gy]};
  let path='',nodes='',lbl='';
  for(let i=0;i<MAP_N;i++){const[a,b]=pt(i),[c2,d2]=pt(i+1),rc=REGIONS[regionOf(i)].c;path+=`<line x1="${a}" y1="${b}" x2="${c2}" y2="${d2}" stroke="${i<m.step?rc:'#1c2a44'}" stroke-width="${i<m.step?5:3}" stroke-linecap="round" ${i<m.step?'':'stroke-dasharray="2 7"'}/>`}
@@ -1314,7 +1334,7 @@ function vMap(){const m=mapInfo(),R=REGIONS[m.r],cols=6,W=340,gx=52,gy=64,x0=40,
   else nodes+=`<circle cx="${a}" cy="${b}" r="${done?6:4.5}" fill="${done?Rg.c:'#0b1120'}" stroke="${done?Rg.c:'#2a3a5c'}" stroke-width="1.5"/>`;
   if(cur){nodes+=`<g class="mme"><circle cx="${a}" cy="${b}" r="15" fill="none" stroke="#fff" stroke-width="2" opacity=".9"><animate attributeName="r" values="12;20;12" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;0;.9" dur="2s" repeatCount="indefinite"/></circle><text x="${a}" y="${b-20}" text-anchor="middle" font-size="16">🚩</text></g>`}}
  const H=y0+(rows-1)*gy+44;
- return`<div class="panel sys"><div class="ptitle">[主線] 66 天之路<span>${m.lap?`第 ${m.lap+1} 輪・`:''}第 ${m.step} / ${MAP_N} 步</span></div>
+ return`<div class="panel sys"><div class="ptitle">[主線] 100 天之路<span>${m.lap?`第 ${m.lap+1} 輪・`:''}第 ${m.step} / ${MAP_N} 步</span></div>
  <div class="mhead"><div class="mreg" style="--rc:${R.c}"><svg viewBox="0 0 512 512" width="44">${icoPaths(R.ic,R.c)}</svg></div><div><b style="color:${R.c};font-size:17px">${R.n}</b><div class="muted" style="font-size:12px">${m.nx?`再通關 ${m.left} 天抵達「${m.nx.n}」`:`再通關 ${m.left} 天登上塔頂`}</div></div></div>
  <svg viewBox="0 0 ${W} ${H}" class="mapsvg">${path}${lbl}${nodes}</svg><p class="muted" style="text-align:center;font-size:11px;margin:0">只有通關的日子會前進・點城鎮看劇情</p></div>`}
 function regionStory(k){const m=mapInfo();if(k==='end')return modal(`<h2>[塔頂]</h2><p class="story">${m.lap>0||m.step>=MAP_N?MAP_END:'？？？'}</p>`,[['關閉','btn pri']]);
@@ -1477,19 +1497,21 @@ function playFx(){if(!F||!F.fx||!F.fx.length){F&&(F.busy=false);return}
  const Q=F.fx.splice(0),host=$('#ffx'),boss=$('#fbw'),card=$('#mcard'),pb=$('#pbox');F.busy=true;card&&card.classList.add('fbusy');let t=0;
  const at=(ms,fn)=>setTimeout(()=>{try{fn()}catch(e){}},ms);
  for(const e of Q){
-  if(e.k==='intro'){at(t,()=>{fxCls(boss,'fin',900)});t+=700}
-  else if(e.k==='charge'){at(t,()=>{fxAdd(host,'<div class="beam"></div>',800);fxCls(boss,'fhit',450);fxCls(card,'fshk',400);fxNum(host,'-'+e.dmg,'big gold');fxBar('bbar',e.bTo,F.b.hp)});t+=900}
-  else if(e.k==='atk'){at(t,()=>{fxAdd(host,`<svg class="slash ${e.crit?'crit':''}" viewBox="0 0 100 100"><path d="M8 82 Q52 52 94 12"/></svg>${e.crit?sparks(10,'#f5c451'):''}`,600);fxCls(boss,'fhit',450);if(e.crit)fxCls(card,'fshk',400);fxNum(host,(e.crit?'暴擊 ':'')+'-'+e.dmg,e.crit?'big gold':'');fxBar('bbar',e.bTo,F.b.hp)});t+=650}
-  else if(e.k==='fire'){at(t,()=>{fxAdd(host,'<div class="fball"></div>',700)});at(t+420,()=>{fxAdd(host,sparks(14,'#fb923c'),700);fxCls(boss,'fhit',450);fxNum(host,'-'+e.dmg,'fire');fxBar('bbar',e.bTo,F.b.hp)});t+=900}
-  else if(e.k==='bolt'){at(t,()=>{fxAdd(host,'<svg class="bolt" viewBox="0 0 100 100"><polyline points="55,0 40,38 58,42 38,100"/></svg>',500);fxCls(card,'fflash',300);fxCls(boss,'fhit',450);fxNum(host,'-'+e.dmg,'bolt');fxBar('bbar',e.bTo,F.b.hp)});t+=750}
-  else if(e.k==='heal'){at(t,()=>{fxCls(pb,'fheal',900);fxNum(pb,'+'+e.hv,'heal',70,0);fxBar('pbar',e.pTo,F.pmax)});t+=700}
-  else if(e.k==='shield'){at(t,()=>{fxCls(pb,'fshield',900)});t+=600}
-  else if(e.k==='rage'){at(t,()=>{fxCls(pb,'frage',900)});t+=600}
-  else if(e.k==='stun'){at(t,()=>{fxNum(host,'麻痺中','stun')});t+=500}
-  else if(e.k==='boss'){at(t,()=>{fxCls(boss,e.big?'flungeB':'flunge',550)});at(t+260,()=>{fxCls(card,e.big?'fred':'fredS',450);fxCls(pb,'fshk',350);fxNum(pb,'-'+e.dmg,e.big?'hurt big':'hurt',70,0);fxBar('pbar',e.pTo,F.pmax)});t+=800}
-  else if(e.k==='win'){at(t,()=>{fxCls(boss,'fdie',1600);fxAdd(host,sparks(18,'#f5c451')+'<div class="fbanner win">VICTORY</div>',1800)});t+=900}
-  else if(e.k==='lose'){at(t,()=>{card&&card.classList.add('fgray');fxAdd(host,'<div class="fbanner lose">DEFEAT</div>',1800)});t+=900}}
- at(t,()=>{if(F)F.busy=false;card&&card.classList.remove('fbusy')})}
+  if(e.msg){const tt=t;at(tt,()=>pkSay(e.msg))}
+  if(e.k==='none'){t+=650}
+  else if(e.k==='intro'){at(t,()=>{fxCls(boss,'fin',900);fxSound('roar')});t+=700}
+  else if(e.k==='charge'){at(t,()=>{fxSound('crit');haptic(3);fxAdd(host,'<div class="beam"></div>',800);fxCls(boss,'fhit',450);fxCls(card,'fshk',400);fxNum(host,'-'+e.dmg,'big gold');fxBar('bbar',e.bTo,F.b.hp)});t+=900}
+  else if(e.k==='atk'){at(t,()=>{fxSound(e.crit?'crit':'slash');setTimeout(()=>fxSound('hit'),90);fxAdd(host,`<svg class="slash ${e.crit?'crit':''}" viewBox="0 0 100 100"><path d="M8 82 Q52 52 94 12"/></svg>${e.crit?sparks(10,'#f5c451'):''}`,600);fxCls(boss,'fhit',450);if(e.crit)fxCls(card,'fshk',400);fxNum(host,(e.crit?'暴擊 ':'')+'-'+e.dmg,e.crit?'big gold':'');fxBar('bbar',e.bTo,F.b.hp)});t+=650}
+  else if(e.k==='fire'){at(t,()=>{fxSound('fire');fxAdd(host,'<div class="fball"></div>',700)});at(t+420,()=>{fxAdd(host,sparks(14,'#fb923c'),700);fxCls(boss,'fhit',450);fxNum(host,'-'+e.dmg,'fire');fxBar('bbar',e.bTo,F.b.hp)});t+=900}
+  else if(e.k==='bolt'){at(t,()=>{fxSound('bolt');haptic(2);fxAdd(host,'<svg class="bolt" viewBox="0 0 100 100"><polyline points="55,0 40,38 58,42 38,100"/></svg>',500);fxCls(card,'fflash',300);fxCls(boss,'fhit',450);fxNum(host,'-'+e.dmg,'bolt');fxBar('bbar',e.bTo,F.b.hp)});t+=750}
+  else if(e.k==='heal'){at(t,()=>{fxSound('heal');fxCls(pb,'fheal',900);fxNum(pb,'+'+e.hv,'heal',70,0);fxBar('pbar',e.pTo,F.pmax)});t+=700}
+  else if(e.k==='shield'){at(t,()=>{fxSound('shield');fxCls(pb,'fshield',900)});t+=600}
+  else if(e.k==='rage'){at(t,()=>{fxSound('roar');fxCls(pb,'frage',900)});t+=600}
+  else if(e.k==='stun'){at(t,()=>{if(e.dmg){fxSound('hit');fxNum(host,'-'+e.dmg,e.poison?'poison':'stun');fxBar('bbar',e.bTo,F.b.hp)}});t+=750}
+  else if(e.k==='boss'){at(t,()=>{fxSound('roar');fxCls(boss,e.big?'flungeB':'flunge',550)});at(t+260,()=>{fxSound('hit');haptic(e.big?3:2);fxCls(card,e.big?'fred':'fredS',450);fxCls(pb,'fshk',350);fxNum(pb,'-'+e.dmg,e.big?'hurt big':'hurt',70,0);fxBar('pbar',e.pTo,F.pmax)});t+=800}
+  else if(e.k==='win'){at(t,()=>{fxSound('win');haptic(3);fxCls(boss,'fdie',1600);fxAdd(host,sparks(18,'#f5c451')+'<div class="fbanner win">VICTORY</div>',1800)});t+=900}
+  else if(e.k==='lose'){at(t,()=>{fxSound('lose');haptic(2);card&&card.classList.add('fgray');fxAdd(host,'<div class="fbanner lose">DEFEAT</div>',1800)});t+=900}}
+ at(t,()=>{if(F)F.busy=false;card&&card.classList.remove('fbusy');if(F&&!F.done)pkSay(`第 ${Math.min(F.turn+1,FIGHT_TURNS)} / ${FIGHT_TURNS} 回合。要怎麼做？`);const mn=$('#pkmenu');if(mn&&F&&!F.done)mn.innerHTML=pkMenu()})}
 /* 專注：蓄力圈 */
 function focusRing(){const tm=S.timer;if(!tm)return;const el=$('#fring');if(!el)return;const tot=tm.min*60e3,p=Math.max(0,Math.min(1,1-(tm.end-Date.now())/tot)),c=2*Math.PI*52;el.style.strokeDashoffset=c*(1-p);const pc=$('#fpct');if(pc)pc.textContent=Math.floor(p*100)+'%'}
 function focusStage(f,col){const c=2*Math.PI*52;return`<div class="fstg"><svg viewBox="0 0 120 120" class="fringsvg"><circle cx="60" cy="60" r="52" fill="none" stroke="#16223a" stroke-width="6"/><circle id="fring" cx="60" cy="60" r="52" fill="none" stroke="${col}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c}" transform="rotate(-90 60 60)" style="filter:drop-shadow(0 0 6px ${col})"/></svg><div class="fmon idle">${minionSvg(f,96)}</div><i class="fp" style="--c:${col};left:22%;animation-delay:0s"></i><i class="fp" style="--c:${col};left:70%;animation-delay:1.1s"></i><i class="fp" style="--c:${col};left:48%;animation-delay:2.2s"></i><div class="fpct" id="fpct">0%</div></div>`}
@@ -1521,8 +1543,118 @@ function brkTick(){const b=S.brk;if(!b)return;const left=b.end-Date.now();const 
  if(el){const s=Math.ceil(left/1e3);el.textContent=pad(Math.floor(s/60))+':'+pad(s%60)}}
 setInterval(brkTick,1000);
 
+/* ====================== v32：職業・寶可夢式 Boss 戰 ====================== */
+const CLS_LV=3,CLS_CHANGE=300;
+const CLASSES={
+ warrior:{n:'狂戰士',ic:'⚔️',stat:'STR',c:'#ff5d6c',d:'正面硬幹。攻擊力 +15%，血越少打越痛。',
+  mv:[['重斬',1,0,'slash',''],['戰吼',0,2,'rage','狂暴 3 回合，攻擊 ×1.6'],['破甲斬',1.5,3,'slash',''],['背水一戰',1.2,1,'slash','血越少傷害越高']]},
+ sage:{n:'賢者',ic:'📖',stat:'INT',c:'#4fd1ff',d:'讀過的書都是武器。法術傷害 +30%。',
+  mv:[['魔力彈',1,0,'bolt',''],['火球',1.6,3,'fire',''],['冰封',.8,2,'bolt','Boss 凍結 1 回合'],['隕石',2.4,1,'fire','']]},
+ monk:{n:'修行者',ic:'🧘',stat:'SPI',c:'#a78bfa',d:'心穩，招就穩。每回合回復 5% HP。',
+  mv:[['掌擊',1,0,'slash',''],['冥想',0,3,'heal','回 25% HP，下一擊 ×1.5'],['氣功波',1.4,3,'bolt',''],['天人合一',1.8,1,'heal','傷害＋回 40% HP']]},
+ guardian:{n:'守護者',ic:'🛡️',stat:'VIT',c:'#3ee08f',d:'睡飽吃好的人最耐打。HP +30%。',
+  mv:[['盾擊',.9,0,'slash','順便擋下 30% 傷害'],['鐵壁',0,3,'shield','2 回合傷害減半'],['反擊架勢',0,2,'shield','把下一次傷害打回去'],['聖光審判',2,1,'bolt','']]},
+ ranger:{n:'影刺客',ic:'🗡️',stat:'DIS',c:'#f5c451',d:'自律就是精準。暴擊率 +15%。',
+  mv:[['快刀',1,0,'slash',''],['影分身',0,2,'shield','閃過下一次攻擊'],['毒刃',.8,2,'slash','中毒 3 回合'],['暗殺',1.2,1,'slash','Boss 血量 35% 以下時 ×3']]}};
+const MV_LV=[1,4,8,14];
+const BASIC=[['撞擊',1,0,'slash',''],['蓄力',0,2,'rage','下一擊 ×2']];
+const topStat=()=>Object.keys(STATS).sort((a,b)=>(S.stats[b]||0)-(S.stats[a]||0))[0];
+const recCls=()=>Object.keys(CLASSES).find(k=>CLASSES[k].stat===topStat())||'warrior';
+const clsOf=()=>S.cls&&CLASSES[S.cls]?CLASSES[S.cls]:null;
+function myMoves(){const c=clsOf(),L=lvInfo(S.xp).lv;if(!c)return BASIC.map((m,i)=>({id:'b'+i,n:m[0],p:m[1],pp:m[2],fx:m[3],d:m[4]}));
+ return c.mv.map((m,i)=>({id:S.cls+i,n:m[0],p:m[1],pp:m[2],fx:m[3],d:m[4],lock:L<MV_LV[i]?MV_LV[i]:0}))}
+function clsPanel(){const c=clsOf(),L=lvInfo(S.xp).lv,r=CLASSES[recCls()];
+ if(!c)return`<div class="panel"><div class="ptitle">[職業]<span>${L<CLS_LV?`Lv.${CLS_LV} 解鎖`:'可以轉職了'}</span></div><p class="muted" style="margin:0 0 8px;font-size:13px">你目前最強的是 <b style="color:${STATS[topStat()].c}">${STATS[topStat()].n}</b>，系統推薦 <b style="color:${r.c}">${r.ic} ${r.n}</b>。</p>${L>=CLS_LV?'<button class="btn cy" id="clsPick" style="width:100%">⚔️ 轉職</button>':''}</div>`;
+ const mv=myMoves();
+ return`<div class="panel"><div class="ptitle">[職業]<span>${STATS[c.stat].n}系任務 XP +10%</span></div><div class="clsnow"><span style="color:${c.c}">${c.ic}</span><div><b style="color:${c.c}">${c.n}</b><div class="muted" style="font-size:12px">${c.d}</div></div></div>
+ <div class="mvlist">${mv.map(m=>`<div class="${m.lock?'off':''}"><b>${m.n}</b><small>${m.lock?`Lv.${m.lock} 解鎖`:m.pp?`PP ${m.pp}`:'無限'}${m.d&&!m.lock?'・'+m.d:''}</small></div>`).join('')}</div>
+ <button class="btn sm" id="clsPick" style="width:100%;margin-top:8px">更換職業（${CLS_CHANGE} G）</button></div>`}
+function clsPick(){const L=lvInfo(S.xp).lv;if(L<CLS_LV)return toast(`Lv.${CLS_LV} 才能轉職`);const rec=recCls(),chg=!!S.cls;
+ modal(`<h2>[${chg?'更換職業':'轉職'}]</h2><p class="muted" style="margin:0 0 8px;font-size:12px">依你最強的屬性 <b style="color:${STATS[topStat()].c}">${STATS[topStat()].n}</b> 推薦 ★。${chg?`換職業要 ${CLS_CHANGE} G。`:'之後也能換。'}</p>
+ <div class="clspick">${Object.entries(CLASSES).map(([k,c])=>`<button data-cls="${k}" class="${S.cls===k?'on':''}" style="--cc:${c.c}"><span>${c.ic}</span><b>${c.n}${k===rec?' ★':''}</b><small>${STATS[c.stat].n}系・${c.d}</small><i>${c.mv.map(m=>m[0]).join('・')}</i></button>`).join('')}</div>`,[['取消','btn']]);
+ $('#mcard').onclick=e=>{const b=e.target.closest('[data-cls]');if(!b)return;const k=b.dataset.cls;if(k===S.cls)return;if(chg&&S.gold<CLS_CHANGE)return toast('金幣不夠');
+  $('#modal').classList.remove('on');$('#mcard').onclick=null;if(chg)S.gold-=CLS_CHANGE;S.cls=k;const c=CLASSES[k];jlog(c.ic,`轉職為「${c.n}」`);sfx('lv');checkAch();
+  qModal(`<h2>[轉職完成]</h2><div class="bigt" style="text-align:center;color:${c.c}">${c.ic} ${c.n}</div><p class="muted" style="text-align:center">${c.d}<br>${STATS[c.stat].n}系任務 XP +10%</p><p style="text-align:center;font-size:13px">招式：${c.mv.map((m,i)=>`<b>${m[0]}</b>${MV_LV[i]>1?`<small class="muted">(Lv.${MV_LV[i]})</small>`:''}`).join('、')}</p>`,[['出發','btn pri']]);after()}}
+
+/* ---------- 寶可夢式戰鬥畫面 ---------- */
+const REG_BG=['#0f2a1c','#0d2418','#2a1c0c','#2e220c','#0c2230','#0c1f2e','#1c1430','#2a0c12'];
+function fightInit(){const c=clsOf(),p=pStats();F.cls=S.cls||null;F.pp={};myMoves().forEach(m=>{if(m.pp)F.pp[m.id]=m.pp});F.poison=0;F.dodge=0;F.counter=0;F.chg=1;F.petUsed=false;F.menu='main';
+ if(c&&S.cls==='guardian'){F.pmax=Math.round(F.pmax*1.3);F.php=F.pmax;F.sp=F.pmax}if(c&&S.cls==='warrior')F.atk=Math.round(F.atk*1.15);if(c&&S.cls==='ranger')F.crit+=.15}
+function petAssist(){const P=S.pet,c=P&&P.sp&&petCalc();return c&&c.stage>=1&&c.mood>0?{n:petName(),st:c.stage,sp:P.sp}:null}
+function drawFight(){const b=F.b,m=mapInfo(),bg=REG_BG[m.r]||REG_BG[0],c=clsOf(),pa=petAssist();
+ const fbar=(id,v,mx,cl)=>`<div class="bar fbar ${cl}" id="${id}" style="height:8px"><u style="width:${Math.max(0,v/mx*100)}%"></u><i style="width:${Math.max(0,v/mx*100)}%"></i></div>`;
+ let h=`<div class="pkb" style="--bg:${bg}"><div class="pkfoe"><div class="pkplate"><b>${b.name}</b><small>Lv.${b.t+1}</small>${fbar('bbar',F.sb,b.hp,'red')}</div></div>
+ <div class="fstage pkboss"><div id="fbw">${bossSvg(b.i,b.t,150,F.done&&F.bhp<=0&&!(F.fx&&F.fx.length))}</div><div class="ffx" id="ffx"></div></div>
+ <div class="pkme" id="pbox"><div class="pkhero">${avatarSvg(96)}${pa?`<span class="pkpet">${petSvg(46)}</span>`:''}</div><div class="pkplate me"><b>${esc(S.title&&S.ach[S.title]?TITLES[S.title]:'你')}${c?` <span style="color:${c.c}">${c.ic}</span>`:''}</b><small>Lv.${F.L}</small>${fbar('pbar',F.sp,F.pmax,'')}<div class="pkhp">${Math.max(0,F.php)} / ${F.pmax}${F.shield?' 🛡️':''}${F.rage?' 💢':''}${F.dodge?' 👥':''}${F.counter?' ↩️':''}</div></div></div></div>
+ <div class="pkbox"><div class="pkmsg" id="pkmsg">${F.done?'':`第 ${Math.min(F.turn+1,FIGHT_TURNS)} / ${FIGHT_TURNS} 回合。要怎麼做？`}</div><div class="pkmenu" id="pkmenu">${F.done?'':pkMenu()}</div></div>`;
+ if(F.done)h+=`<div class="flog">${F.log.slice(-4).map(x=>`<div>${x}</div>`).join('')}</div>`;
+ modal(h,F.done?[['結束','btn pri',()=>{F=null;render()}]]:[]);$('#mcard').classList.remove('fgray');$('#mcard').classList.add('pkcard');
+ $('#mcard').onclick=e=>{const x=e.target.closest('[data-pk]');if(!x||!F||F.done||F.busy)return;const a=x.dataset.pk;
+  if(a==='fight'||a==='bag'){F.menu=a;$('#pkmenu').innerHTML=pkMenu();return}if(a==='back'){F.menu='main';$('#pkmenu').innerHTML=pkMenu();return}
+  if(a==='run'){pkSay('Boss 戰沒辦法逃跑！');return}if(a==='pet')return fightTurn({pet:1});
+  if(a.startsWith('mv:'))return fightTurn({mv:a.slice(3)});if(a.startsWith('it:'))return fightTurn({it:a.slice(3)})};
+ if(F.fx&&F.fx.length)playFx();else{fxBar('bbar',F.bhp,b.hp);fxBar('pbar',F.php,F.pmax)}F.sb=F.bhp;F.sp=F.php}
+function pkMenu(){const pa=petAssist();
+ if(F.menu==='fight')return`<div class="pkgrid">${myMoves().map(m=>{const left=m.pp?F.pp[m.id]:null,off=m.lock||(m.pp&&!left);return`<button data-pk="mv:${m.id}" ${off?'disabled':''}><b>${m.n}</b><small>${m.lock?`Lv.${m.lock}`:m.pp?`PP ${left}/${m.pp}`:'—'}</small></button>`}).join('')}</div><button class="pkback" data-pk="back">‹ 返回</button>`;
+ if(F.menu==='bag'){const inv=SPELLS.filter(s=>(S.items[s.id]||0)>0);return`<div class="pkgrid">${inv.length?inv.map(s=>`<button data-pk="it:${s.id}" ${F.used>=SPELL_MAX?'disabled':''}><b>${s.ic} ${s.n}</b><small>×${S.items[s.id]}</small></button>`).join(''):'<p class="muted" style="grid-column:1/-1;margin:6px 0;font-size:13px">背包是空的。去商店做魔法。</p>'}</div><button class="pkback" data-pk="back">‹ 返回　<small class="muted">道具 ${F.used}/${SPELL_MAX}</small></button>`}
+ return`<div class="pkgrid main"><button data-pk="fight" class="pk-f">⚔️ 戰鬥</button><button data-pk="bag" class="pk-b">🎒 道具</button><button data-pk="pet" class="pk-p" ${!pa||F.petUsed?'disabled':''}>🐾 夥伴</button><button data-pk="run" class="pk-r">🏃 逃跑</button></div>`}
+function pkSay(t){const el=$('#pkmsg');if(!el)return;el.textContent='';let i=0;clearInterval(pkSay.t);pkSay.t=setInterval(()=>{el.textContent=t.slice(0,++i);if(i>=t.length)clearInterval(pkSay.t)},22)}
+function fightTurn(a){if(!F||F.busy||F.done)return;haptic(1);const roll=()=>.85+Math.random()*.3,c=clsOf(),B=F.b.name,sageX=S.cls==='sage'?1.3:1;let dmg=0,crit=false;
+ const hit=(pw,fx,name,magic)=>{crit=Math.random()<F.crit;let d=F.atk*pw*(F.rage?1.6:1)*F.chg*roll()*(crit?2:1)*(magic?sageX:1);F.chg=1;d=Math.round(d);F.bhp-=d;fxEv({k:fx==='fire'?'fire':fx==='bolt'?'bolt':'atk',dmg:d,crit,bTo:Math.max(0,F.bhp),msg:`${name}！${crit?'會心一擊！':''}造成 ${d} 點傷害`});F.log.push(`${name}：${d}${crit?'（暴擊）':''}`);return d};
+ if(a.mv){const m=myMoves().find(x=>x.id===a.mv);if(!m||m.lock)return;if(m.pp){if(!F.pp[m.id])return;F.pp[m.id]--}const mg=m.fx==='fire'||m.fx==='bolt';
+  if(m.p>0){let pw=m.p;if(m.n==='背水一戰')pw*=1+(1-F.php/F.pmax)*2;if(m.n==='暗殺'&&F.bhp/F.b.hp<=.35)pw*=3;if(m.n==='快刀'){F.crit+=.15}hit(pw,m.fx,`你使出「${m.n}」`,S.cls==='sage'&&mg);if(m.n==='快刀')F.crit-=.15}
+  else fxEv({k:m.fx==='shield'?'shield':m.fx==='rage'?'rage':'none',msg:`你使出「${m.n}」！`});
+  if(m.n==='戰吼')F.rage=3;if(m.n==='蓄力'){F.chg=2}if(m.n==='冰封')F.stun=1;if(m.n==='毒刃')F.poison=3;if(m.n==='影分身')F.dodge=1;if(m.n==='鐵壁')F.shield=2;if(m.n==='反擊架勢')F.counter=1;if(m.n==='盾擊')F.guard=1;
+  if(m.n==='冥想'||m.n==='天人合一'){const hv=Math.round(F.pmax*(m.n==='冥想'?.25:.4));F.php=Math.min(F.pmax,F.php+hv);if(m.n==='冥想')F.chg=1.5;fxEv({k:'heal',hv,pTo:F.php,msg:`回復了 ${hv} HP`})}
+  }
+ else if(a.it){const sp=SPELLS.find(s=>s.id===a.it);if(!sp||!S.items[a.it]||F.used>=SPELL_MAX)return;S.items[a.it]--;F.used++;
+  if(a.it==='fire'){dmg=Math.round((60+F.L*4)*sageX);F.bhp-=dmg;fxEv({k:'fire',dmg,bTo:Math.max(0,F.bhp),msg:`使用火球術！造成 ${dmg} 點傷害`})}
+  if(a.it==='bolt'){dmg=Math.round((30+F.L*2)*sageX);F.bhp-=dmg;F.stun=1;fxEv({k:'bolt',dmg,bTo:Math.max(0,F.bhp),msg:`使用雷擊！${B}麻痺了`})}
+  if(a.it==='heal'){const hv=60+F.L*3;F.php=Math.min(F.pmax,F.php+hv);fxEv({k:'heal',hv,pTo:F.php,msg:`使用治癒術，回復 ${hv} HP`})}
+  if(a.it==='shield'){F.shield=2;fxEv({k:'shield',msg:'護盾展開！2 回合傷害減半'})}
+  if(a.it==='rage'){F.rage=3;fxEv({k:'rage',msg:'狂暴！3 回合攻擊力提升'})}F.log.push(`${sp.ic} ${sp.n}`)}
+ else if(a.pet){const pa=petAssist();if(!pa||F.petUsed)return;F.petUsed=true;const d=Math.round((20+pa.st*25)*roll());F.bhp-=d;fxEv({k:pa.sp==='dragon'?'fire':pa.sp==='fox'?'bolt':'atk',dmg:d,bTo:Math.max(0,F.bhp),msg:`${pa.n}衝了出去！造成 ${d} 點傷害`});
+  if(pa.sp==='bird'){const hv=Math.round(F.pmax*.15);F.php=Math.min(F.pmax,F.php+hv);fxEv({k:'heal',hv,pTo:F.php,msg:`${pa.n}的羽毛治癒了你 ${hv} HP`})}F.log.push(`🐾 ${pa.n}：${d}`);fxSound('pet')}
+ if(F.rage&&a.mv&&(myMoves().find(x=>x.id===a.mv)||{}).p>0)F.rage--;
+ if(F.poison>0&&F.bhp>0){const pd=Math.round(F.b.hp*.05);F.bhp-=pd;F.poison--;fxEv({k:'stun',msg:`${B}受到毒的傷害 ${pd}`,dmg:pd,bTo:Math.max(0,F.bhp),poison:1})}
+ if(F.bhp<=0)return endFight(true);
+ if(F.stun){F.stun=0;fxEv({k:'stun',msg:`${B}動彈不得！`})}
+ else{const big=(F.turn+1)%3===0;let bd=Math.round(F.bs.atk*(big?1.8:1)*roll());const atkName=big?`${B}放出大招！`:`${B}發動攻擊！`;
+  if(F.dodge){F.dodge=0;fxEv({k:'stun',msg:`${atkName}……但打中的是分身！`})}
+  else{if(F.shield){bd=Math.round(bd/2);F.shield--}if(F.guard){bd=Math.round(bd*.7);F.guard=0}F.php-=bd;fxEv({k:'boss',dmg:bd,big,pTo:Math.max(0,F.php),msg:`${atkName}你受到 ${bd} 點傷害`});
+   if(F.counter){F.counter=0;F.bhp-=bd*2;fxEv({k:'atk',dmg:bd*2,bTo:Math.max(0,F.bhp),msg:`反擊！把 ${bd*2} 點傷害打回去`});if(F.bhp<=0)return endFight(true)}}
+  F.log.push(`${B}：${bd}`)}
+ if(S.cls==='monk'&&F.php>0){const hv=Math.round(F.pmax*.05);F.php=Math.min(F.pmax,F.php+hv);fxEv({k:'heal',hv,pTo:F.php,msg:`調息，回復 ${hv} HP`})}
+ F.turn++;F.menu='main';if(F.php<=0)return endFight(false);if(F.turn>=FIGHT_TURNS)return endFight(false,true);drawFight()}
+
+/* ---------- v33：音效・震動・通知卡 ---------- */
+// 合成音效（不用下載檔案）：揮砍、打擊、火、雷、治癒、Boss 咆哮、夥伴、勝利、失敗
+function fxSound(type){if(!S||!S.sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const t0=AC.currentTime,out=AC.createGain();out.gain.value=.5;out.connect(AC.destination);
+ const noise=(dur,f0,f1,q,vol,type2,delay)=>{const t=t0+(delay||0),n=AC.createBufferSource(),b=AC.createBuffer(1,Math.max(1,AC.sampleRate*dur),AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;n.buffer=b;
+  const f=AC.createBiquadFilter();f.type=type2||'bandpass';f.Q.value=q||1;f.frequency.setValueAtTime(f0,t);f.frequency.exponentialRampToValueAtTime(f1,t+dur);const g=AC.createGain();g.gain.setValueAtTime(vol||.4,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);n.connect(f).connect(g).connect(out);n.start(t);n.stop(t+dur)};
+ const tone=(f0,f1,dur,wave,vol,delay)=>{const t=t0+(delay||0),o=AC.createOscillator(),g=AC.createGain();o.type=wave||'sine';o.frequency.setValueAtTime(f0,t);o.frequency.exponentialRampToValueAtTime(Math.max(20,f1),t+dur);g.gain.setValueAtTime(vol||.2,t);g.gain.exponentialRampToValueAtTime(.001,t+dur);o.connect(g).connect(out);o.start(t);o.stop(t+dur)};
+ ({slash:()=>{noise(.16,5000,900,2,.5)},
+  crit:()=>{noise(.18,7000,800,2,.6);tone(1400,700,.12,'square',.08,.02);noise(.22,300,60,1,.6,'lowpass',.08)},
+  hit:()=>{noise(.18,260,50,1,.7,'lowpass');tone(140,50,.15,'sine',.35)},
+  fire:()=>{noise(.45,300,2500,.8,.45,'bandpass');noise(.3,800,120,1,.5,'lowpass',.32)},
+  bolt:()=>{for(let i=0;i<4;i++)noise(.05,6000,2000,3,.5,'highpass',i*.04);tone(90,40,.3,'sawtooth',.15,.05)},
+  heal:()=>{[784,988,1175,1568].forEach((f,i)=>tone(f,f,.25,'sine',.12,i*.07))},
+  shield:()=>{tone(400,800,.25,'triangle',.18);tone(600,1200,.25,'triangle',.1,.05)},
+  roar:()=>{tone(110,55,.6,'sawtooth',.22);noise(.6,600,150,.7,.35,'bandpass')},
+  pet:()=>{tone(1200,1800,.08,'sine',.15);tone(1500,2200,.08,'sine',.15,.1)},
+  win:()=>{[523,659,784,1047,1319].forEach((f,i)=>tone(f,f,.22,'square',.07,i*.1))},
+  lose:()=>{[392,330,262,196].forEach((f,i)=>tone(f,f*.97,.3,'triangle',.12,i*.18))},
+  alarm:()=>{[0,.25,.5].forEach(d=>tone(880,880,.15,'square',.08,d))}})[type]()}catch(e){}}
+// 震動：Android 用 vibrate；iPhone 不支援 vibrate，用 iOS 18 開關元件的觸覺回饋
+let hapEl=null;
+function haptic(n){if(!S||S.haptic===false)return;n=n||1;try{if(navigator.vibrate){navigator.vibrate(n===1?20:Array.from({length:n*2-1},(_,i)=>i%2?40:30));return}
+ if(!hapEl){hapEl=document.createElement('label');hapEl.style.cssText='position:fixed;left:-99px;top:-99px;opacity:0;pointer-events:none';hapEl.innerHTML='<input type="checkbox" switch>';document.body.appendChild(hapEl)}
+ for(let i=0;i<n;i++)setTimeout(()=>{try{hapEl.click()}catch(e){}},i*90)}catch(e){}}
+// 重要訊息：彈出卡片，按 × 或「繼續」關掉
+function notice(icon,title,body,cls){qModal(`<button class="mx" data-m="0">×</button><div class="ntc ${cls||''}"><div class="ntci">${icon}</div><div class="ntct">${title}</div>${body?`<div class="ntcb">${body}</div>`:''}</div>`,[['繼續','btn pri']])}
+
 /* ---------- UI 基礎 ---------- */
-function toast(h,c=''){const box=$('#toasts');while(box.children.length>=3)box.firstChild.remove();const el=document.createElement('div');el.className='toast '+c;el.innerHTML=h;box.appendChild(el);setTimeout(()=>el.remove(),2600)}
+function toast(h,c=''){const box=$('#toasts');while(box.children.length>=3)box.firstChild.remove();const el=document.createElement('div');el.className='toast '+c;el.innerHTML=h;el.onclick=()=>el.remove();box.appendChild(el);setTimeout(()=>el.remove(),c==='crit'?5000:4200)}
 let mActs=[];
 function modal(html,acts){mActs=acts||[['OK','btn pri']];$('#mcard').onclick=null;
  $('#mcard').innerHTML=html+'<div class="acts">'+mActs.map((a,i)=>`<button class="${a[1]}" data-m="${i}">${a[0]}</button>`).join('')+'</div>';$('#modal').classList.add('on')}
@@ -1536,11 +1668,11 @@ const tag=s=>`<span class="tag" style="color:${(STATS[s]||STATS.SPI).c};border-c
 function vToday(){const tt=S.ttab||'day';return tSeg()+(tt==='week'?vWeek():tt==='month'?vMonth():vToday0())}
 function vToday0(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)+1,st=streak(),L=dayLog(D),dc=doneCount(D),nd=need(D),act=actives(D);
  const q=QUOTES[((dayNum(t)%QUOTES.length)+QUOTES.length)%QUOTES.length];
- let h=`<div class="panel sys"><div class="ptitle">[RESET PROGRAM]<span>${dn>66?'第 '+Math.ceil(dn/66)+' 輪':'66 天計畫'}</span></div>
- <div class="day"><div class="big">DAY ${dn>66?((dn-1)%66)+1:dn}<small> / 66</small></div><div class="grow"></div><div style="text-align:right"><div style="font:800 24px var(--mono);color:${dc>=nd?'var(--cyan)':'var(--text)'}">${dc}/${act.length}</div><div class="muted">達標需 ${nd}</div></div></div>
+ let h=`<div class="panel sys"><div class="ptitle">[RESET PROGRAM]<span>${dn>PROG?'第 '+Math.ceil(dn/PROG)+' 輪':dn<=0?'新手村・暖身週':PROG+' 天計畫'}</span></div>
+ <div class="day"><div class="big">${dn<=0?`暖身<small> 還有 ${1-dn} 天</small>`:`DAY ${dn>PROG?((dn-1)%PROG)+1:dn}<small> / ${PROG}</small>`}</div><div class="grow"></div><div style="text-align:right"><div style="font:800 24px var(--mono);color:${dc>=nd?'var(--cyan)':'var(--text)'}">${dc}/${act.length}</div><div class="muted">達標需 ${nd}</div></div></div>
  <div class="bar" style="margin-top:10px"><i style="width:${nd?Math.min(100,dc/nd*100):100}%"></i></div>
  <div class="chips"><span class="chip hot">🔥 連續 ${st} 天</span><span class="chip">📅 簽到 ${S.login.streak||0} 天</span>${(m=>`<button class="chip" data-gomap="1" style="color:${REGIONS[m.r].c};border-color:${REGIONS[m.r].c}55">🗺️ ${REGIONS[m.r].n} ${m.step}/${MAP_N}</button>`)(mapInfo())}${season()?`<span class="chip" style="color:var(--gold);border-color:#5a4a18">${season()[2]} ${season()[3]}</span>`:''}${buffOn('x')||buffOn('crit')?`<span class="chip" style="color:var(--cyan)">${esc(S.buff.n)}</span>`:''}${S.chal&&S.chal.d===t&&!S.chal.paid?`<span class="chip" style="color:#e6d5b0;border-color:#5a4a30">📜 委託：${esc((QUESTS.find(x=>x.id===S.chal.q)||{}).name||'')}精英</span>`:''}${!(S.diary&&S.diary[t]&&(S.diary[t].text||'').trim())&&new Date().getHours()>=18&&!viewY?'<button class="chip" data-gotab="log" onclick="S.jday=null" style="color:#e6d5b0;border-color:#5a4a30">✎ 今天還沒寫日誌</button>':''}${yMissed()&&!cleared(t)?'<span class="chip" style="color:var(--gold);border-color:#5a4a18">⚠️ 昨天沒過，今天別再錯過</span>':''}${S.hard?'<span class="chip" style="color:var(--red);border-color:#552030">😈 硬核</span>':''}</div>
- ${dn<=0?'<p class="quote" style="color:var(--gold)">今天是暖身日，任務照做、XP 照拿，明天正式 DAY 1</p>':`<button class="petline" data-pet="1"><span class="petmini">${petSvg(52)}</span><span class="bubble">${esc((h=>h>=1&&h<4)(new Date().getHours())?npcLine():petLine()||npcLine())}</span></button>`}</div>`+(viewY?'':encCard());
+ ${dn<=0?`<p class="quote" style="color:var(--gold)">新手村暖身週：任務照做、XP 照拿，不算連續和主線。週一正式 DAY 1</p>`:`<button class="petline" data-pet="1"><span class="petmini">${petSvg(52)}</span><span class="bubble">${esc((h=>h>=1&&h<4)(new Date().getHours())?npcLine():petLine()||npcLine())}</span></button>`}</div>`+(viewY?'':encCard());
  const pp=pendingPen();
  if(pp.length)h+=`<div class="panel pen"><div class="ptitle">[懲罰任務]<span>完成前商店鎖定</span></div>${pp.map(p=>`<button class="q" data-pen="${p.id}"><span class="box"></span><span class="nm">${esc(p.text)}<div class="muted">${p.date.slice(5)} 失敗的代價</div></span></button>`).join('')}</div>`;
  h+=`<div class="panel sys"><div class="ptitle"><span style="display:flex;gap:6px"><button class="btn sm ${viewY?'':'cy'}" data-day="t">今天</button><button class="btn sm ${viewY?'cy':''}" data-day="y">昨天（補登）</button></span><span>${D.slice(5).replace('-','/')} 週${WD[parse(D).getDay()]}</span></div>
@@ -1555,8 +1687,8 @@ function vToday0(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t
  if(!viewY)h+=todayTodos(t);
  h+=`<div class="panel bonus"><div class="ptitle" style="color:var(--gold)">[隨機任務]<span>每天 3 個・不影響通關</span></div>`+sidesOf(D).map(i=>{const s=SIDE[i],d=L.side[i];return`<div class="q ${d?'done':''}"><button class="box" data-side="${i}">${d?'✓':''}</button><button class="nm" data-info="s:${i}"><span class="qn">${esc(s[0])}</span></button>${tag(s[1])}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+15'}</span></div>`}).join('')+'</div>';
  h+=vExtra(D);
- h+=`<div class="panel"><div class="ptitle">[66 天紀錄]<span>亮 = 通關</span></div><div class="heat">`;
- for(let i=0;i<66;i++){const d=addDays(S.start,i),c=diff(d,t);let cl='';
+ h+=`<div class="panel"><div class="ptitle">[${PROG} 天紀錄]<span>亮 = 通關</span></div><div class="heat">`;
+ for(let i=0;i<PROG;i++){const d=addDays(S.start,i),c=diff(d,t);let cl='';
   if(c===0)cl='now '+(cleared(d)?'ok':doneCount(d)?'part':'');else if(c>0)cl=cleared(d)?'ok':doneCount(d)?'part':'miss';h+=`<i class="${cl}"></i>`}
  return h+'</div></div>'}
 
@@ -1661,7 +1793,7 @@ function vMe(){const L=lvInfo(S.xp),r=rankOf(L.lv),nx=RANKS.find(x=>x[0]>L.lv);
  <div class="pw">戰力 <b>${power()}</b></div><p class="muted" style="margin:4px 0 10px">${nx?`Lv.${nx[0]} 晉升 ${nx[1]} 級`:'已達最高階級'}</p>
  <div class="eqrow">${['weapon','armor','acc'].map(k=>{const g=eqItem(k);return`<div><span>${g?gearIcon(k,g.tier):'—'}</span><small>${GEAR[k].n}</small>${gearName(g)}</div>`}).join('')}</div>
  ${radar()}<div class="stats">${Object.keys(STATS).map(k=>`<div><b style="color:${STATS[k].c}">${S.stats[k]||0}</b><span class="muted">${STATS[k].n}</span></div>`).join('')}</div></div>`;
- h+=petPanel()+realData()+focusStats()+scrChart()+rates();
+ h+=petPanel()+clsPanel()+realData()+focusStats()+scrChart()+rates();
  h+=`<div class="panel"><div class="ptitle">[戰績]</div><div class="stats" style="grid-template-columns:repeat(4,1fr)"><div><b>${S.questCount}</b><span class="muted">任務</span></div><div><b>${S.best||0}</b><span class="muted">最佳連續</span></div><div><b>${S.bossKills}</b><span class="muted">Boss</span></div><div><b>${S.crits}</b><span class="muted">暴擊</span></div></div></div>`;
  const an=ACH.filter(a=>S.ach[a[0]]).length,sn=SECRET.filter(a=>S.ach[a[0]]).length;
  h+=`<div class="panel"><div class="ptitle">[成就・稱號]<span>${an}/${ACH.length}</span></div><p class="muted" style="margin:-4px 0 8px;font-size:12px">點已解鎖的成就，裝上稱號${S.title&&S.ach[S.title]?`・目前：<b style="color:var(--gold)">${TITLES[S.title]}</b>`:''}</p><div class="ach">${ACH.map(a=>`<button data-title="${a[0]}" class="${S.ach[a[0]]?'':'off'} ${S.title===a[0]?'eqt':''}"><b>${a[1]}</b>${a[2]}<div class="muted" style="font-size:10px;margin-top:2px">${a[3]}</div></button>`).join('')}</div>
@@ -1674,6 +1806,7 @@ function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務・獎�
  h+=`<div class="panel"><div class="ptitle">[模式]</div>
  <div class="sw"><div><b>😈 硬核模式</b><div class="muted">沒通關扣 50G＋懲罰任務</div></div><button class="tog ${S.hard?'on':''}" id="tHard"></button></div>
  <div class="sw"><div><b>🔊 音效</b></div><button class="tog c ${S.sound?'on':''}" id="tSnd"></button></div>
+ <div class="sw"><div><b>📳 震動</b><div class="muted">iPhone 要 iOS 18 以上</div></div><button class="tog c ${S.haptic!==false?'on':''}" id="tHap"></button></div>
  <div class="sw"><div><b>🌙 一天從幾點開始</b><div class="muted">凌晨勾的任務算前一天</div></div><select id="dayStart" style="width:90px">${[0,2,3,4,5,6].map(x=>`<option value="${x}" ${S.dayStart===x?'selected':''}>${pad(x)}:00</option>`).join('')}</select></div>
  <div class="sw"><div><b>🔴 圖示顯示剩幾項</b></div><button class="tog c ${S.badge?'on':''}" id="tBadge"></button></div></div>
  <div class="panel ${bkDays()>=7?'pen':''}"><div class="ptitle">[備份]<span>${S.lastBackup?'上次備份：'+(bkDays()===0?'今天':bkDays()+' 天前'):'還沒備份過'}</span></div>
@@ -1683,7 +1816,7 @@ function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務・獎�
  <input type="file" id="rsInput" accept=".json,application/json,text/plain" class="hide">
  <textarea id="bk" class="hide" style="margin-top:8px"></textarea><button class="btn sm pri hide" id="impGo" style="margin-top:6px;width:100%">確認匯入</button></div>
  <p class="muted" data-ver="1" style="text-align:center;font:12px var(--mono);margin:6px 0 4px;user-select:none">目前版本 ${VER}</p><p class="muted" style="text-align:center;font-size:11px;margin:0 0 12px">圖示：game-icons.net（Lorc、Delapouite、Cathelineau、Caro Asercion），CC BY 3.0</p>
- <div class="panel"><div class="ptitle" style="color:var(--red)">[危險區]</div><div class="row"><button class="btn sm grow" id="restart">重開 66 天（保留等級）</button><button class="btn sm red grow" id="wipe">全部清空</button></div></div>`;
+ <div class="panel"><div class="ptitle" style="color:var(--red)">[危險區]</div><div class="row"><button class="btn sm grow" id="restart">重開 100 天（保留等級）</button><button class="btn sm red grow" id="wipe">全部清空</button></div></div>`;
  return h}
 
 const VIEWS={today:vToday,battle:vBattle,shop:vShop,me:vMe,log:vLog,set:vSet};
@@ -1745,6 +1878,8 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-tt],[da
   case'pTest':return pushLocalTest();
   case'pPrev':return pushPreview();
   case'tSet':return timerSetup();
+  case'clsPick':return clsPick();
+  case'tHap':S.haptic=S.haptic===false;save();if(S.haptic)haptic(2);return render();
   case'brkEnd':S.brk=null;timerCancel();save();return render();
   case'pCfg':return showPushCfg();
   case'todoAdd':{const v=$('#todotx').value,dd=$('#todod').value;return todoAdd(v,dd||null)}
@@ -1764,7 +1899,7 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-tt],[da
   case'exp':{S.lastBackup=Date.now();save();const t=$('#bk');t.classList.remove('hide');$('#impGo').classList.add('hide');t.value=JSON.stringify(S);t.select();try{navigator.clipboard.writeText(t.value).then(()=>toast('<b>已複製</b>　貼到備忘錄存起來'),()=>toast('請手動複製下面的文字'))}catch(err){toast('請手動複製下面的文字')}return}
   case'imp':{const t=$('#bk');t.classList.remove('hide');t.value='';t.placeholder='把備份文字貼在這';$('#impGo').classList.remove('hide');return}
   case'impGo':try{const o=JSON.parse($('#bk').value);if(!o.log)throw 0;return restoreData(o);localStorage.setItem(KEY,JSON.stringify(o));load();save();toast('<b>匯入成功</b>');render()}catch(err){toast('格式不對，確認有整段貼上')}return;
-  case'restart':return modal('<h2>[重開計畫]</h2><div class="bigt">從 DAY 1 重新開始？</div><p class="muted">等級、金幣、裝備、成就保留，66 天進度歸零。</p>',[['取消','btn'],['重開','btn pri',()=>{S.start=today();S.lastClosed=null;S.penalties=[];save();render()}]]);
+  case'restart':return modal('<h2>[重開計畫]</h2><div class="bigt">從 DAY 1 重新開始？</div><p class="muted">等級、金幣、裝備、成就保留，100 天進度歸零。</p>',[['取消','btn'],['重開','btn pri',()=>{S.start=today();S.lastClosed=null;S.penalties=[];save();render()}]]);
   case'wipe':return modal('<h2>[警告]</h2><div class="bigt" style="color:var(--red)">全部清空？</div><p class="muted">無法復原。建議先匯出備份。</p>',[['取消','btn'],['清空','btn red',()=>{S=defaults();S.seen=1;save();render()}]]);
  }});
 $('#view').addEventListener('input',e=>{if(e.target.id==='fmin'){S.fmin=+e.target.value;fUpd()}});
@@ -1775,7 +1910,7 @@ $('#view').addEventListener('change',e=>{if(e.target.id==='jsys'){S.jsys=e.targe
 
 /* ---------- 計時 ---------- */
 function tick(){const tm=S.timer;if(!tm)return;const left=tm.end-Date.now();
- if(left<=0){S.timer=null;S.maxFocus=Math.max(S.maxFocus||0,tm.min);const f0=dun().floor;const t=today(),fc=FCATS[tm.cat||'study'],L0=dayLog(t),combo=1+Math.min(3,L0.focus.length)*.2,q=fTask(tm.cat||'study',t);S.focusCount++;
+ if(left<=0){S.timer=null;fxSound('crit');haptic(3);S.maxFocus=Math.max(S.maxFocus||0,tm.min);const f0=dun().floor;const t=today(),fc=FCATS[tm.cat||'study'],L0=dayLog(t),combo=1+Math.min(3,L0.focus.length)*.2,q=fTask(tm.cat||'study',t);S.focusCount++;
   const qid=FQ[tm.cat||'study'],qq=qid&&QUESTS.find(x=>x.id===qid);L0.mins=L0.mins||{};
   if(qq&&activeOn(qq,t)){const dd=L0.done[qid];L0.mins[qid]=(L0.mins[qid]!=null?L0.mins[qid]:(dd&&dd.amt||0))+tm.min}
   const cum=qq?L0.mins[qid]||tm.min:tm.min;
@@ -1797,7 +1932,7 @@ setInterval(()=>{if(today()!==lastDay){lastDay=today();closeDays();render();chec
 document.addEventListener('visibilitychange',()=>{try{navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r&&r.update())}catch(e){}if(!document.hidden&&S.seen){closeDays();bossInfo();render();if(!$('#modal').classList.contains('on'))boot()}});
 
 /* ---------- 啟動 ---------- */
-if(!S.journal){S.journal=[];jlog('🌅','冒險開始。66 天後，成為更好的自己。')}
+if(!S.journal){S.journal=[];jlog('🌅','冒險開始。100 天後，成為更好的自己。')}
 if(S.bossKills===undefined)S.bossKills=0;S.chap=S.chap||{};if(S.boss.week&&S.chap[S.boss.week]==null&&S.boss.idx!==undefined)S.chap[S.boss.week]=S.boss.idx;
 {const ON=['怠惰之王','無限滑動獸','拖延巨像','宵夜惡龍','熬夜幽靈','藉口魔偶','沙發吸血鬼'],MN=['墮夢君主','藍屏巨蛇','明日巨像','暴食炎龍','不眠亡靈','千面傀儡師','沙發伯爵'];
  for(const k in S.chap){const v=S.chap[k];if(typeof v==='string'){let i=ON.indexOf(v);if(i<0)i=MN.indexOf(v);if(i<0)i=BOSS.findIndex(b=>b.n===v);S.chap[k]=i<0?null:i}}
@@ -1805,8 +1940,8 @@ if(S.bossKills===undefined)S.bossKills=0;S.chap=S.chap||{};if(S.boss.week&&S.cha
 dun();migrateDiary();petInit();pruneLootKeys();closeDays();bossInfo();checkAch();save();render();updBadge();
 try{if('serviceWorker'in navigator&&location.protocol==='https:'&&!/claude/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
 function boot(){try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
- {const h=new Date().getHours();if(h>=1&&h<4&&S.seen){const f=setEgg('owl');setTimeout(()=>toast(`<b>[系統] 偵測到熬夜</b>　${f?'獲得稱號「不眠者」……但快去睡。':'快去睡。'}`,'crit'),2500);checkAch()}
-  const se=season();if(se&&S.seen&&S.seasonSeen!==today()){S.seasonSeen=today();if(setEgg('season'))checkAch();jlog(se[2],`${se[3]}開始！${se[4]}`);setTimeout(()=>toast(`<b>${se[2]} ${se[3]}</b>　${se[4]}`,'crit'),3000);save()}}
+ {const h=new Date().getHours();if(h>=1&&h<4&&S.seen){const f=setEgg('owl');setTimeout(()=>{fxSound('alarm');haptic(3);notice('🦉','[系統] 偵測到熬夜',`現在 ${new Date().getHours()} 點了。睡覺也是任務。<br>${S.pet&&S.pet.sp?esc(petName())+'已經睡著了，':''}放下手機，明天再戰。`,'red')},2500);checkAch()}
+  const se=season();if(se&&S.seen&&S.seasonSeen!==today()){S.seasonSeen=today();if(setEgg('season'))checkAch();jlog(se[2],`${se[3]}開始！${se[4]}`);setTimeout(()=>notice(se[2],`${se[3]}開始了`,se[4],'gold'),3000);save()}}
 if(S.pendingMsg){const h=S.pendingMsg;S.pendingMsg=null;save();sfx('bad');modal(h,[['可惡','btn red',()=>{if(!checkLogin(askScreen))askScreen()}]]);return}
  if(!checkLogin(()=>{askScreen()}))askScreen();setTimeout(()=>{if(!$('#modal').classList.contains('on'))askBackup()},1500);setTimeout(()=>{petCheck();mapCheck();save();render()},1000)}
 if(!S.seen)modal(`<h2>[系統] 玩家覺醒</h2><div style="text-align:center">${avatarSvg(220)}</div><div class="bigt" style="text-align:center">歡迎來到 RESET</div><p class="muted" style="line-height:1.7">每天完成 75% 任務 = 通關，錯過一天不會斷，連續兩天才會。<br>有些任務分迷你／標準／精英，狀態差做迷你也算。<br>任務 → XP 升級、金幣買裝備和技能；你練什麼，房間和角色就長成什麼樣。<br>平日打地城小怪收集素材、做魔法；週六日跟 Boss 決戰，打贏換更強的，打輸會被搶東西。<br>有上班的日子記得切「有班」。</p>`,[['開始','btn pri',()=>{S.seen=1;save();boot()}]]);
