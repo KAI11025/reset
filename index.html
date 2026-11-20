@@ -436,7 +436,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v33・11/21 04:30';
+const VER='v34・11/21 03:40';
 const PROG=100;
 'use strict';
 /* =====================================================================
@@ -1591,13 +1591,13 @@ function drawFight(){const b=F.b,m=mapInfo(),bg=REG_BG[m.r]||REG_BG[0],c=clsOf()
  modal(h,F.done?[['結束','btn pri',()=>{F=null;render()}]]:[]);$('#mcard').classList.remove('fgray');$('#mcard').classList.add('pkcard');
  $('#mcard').onclick=e=>{const x=e.target.closest('[data-pk]');if(!x||!F||F.done||F.busy)return;const a=x.dataset.pk;
   if(a==='fight'||a==='bag'){F.menu=a;$('#pkmenu').innerHTML=pkMenu();return}if(a==='back'){F.menu='main';$('#pkmenu').innerHTML=pkMenu();return}
-  if(a==='run'){pkSay('Boss 戰沒辦法逃跑！');return}if(a==='pet')return fightTurn({pet:1});
+  if(a==='guard')return fightTurn({guard:1});if(a==='pet')return fightTurn({pet:1});
   if(a.startsWith('mv:'))return fightTurn({mv:a.slice(3)});if(a.startsWith('it:'))return fightTurn({it:a.slice(3)})};
  if(F.fx&&F.fx.length)playFx();else{fxBar('bbar',F.bhp,b.hp);fxBar('pbar',F.php,F.pmax)}F.sb=F.bhp;F.sp=F.php}
 function pkMenu(){const pa=petAssist();
  if(F.menu==='fight')return`<div class="pkgrid">${myMoves().map(m=>{const left=m.pp?F.pp[m.id]:null,off=m.lock||(m.pp&&!left);return`<button data-pk="mv:${m.id}" ${off?'disabled':''}><b>${m.n}</b><small>${m.lock?`Lv.${m.lock}`:m.pp?`PP ${left}/${m.pp}`:'—'}</small></button>`}).join('')}</div><button class="pkback" data-pk="back">‹ 返回</button>`;
  if(F.menu==='bag'){const inv=SPELLS.filter(s=>(S.items[s.id]||0)>0);return`<div class="pkgrid">${inv.length?inv.map(s=>`<button data-pk="it:${s.id}" ${F.used>=SPELL_MAX?'disabled':''}><b>${s.ic} ${s.n}</b><small>×${S.items[s.id]}</small></button>`).join(''):'<p class="muted" style="grid-column:1/-1;margin:6px 0;font-size:13px">背包是空的。去商店做魔法。</p>'}</div><button class="pkback" data-pk="back">‹ 返回　<small class="muted">道具 ${F.used}/${SPELL_MAX}</small></button>`}
- return`<div class="pkgrid main"><button data-pk="fight" class="pk-f">⚔️ 戰鬥</button><button data-pk="bag" class="pk-b">🎒 道具</button><button data-pk="pet" class="pk-p" ${!pa||F.petUsed?'disabled':''}>🐾 夥伴</button><button data-pk="run" class="pk-r">🏃 逃跑</button></div>`}
+ return`<div class="pkgrid main"><button data-pk="fight" class="pk-f">⚔️ 戰鬥</button><button data-pk="bag" class="pk-b">🎒 道具</button><button data-pk="pet" class="pk-p" ${!pa||F.petUsed?'disabled':''}>🐾 夥伴</button><button data-pk="guard" class="pk-r">🛡️ 防禦</button></div>`}
 function pkSay(t){const el=$('#pkmsg');if(!el)return;el.textContent='';let i=0;clearInterval(pkSay.t);pkSay.t=setInterval(()=>{el.textContent=t.slice(0,++i);if(i>=t.length)clearInterval(pkSay.t)},22)}
 function fightTurn(a){if(!F||F.busy||F.done)return;haptic(1);const roll=()=>.85+Math.random()*.3,c=clsOf(),B=F.b.name,sageX=S.cls==='sage'?1.3:1;let dmg=0,crit=false;
  const hit=(pw,fx,name,magic)=>{crit=Math.random()<F.crit;let d=F.atk*pw*(F.rage?1.6:1)*F.chg*roll()*(crit?2:1)*(magic?sageX:1);F.chg=1;d=Math.round(d);F.bhp-=d;fxEv({k:fx==='fire'?'fire':fx==='bolt'?'bolt':'atk',dmg:d,crit,bTo:Math.max(0,F.bhp),msg:`${name}！${crit?'會心一擊！':''}造成 ${d} 點傷害`});F.log.push(`${name}：${d}${crit?'（暴擊）':''}`);return d};
@@ -1613,6 +1613,7 @@ function fightTurn(a){if(!F||F.busy||F.done)return;haptic(1);const roll=()=>.85+
   if(a.it==='heal'){const hv=60+F.L*3;F.php=Math.min(F.pmax,F.php+hv);fxEv({k:'heal',hv,pTo:F.php,msg:`使用治癒術，回復 ${hv} HP`})}
   if(a.it==='shield'){F.shield=2;fxEv({k:'shield',msg:'護盾展開！2 回合傷害減半'})}
   if(a.it==='rage'){F.rage=3;fxEv({k:'rage',msg:'狂暴！3 回合攻擊力提升'})}F.log.push(`${sp.ic} ${sp.n}`)}
+ else if(a.guard){F.guarding=1;const hv=Math.round(F.pmax*.08);F.php=Math.min(F.pmax,F.php+hv);F.chg=Math.max(F.chg,1.3);fxEv({k:'shield',msg:`你擺出防禦架勢！回復 ${hv} HP，下一擊 ×1.3`});F.log.push('🛡️ 防禦')}
  else if(a.pet){const pa=petAssist();if(!pa||F.petUsed)return;F.petUsed=true;const d=Math.round((20+pa.st*25)*roll());F.bhp-=d;fxEv({k:pa.sp==='dragon'?'fire':pa.sp==='fox'?'bolt':'atk',dmg:d,bTo:Math.max(0,F.bhp),msg:`${pa.n}衝了出去！造成 ${d} 點傷害`});
   if(pa.sp==='bird'){const hv=Math.round(F.pmax*.15);F.php=Math.min(F.pmax,F.php+hv);fxEv({k:'heal',hv,pTo:F.php,msg:`${pa.n}的羽毛治癒了你 ${hv} HP`})}F.log.push(`🐾 ${pa.n}：${d}`);fxSound('pet')}
  if(F.rage&&a.mv&&(myMoves().find(x=>x.id===a.mv)||{}).p>0)F.rage--;
@@ -1621,7 +1622,7 @@ function fightTurn(a){if(!F||F.busy||F.done)return;haptic(1);const roll=()=>.85+
  if(F.stun){F.stun=0;fxEv({k:'stun',msg:`${B}動彈不得！`})}
  else{const big=(F.turn+1)%3===0;let bd=Math.round(F.bs.atk*(big?1.8:1)*roll());const atkName=big?`${B}放出大招！`:`${B}發動攻擊！`;
   if(F.dodge){F.dodge=0;fxEv({k:'stun',msg:`${atkName}……但打中的是分身！`})}
-  else{if(F.shield){bd=Math.round(bd/2);F.shield--}if(F.guard){bd=Math.round(bd*.7);F.guard=0}F.php-=bd;fxEv({k:'boss',dmg:bd,big,pTo:Math.max(0,F.php),msg:`${atkName}你受到 ${bd} 點傷害`});
+  else{if(F.shield){bd=Math.round(bd/2);F.shield--}if(F.guard){bd=Math.round(bd*.7);F.guard=0}if(F.guarding){bd=Math.round(bd*.4);F.guarding=0}F.php-=bd;fxEv({k:'boss',dmg:bd,big,pTo:Math.max(0,F.php),msg:`${atkName}你受到 ${bd} 點傷害`});
    if(F.counter){F.counter=0;F.bhp-=bd*2;fxEv({k:'atk',dmg:bd*2,bTo:Math.max(0,F.bhp),msg:`反擊！把 ${bd*2} 點傷害打回去`});if(F.bhp<=0)return endFight(true)}}
   F.log.push(`${B}：${bd}`)}
  if(S.cls==='monk'&&F.php>0){const hv=Math.round(F.pmax*.05);F.php=Math.min(F.pmax,F.php+hv);fxEv({k:'heal',hv,pTo:F.php,msg:`調息，回復 ${hv} HP`})}
@@ -1731,7 +1732,7 @@ function vBattle0(){const b=bossInfo(),D=dun(),m=minionOf(D.floor),fd=isFightDay
  const tm=S.timer;
  const wk=focusMin(0,7);
  h+=`<div class="panel sys"><div class="ptitle">[專注討伐]<span>本週 ${fmtHM(wk)}</span></div>`;
- if(tm){const fc=FCATS[tm.cat||'study'];h+=`<div class="ftimer ftimer2"><div>${focusStage(D.floor,STATS[fc[2]].c)}</div><div><div class="muted sm">${fc[0]} ${fc[1]}・${fmtF(tm.min)}</div><div class="timer" id="tmr">--:--</div></div></div><button class="btn red" id="giveup" style="width:100%">放棄</button>`}
+ if(tm){const fc=FCATS[tm.cat||'study'];h+=`<div class="ftimer ftimer2"><div>${focusStage(D.floor,STATS[fc[2]].c)}</div><div><div class="muted sm">${fc[0]} ${fc[1]}・${fmtF(tm.min)}</div><div class="timer" id="tmr">--:--</div></div></div><button class="btn red" id="giveup" style="width:100%">🏃 逃跑</button>`}
  else{if(S.brk)h+=`<div class="brk"><span>☕ 休息中</span><b id="btmr">--:--</b><button class="btn sm" id="brkEnd">結束休息</button></div>`;h+=`<div class="fcats">${Object.entries(FCATS).map(([k,v])=>`<button class="${fcat===k?'on':''}" data-fcat="${k}"><span>${v[0]}</span>${v[1]}${v[2]===m.w?'<i>弱點</i>':''}</button>`).join('')}</div>
  <div class="fset" style="margin-top:14px"><button class="fstep" data-fstep="-5">−</button><div class="fval"><b id="fminv">${fmtF(S.fmin||25)}</b></div><button class="fstep" data-fstep="5">＋</button></div>
  <input type="range" id="fmin" min="5" max="180" step="5" value="${S.fmin||25}" class="frange">
@@ -1886,7 +1887,7 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-tt],[da
   case'jSave':{const tx=($('#jtxt').value||'').trim();if(!tx)return toast('先寫點什麼');S.journal=S.journal||[];S.journal.unshift({t:Date.now(),d:today(),type:'user',text:tx.slice(0,2000),mood:S.jm==null?null:S.jm});
    jDraft='';S.jm=null;if(S.jxp!==today()){S.jxp=today();S.stats.SPI=(S.stats.SPI||0)+1;gain(10,0);toast('<b>[勇者日誌]</b> 今天第一篇 +10 XP　心靈 +1')}else toast('<b>已寫入日誌</b>');sfx('done');return after()}
   case'fight':return startFight();
-  case'giveup':return modal('<h2>[專注討伐]</h2><div class="bigt">確定放棄？</div><p class="muted">這場不會有獎勵，會記在專注統計裡。</p>',[['繼續撐','btn pri'],['放棄','btn red',()=>{const L=dayLog(today());L.quit=(L.quit||0)+1;S.timer=null;timerCancel();save();render()}]]);
+  case'giveup':return modal(`<h2>[專注討伐]</h2><div style="text-align:center">${minionSvg(dun().floor,110)}</div><div class="bigt" style="text-align:center">要逃跑嗎？</div><p class="muted" style="text-align:center">逃跑＝放棄這場專注。不會有獎勵，${esc(minionOf(dun().floor).n)}也還在。</p>`,[['繼續戰鬥','btn pri'],['🏃 逃跑','btn red',()=>{toast('成功逃走了……下次再來');const L=dayLog(today());L.quit=(L.quit||0)+1;S.timer=null;timerCancel();save();render()}]]);
   case'tHard':S.hard=!S.hard;if(S.hard)S.lastClosed=addDays(today(),-1);return after();
   case'tSnd':S.sound=!S.sound;save();sfx('done');return render();
   case'tBadge':{if(!('setAppBadge'in navigator)){toast('這裡不支援，先「加入主畫面」再從主畫面打開');return}
