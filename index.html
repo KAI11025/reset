@@ -325,6 +325,15 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 .bact{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.bact button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border-radius:12px;border:1px solid var(--line);background:#070c18;color:var(--text);font-size:11px}.bact button span{font-size:22px}.bact button.on{border-color:var(--cyan);background:#0b2233;color:var(--cyan)}
 .bint{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.bint button{display:flex;flex-direction:column;gap:2px;padding:8px 4px;border-radius:12px;border:1px solid var(--line);background:#070c18;color:var(--text)}.bint small{font-size:10px;color:var(--mute)}.bint button.on{border-color:var(--cyan);background:#0b2233}.bint button.on b{color:var(--cyan)}
 .bprev{text-align:center;margin:12px 0 2px}
+
+.tseg{margin-bottom:10px}
+.wtop{display:flex;align-items:center;gap:14px}.wst{flex:1;display:grid;gap:8px}.wst>div{display:flex;align-items:baseline;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:5px}.wst b{font:800 18px var(--mono)}.wst small{font-size:11px;color:var(--mute)}.wst span{font-size:12px}
+.wdays{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-top:12px;text-align:center}.wdays>div{display:flex;flex-direction:column;align-items:center;gap:2px;border-radius:10px;padding:4px 0}.wdays small{font-size:10px;color:var(--mute)}.wdays .now{background:#0b2233}.wdays .now small{color:var(--cyan)}
+.mgrid{width:100%;display:block;margin:12px 0 6px}
+.mleg{display:flex;gap:10px;flex-wrap:wrap;font-size:11px;color:var(--mute)}.mleg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.mnav{display:flex;align-items:center;gap:8px}.mnav button{color:var(--cyan);font-size:18px;padding:0 4px}.mnav button:disabled{opacity:.2}
+.lg{display:inline-block;width:10px;height:3px;border-radius:2px;vertical-align:3px;margin:0 2px 0 6px}
+.tdel{color:var(--mute);font-size:18px;padding:0 4px 0 10px}
 </style>
 </head>
 <body>
@@ -349,7 +358,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v26・11/20 22:10';
+const VER='v27・11/21 00:30';
 'use strict';
 /* =====================================================================
    RESET 系統 v4
@@ -1310,6 +1319,72 @@ function bodyList(t){const L=S.log[t],B=(L&&L.body)||[];if(!B.length)return'';
 function guessBody(tx){const map=[[/道館|練拳|練柔術|MMA|拳擊|柔術|摔角|泰拳|去練|訓練/i,'dojo'],[/跑步|慢跑|晨跑|夜跑|跑/,'run'],[/游泳|游/,'swim'],[/重訓|健身|舉重|臥推|深蹲/,'gym'],[/間歇|HIIT|衝刺|tabata/i,'hiit'],[/籃球|羽球|排球|足球|網球|桌球|打球/,'ball'],[/騎車|單車|腳踏車|自行車/,'bike'],[/走路|散步|健行|爬山/,'walk'],[/伸展|瑜伽|滾筒|拉筋|放鬆/,'mob']];
  const f=map.find(m=>m[0].test(tx)),j=judgeExtra(tx);return{act:f?f[1]:'other',min:j.min?Math.max(5,Math.min(240,Math.round(j.min/5)*5)):null}}
 
+/* ---------- v27：週／月追蹤（參考 Quiet Progress 的格子與完成率） ---------- */
+const TODO_XP=10,TODO_CAP=5;
+const ROWS=()=>{const r=[];for(const q of QUESTS){const k=q.group||q.id;if(!r.find(x=>x.k===k))r.push({k,n:({woop:'一件事',study:'讀書',train:'身體',screen:'螢幕',nophone:'睡前不滑',sleep:'準時上床',review:'復盤',weekly:'週回顧'})[k]||q.gname||q.name,ids:QUESTS.filter(z=>(z.group||z.id)===k).map(z=>z.id)})}return r};
+function cellOf(row,d){const act=row.ids.map(id=>QUESTS.find(q=>q.id===id)).filter(q=>activeOn(q,d));if(!act.length)return'off';const L=S.log[d],dn=act.map(q=>L&&L.done&&L.done[q.id]).find(Boolean);
+ if(dn)return dn.lv!=null?'l'+dn.lv:'ok';return'no'}
+const dayPct=d=>{const a=actives(d).length;return a?doneCount(d)/a:0};
+function ring(p,size,label,sub,col){const r=size/2-5,c=2*Math.PI*r,o=c*(1-Math.max(0,Math.min(1,p)));
+ return`<svg viewBox="0 0 ${size} ${size}" width="${size}" height="${size}"><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#16223a" stroke-width="${size>70?8:5}"/><circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${col||'var(--cyan)'}" stroke-width="${size>70?8:5}" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${o}" transform="rotate(-90 ${size/2} ${size/2})"/><text x="50%" y="${sub?46:52}%" text-anchor="middle" dominant-baseline="middle" fill="#e6eefc" font-size="${size>70?20:11}" font-weight="800" font-family="ui-monospace,Menlo,monospace">${label}</text>${sub?`<text x="50%" y="68%" text-anchor="middle" fill="#7d8aa6" font-size="${size>70?10:8}" font-family="-apple-system,sans-serif">${sub}</text>`:''}</svg>`}
+const pctCol=p=>p>=.75?'var(--cyan)':p>=.4?'#f5c451':p>0?'#ef7a5a':'#2a3a5c';
+
+/* 委託板：本週要完成的一次性任務 */
+const todosOf=wk=>(S.todos||[]).filter(x=>x.wk===wk||(!x.done&&x.wk<wk));
+function todoAdd(tx,d){tx=(tx||'').trim().slice(0,60);if(!tx)return toast('先寫要做什麼');S.todos=S.todos||[];const t=today();S.todos.push({id:uid(),t:tx,d:d||null,wk:weekKey(d||t),done:null});sfx('tap');after()}
+function todoToggle(id){const x=(S.todos||[]).find(z=>z.id===id);if(!x)return;const t=today();
+ if(x.done){if(x.r)undo(x.r);x.done=null;x.r=null;return after()}
+ const n=(S.todos||[]).filter(z=>z.done===t&&z.r).length;x.done=t;x.wk=weekKey(t);
+ if(n<TODO_CAP){x.r=reward(t,'todo'+x.id,TODO_XP,'DIS','todo')}else{sfx('done');toast('<b>委託完成</b>　今天的委託獎勵已滿 5 個')}
+ jlog('📌',`完成委託：${x.t}`);after()}
+function todoDel(id){const x=(S.todos||[]).find(z=>z.id===id);if(!x)return;if(x.r)undo(x.r);S.todos=S.todos.filter(z=>z.id!==id);after()}
+function todoRow(x,t){const late=!x.done&&x.d&&x.d<t;return`<div class="q ${x.done?'done':''}"><button class="box" data-todo="${x.id}">${x.done?'✓':''}</button><span class="nm"><span class="qn">${esc(x.t)}</span>${x.d?`<span class="lvb" style="${late?'color:var(--red);border-color:#552030':''}">${late?'逾期・':''}週${WD[parse(x.d).getDay()]}</span>`:''}</span><button class="tdel" data-tdel="${x.id}">×</button></div>`}
+function todayTodos(t){const L=(S.todos||[]).filter(x=>(!x.done&&(!x.d||x.d<=t)&&x.wk<=weekKey(t))||x.done===t);if(!L.length)return'';
+ return`<div class="panel"><div class="ptitle">[委託]<span>${L.filter(x=>x.done).length}/${L.length}・完成 +${TODO_XP} XP</span></div>${L.map(x=>todoRow(x,t)).join('')}</div>`}
+
+/* 本週 */
+function vWeek(){const t=today(),wk=weekKey(t);let tot=0,dn=0;const days=[];
+ for(let i=0;i<7;i++){const d=addDays(wk,i),a=actives(d).length,c=d<=t&&diff(S.start,d)>=0?doneCount(d):0;if(d<=t&&diff(S.start,d)>=0){tot+=a;dn+=c}days.push({d,a,c,fut:d>t,pre:diff(S.start,d)<0})}
+ const p=tot?dn/tot:0,cl=days.filter(x=>!x.fut&&!x.pre&&cleared(x.d)).length;
+ let h=`<div class="panel sys"><div class="ptitle">[本週]<span>${wk.slice(5).replace('-','/')} – ${addDays(wk,6).slice(5).replace('-','/')}</span></div>
+ <div class="wtop">${ring(p,112,Math.round(p*100)+'%','完成率',pctCol(p))}<div class="wst"><div><b>${cl}</b><span class="muted">通關天數</span></div><div><b>${dn}<small>/${tot}</small></b><span class="muted">完成任務</span></div><div><b>${bodyWeek(t).p}<small>/${BODY_WK}</small></b><span class="muted">修練點數</span></div></div></div>
+ <div class="wdays">${days.map(x=>{const q=x.a?x.c/x.a:0;return`<div class="${x.d===t?'now':''}">${x.fut||x.pre?ring(0,44,'—','',''):ring(q,44,Math.round(q*100),'',pctCol(q))}<small>週${WD[parse(x.d).getDay()]}</small></div>`}).join('')}</div></div>`;
+ const td=todosOf(wk).sort((a,b)=>((!!a.done)-(!!b.done))||((a.d||'9')<(b.d||'9')?-1:(a.d||'9')>(b.d||'9')?1:0));
+ h+=`<div class="panel"><div class="ptitle">[委託板]<span>這週要搞定的事・${td.filter(x=>x.done).length}/${td.length}</span></div>
+ <div class="row"><input id="todotx" placeholder="例：交電路學作業、寄履歷" style="flex:1" maxlength="60"><select id="todod" style="width:74px">${['<option value="">不限</option>'].concat(days.filter(x=>x.d>=t).map(x=>`<option value="${x.d}">週${WD[parse(x.d).getDay()]}</option>`)).join('')}</select><button class="btn sm cy" id="todoAdd">＋</button></div>
+ ${td.length?td.map(x=>todoRow(x,t)).join(''):'<p class="muted" style="margin:10px 0 0;font-size:13px">週日回顧的時候，把下週最重要的 3 件事放進來。</p>'}</div>`;
+ return h}
+
+/* 本月 */
+function vMonth(){const t=today(),mk=S.mon&&S.mon<=t.slice(0,7)?S.mon:t.slice(0,7),[y,m]=mk.split('-').map(Number),N=new Date(y,m,0).getDate(),rows=ROWS(),dd=k=>`${y}-${pad(m)}-${pad(k)}`;
+ const W=340,lw=66,pw=30,gap=1.4,cs=(W-lw-pw)/N-gap,rh=Math.max(cs+4,11);let g='',tot=0,dn=0;
+ for(let k=1;k<=N;k++){const x=lw+(k-1)*(cs+gap);if(k===1||k%5===0)g+=`<text x="${x+cs/2}" y="9" text-anchor="middle" font-size="8" fill="${dd(k)===t?'#4fd1ff':'#4b5a78'}" font-family="ui-monospace,Menlo,monospace">${k}</text>`}
+ rows.forEach((r,ri)=>{const yy=14+ri*rh;let a=0,c=0;g+=`<text x="0" y="${yy+cs/2+3.5}" font-size="10" fill="#a9b6cf" font-family="-apple-system,PingFang TC,sans-serif">${esc(r.n.length>5?r.n.slice(0,5)+'…':r.n)}</text>`;
+  for(let k=1;k<=N;k++){const d=dd(k),x=lw+(k-1)*(cs+gap);let fill='#0f1a2e',op=1;
+   if(d>t||diff(S.start,d)<0){fill='#0a1222'}else{const v=cellOf(r,d);if(v==='off'){fill='#0a1222';op=.6}else{a++;if(v!=='no'){c++;fill=v==='ok'?'#4fd1ff':ELV[+v[1]][2]}else fill='#1c2740'}}
+   g+=`<rect x="${x}" y="${yy}" width="${cs}" height="${cs}" rx="2" fill="${fill}" opacity="${op}"${d===t?' stroke="#fff" stroke-width=".8"':''}/>`}
+  tot+=a;dn+=c;const p=a?c/a:0;g+=`<text x="${W-2}" y="${yy+cs-1.5}" text-anchor="end" font-size="9.5" fill="${a?pctCol(p).replace('var(--cyan)','#4fd1ff'):'#4b5a78'}" font-family="ui-monospace,Menlo,monospace" font-weight="700">${a?Math.round(p*100)+'%':'—'}</text>`.replace(`y="${yy+cs-1.5}"`,`y="${yy+cs/2+3.5}"`)});
+ const by=14+rows.length*rh+3;
+ for(let k=1;k<=N;k++){const d=dd(k),x=lw+(k-1)*(cs+gap);if(d>t||diff(S.start,d)<0)continue;const p=dayPct(d),hh=Math.max(1,p*22);g+=`<rect x="${x}" y="${by+22-hh}" width="${cs}" height="${hh}" rx="1.5" fill="${cleared(d)?'#4fd1ff':'#3a4a6a'}"/>`}
+ g+=`<text x="0" y="${by+18}" font-size="9.5" fill="#7d8aa6" font-family="-apple-system,PingFang TC,sans-serif">每日完成</text>`;
+ const H=by+28,P=tot?dn/tot:0,clr=[...Array(N).keys()].map(i=>dd(i+1)).filter(d=>d<=t&&diff(S.start,d)>=0&&cleared(d)).length;
+ const prev=fmt(new Date(y,m-2,1)).slice(0,7),next=fmt(new Date(y,m,1)).slice(0,7);
+ let h=`<div class="panel sys"><div class="ptitle">[本月]<span class="mnav"><button data-mon="${prev}">‹</button>${y}/${pad(m)}<button data-mon="${next}" ${next>t.slice(0,7)?'disabled':''}>›</button></span></div>
+ <div class="wtop">${ring(P,112,Math.round(P*100)+'%','一致性',pctCol(P))}<div class="wst"><div><b>${clr}</b><span class="muted">通關天數</span></div><div><b>${dn}<small>/${tot}</small></b><span class="muted">完成任務</span></div><div><b>${S.best||0}</b><span class="muted">最佳連續</span></div></div></div>
+ <svg viewBox="0 0 ${W} ${H}" class="mgrid">${g}</svg><div class="mleg"><span><i style="background:#3ee08f"></i>迷你</span><span><i style="background:#4fd1ff"></i>標準／完成</span><span><i style="background:#f5c451"></i>精英</span><span><i style="background:#1c2740"></i>沒做</span></div></div>`;
+ return h+mindChart(y,m,N)}
+/* 心情 × 完成率 */
+function mindChart(y,m,N){const t=today(),dd=k=>`${y}-${pad(m)}-${pad(k)}`,W=340,H=130,x0=24,x1=W-8,y0=12,y1=H-22,X=k=>x0+(k-1)*(x1-x0)/Math.max(1,N-1);
+ const md=[],cp=[];for(let k=1;k<=N;k++){const d=dd(k);if(d>t||diff(S.start,d)<0)continue;const p=S.diary&&S.diary[d];if(p&&p.mood!=null)md.push([k,p.mood/4]);if(d<t||dayPct(d)>0)cp.push([k,dayPct(d)])}
+ if(md.length<2&&cp.length<2)return'';const Y=v=>y1-v*(y1-y0),path=a=>a.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
+ let g='';[0,.5,1].forEach(v=>{g+=`<line x1="${x0}" x2="${x1}" y1="${Y(v)}" y2="${Y(v)}" stroke="#16223a"/>`});
+ g+=`<text x="2" y="${Y(1)+3}" font-size="9" fill="#4b5a78">😄</text><text x="2" y="${Y(0)+3}" font-size="9" fill="#4b5a78">😫</text>`;
+ if(cp.length>1)g+=`<path d="${path(cp)}" fill="none" stroke="#4fd1ff" stroke-width="2" stroke-linejoin="round" opacity=".85"/>`;
+ if(md.length>1)g+=`<path d="${path(md)}" fill="none" stroke="#f5c451" stroke-width="2" stroke-linejoin="round"/>`+md.map(p=>`<circle cx="${X(p[0])}" cy="${Y(p[1])}" r="2.6" fill="#f5c451"/>`).join('');
+ for(let k=1;k<=N;k+=7)g+=`<text x="${X(k)}" y="${H-6}" text-anchor="middle" font-size="9" fill="#4b5a78" font-family="ui-monospace,Menlo,monospace">${m}/${k}</text>`;
+ return`<div class="panel"><div class="ptitle">[心態追蹤]<span><i class="lg" style="background:#f5c451"></i>心情　<i class="lg" style="background:#4fd1ff"></i>完成率</span></div><svg viewBox="0 0 ${W} ${H}" style="width:100%;display:block">${g}</svg>${md.length<2?'<p class="muted" style="margin:4px 0 0;font-size:12px">在日記選心情，這裡就會畫出心情曲線。</p>':''}</div>`}
+const tSeg=()=>`<div class="seg jtab tseg">${[['day','今天'],['week','本週'],['month','本月']].map(([k,n])=>`<button class="${(S.ttab||'day')===k?'on':''}" data-tt="${k}">${n}</button>`).join('')}</div>`;
+
 /* ---------- UI 基礎 ---------- */
 function toast(h,c=''){const box=$('#toasts');while(box.children.length>=3)box.firstChild.remove();const el=document.createElement('div');el.className='toast '+c;el.innerHTML=h;box.appendChild(el);setTimeout(()=>el.remove(),2600)}
 let mActs=[];
@@ -1322,7 +1397,8 @@ function header(){const L=lvInfo(S.xp),r=rankOf(L.lv);$('#hRank').textContent=r[
 const tag=s=>`<span class="tag" style="color:${(STATS[s]||STATS.SPI).c};border-color:${(STATS[s]||STATS.SPI).c}55">${(STATS[s]||STATS.SPI).n}</span>`;
 
 /* ---------- 任務頁 ---------- */
-function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)+1,st=streak(),L=dayLog(D),dc=doneCount(D),nd=need(D),act=actives(D);
+function vToday(){const tt=S.ttab||'day';return tSeg()+(tt==='week'?vWeek():tt==='month'?vMonth():vToday0())}
+function vToday0(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)+1,st=streak(),L=dayLog(D),dc=doneCount(D),nd=need(D),act=actives(D);
  const q=QUOTES[((dayNum(t)%QUOTES.length)+QUOTES.length)%QUOTES.length];
  let h=`<div class="panel sys"><div class="ptitle">[RESET PROGRAM]<span>${dn>66?'第 '+Math.ceil(dn/66)+' 輪':'66 天計畫'}</span></div>
  <div class="day"><div class="big">DAY ${dn>66?((dn-1)%66)+1:dn}<small> / 66</small></div><div class="grow"></div><div style="text-align:right"><div style="font:800 24px var(--mono);color:${dc>=nd?'var(--cyan)':'var(--text)'}">${dc}/${act.length}</div><div class="muted">達標需 ${nd}</div></div></div>
@@ -1340,6 +1416,7 @@ function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)
   return`<div class="q ${d?'done':''}"><button class="box" data-q="${q.id}">${d?'✓':''}</button><button class="nm" data-info="q:${q.id}"><span class="qn">${esc(q.name)}</span>${lb}</button>${tag(q.stat)}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:(q.lv?'+'+Math.round(q.xp*.5)+'~':'+')+(q.lv?Math.round(q.xp*1.6):q.xp)}</span></div>`};
  h+=act.length?Object.keys(SLOTS).map(k=>{const g=act.filter(q=>q.slot===k);return g.length?`<div class="slot">${SLOTS[k]}</div>`+g.map(row).join(''):''}).join(''):'<p class="muted">今天沒有排任務 😴</p>';
  h+='</div>';
+ if(!viewY)h+=todayTodos(t);
  h+=`<div class="panel bonus"><div class="ptitle" style="color:var(--gold)">[隨機任務]<span>每天 3 個・不影響通關</span></div>`+sidesOf(D).map(i=>{const s=SIDE[i],d=L.side[i];return`<div class="q ${d?'done':''}"><button class="box" data-side="${i}">${d?'✓':''}</button><button class="nm" data-info="s:${i}"><span class="qn">${esc(s[0])}</span></button>${tag(s[1])}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+15'}</span></div>`}).join('')+'</div>';
  h+=vExtra(D);
  h+=`<div class="panel"><div class="ptitle">[66 天紀錄]<span>亮 = 通關</span></div><div class="heat">`;
@@ -1479,11 +1556,15 @@ let jDraft='',xDraft='';
 function render(){const se=season();document.body.classList.toggle('snow',!!(se&&se[5]==='snow'));header();$('#view').innerHTML=VIEWS[tab]();if(tab==='log')bindBook();if(tab==='set')photoBundle().then(b=>{window.__pb=b}).catch(()=>{});const ta=$('#jtxt');if(ta){ta.value=jDraft;ta.oninput=()=>{jDraft=ta.value}}const xt=$('#xtxt');if(xt){xt.value=xDraft;xt.oninput=()=>{xDraft=xt.value}}tick()}
 
 /* ---------- 事件 ---------- */
-$('#view').addEventListener('click',e=>{const el=e.target.closest('[data-item],[data-pet],[data-gomap],[data-bt],[data-region],[data-salv],[data-poke],[data-ver],[data-enc],[data-title],[data-dnav],[data-ph],[data-dgo],[data-gotab],[data-jt],[data-jedit],[data-fstep],[data-fcat],[data-spell],[data-xdel],[data-mood],[data-jf],[data-jdel],[data-info],[data-q],[data-side],[data-day],[data-shift],[data-pen],[data-focus],[data-buy],[data-gear],[data-eq],[data-skill],[data-delr],button[id]');if(!el||el.disabled)return;const d=el.dataset;
+$('#view').addEventListener('click',e=>{const el=e.target.closest('[data-tt],[data-todo],[data-tdel],[data-mon],[data-item],[data-pet],[data-gomap],[data-bt],[data-region],[data-salv],[data-poke],[data-ver],[data-enc],[data-title],[data-dnav],[data-ph],[data-dgo],[data-gotab],[data-jt],[data-jedit],[data-fstep],[data-fcat],[data-spell],[data-xdel],[data-mood],[data-jf],[data-jdel],[data-info],[data-q],[data-side],[data-day],[data-shift],[data-pen],[data-focus],[data-buy],[data-gear],[data-eq],[data-skill],[data-delr],button[id]');if(!el||el.disabled)return;const d=el.dataset;
  const D=viewY?addDays(today(),-1):today();
  if(d.spell){const sp=SPELLS.find(x=>x.id===d.spell);if(S.gold<sp.g||!Object.entries(sp.m).every(([k,n])=>(S.mats[k]||0)>=n))return toast('金幣或素材不夠');
   S.gold-=sp.g;Object.entries(sp.m).forEach(([k,n])=>S.mats[k]-=n);S.items[sp.id]=(S.items[sp.id]||0)+1;sfx('chest');toast(`<b>${sp.ic} ${sp.n}</b> 製作完成`);return after()}
  if(d.xdel!==undefined){const L=dayLog(D),e=(L.extra||[])[+d.xdel];if(!e)return;return modal(`<h2>[額外修練]</h2><div class="bigt" style="font-size:22px">刪除「${esc(e.text)}」？</div><p class="muted">加的分會扣回來。</p>`,[['取消','btn'],['刪除','btn red',()=>{if(e.r)undo(e.r);L.extra.splice(+d.xdel,1);after()}]])}
+ if(d.tt){S.ttab=d.tt;save();window.scrollTo(0,0);return render()}
+ if(d.todo)return todoToggle(d.todo);
+ if(d.tdel){const x=(S.todos||[]).find(z=>z.id===d.tdel);if(!x)return;return modal(`<h2>[委託]</h2><div class="bigt" style="font-size:20px">刪除「${esc(x.t)}」？</div>`,[['取消','btn'],['刪除','btn red',()=>todoDel(d.tdel)]])}
+ if(d.mon){S.mon=d.mon;return render()}
  if(d.item)return itemModal(d.item);
  if(d.pet)return petModal();
  if(d.gomap){S.btab='map';tab='battle';document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x.dataset.t===tab));window.scrollTo(0,0);save();return render()}
@@ -1525,6 +1606,7 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-item],[
    try{navigator.clipboard.writeText(tx).then(done,fb)}catch(e){fb()}return}
   case'xJudge':return openExtra(D,($('#xtxt').value||'').trim());
   case'dcal':return openCal();
+  case'todoAdd':{const v=$('#todotx').value,dd=$('#todod').value;return todoAdd(v,dd||null)}
   case'jSave':{const tx=($('#jtxt').value||'').trim();if(!tx)return toast('先寫點什麼');S.journal=S.journal||[];S.journal.unshift({t:Date.now(),d:today(),type:'user',text:tx.slice(0,2000),mood:S.jm==null?null:S.jm});
    jDraft='';S.jm=null;if(S.jxp!==today()){S.jxp=today();S.stats.SPI=(S.stats.SPI||0)+1;gain(10,0);toast('<b>[勇者日誌]</b> 今天第一篇 +10 XP　心靈 +1')}else toast('<b>已寫入日誌</b>');sfx('done');return after()}
   case'fight':return startFight();
