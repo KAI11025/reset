@@ -1,5 +1,5 @@
 // 離線快取：每次都先拿網路最新版（不吃瀏覽器快取），沒網路才用快取
-const C='reset-v30';
+const C='reset-v31';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./','index.html','manifest.json','icon.png'])));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;
@@ -9,8 +9,12 @@ self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;
 function idbGet(k){return new Promise(res=>{try{const r=indexedDB.open('reset_meta',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>{try{const db=r.result,q=db.transaction('kv','readonly').objectStore('kv').get(k);q.onsuccess=()=>res(q.result||null);q.onerror=()=>res(null)}catch(e){res(null)}};r.onerror=()=>res(null)}catch(e){res(null)}})}
 function dayKey(ds,off){const d=new Date(Date.now()-(ds||0)*3600e3);d.setDate(d.getDate()+(off||0));return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
 const pick=a=>a[Math.floor(Math.random()*a.length)];
-function compose(type,st){
+const FCN={study:'讀書',esp:'西文',med:'冥想',body:'體能',tidy:'整理'};
+function compose(type,st,d){d=d||{};
  if(type==='test')return['🔔 通知測試成功','接通了。之後我會盯著你的進度。'];
+ if(type==='tick')return['⏰ 計時通知接通了','之後專注、休息時間到，鎖著螢幕也會叫你。'];
+ if(type==='focus'){const M2=st&&st.minion||'魔物',c=FCN[d.cat]||'專注';return pick([[`⏰ ${c} ${d.min} 分鐘完成`,`斬擊命中「${M2}」！回來領獎勵，然後休息 5 分鐘。`],['⚔️ 專注討伐成功',`${d.min} 分鐘的${c}撐完了。站起來動一動、喝口水。`],[`🔔 時間到，可以休息了`,`${c} ${d.min} 分鐘完成。打開 RESET 收下戰利品。`]])}
+ if(type==='break')return pick([['☕ 休息結束','回來再戰一場？'],['⚔️ 休息時間到',`${st&&st.minion||'魔物'}還在地城等你。`]]);
  const fresh=st&&st.d===dayKey(st.ds),yest=st&&st.d===dayKey(st.ds,-1);
  const R=st&&st.region||'晨曦之村',M=st&&st.minion||'魔物',B=st&&st.bossName||'Boss',pet=st&&st.pet||'',n=st?Math.max(0,st.need-st.done):0,q=(st&&st.quick)||[],qs=q.slice(0,Math.max(1,Math.min(n,3))),sk=st&&st.streak||0;
  if(type==='morning'){
@@ -37,6 +41,6 @@ function compose(type,st){
   return pick([['🌙 快 00:30 了',`還差 ${n} 項：${qs.join('、')}。做完就睡。`],[pet?`😢 ${pet}還在門口等你`:'🌙 還沒通關',`差 ${n} 項。明天能補登，但現在做掉最輕鬆。`],[`🌑 夜晚降臨${R}`,`魔物在暗處集結。還差 ${n} 項，做完就能守住今晚。`]])}
  return['RESET','打開看看今天的進度。']}
 self.addEventListener('push',e=>{let d={};try{d=e.data?e.data.json():{}}catch(_){}
- e.waitUntil(idbGet('status').then(st=>{const[title,body]=d.title?[d.title,d.body||'']:compose(d.type,st);return self.registration.showNotification(title,{body,icon:'icon.png',badge:'icon.png',tag:d.type||'reset',data:{url:'./'}})}))});
+ e.waitUntil(idbGet('status').then(st=>{const[title,body]=d.title?[d.title,d.body||'']:compose(d.type,st,d);return self.registration.showNotification(title,{body,icon:'icon.png',badge:'icon.png',tag:d.type||'reset',renotify:true,requireInteraction:d.type==='focus'||d.type==='break',vibrate:[200,100,200],data:{url:'./'}})}))});
 self.addEventListener('message',e=>{const m=e.data||{};if(m.preview){idbGet('status').then(st=>{const out={};for(const t of['morning','evening','night'])out[t]=compose(t,st);e.ports[0]&&e.ports[0].postMessage(out);if(m.show)self.registration.showNotification(...(([a,b])=>[a,{body:b,icon:'icon.png',tag:'preview'}])(compose(m.show,st)))})}});
 self.addEventListener('notificationclick',e=>{e.notification.close();e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(cs=>{for(const c of cs)if('focus'in c)return c.focus();return clients.openWindow('./')}))});

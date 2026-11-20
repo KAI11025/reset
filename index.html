@@ -372,6 +372,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 .fdone{position:relative;width:180px;height:150px;margin:0 auto}.fdm{display:grid;place-items:center;height:100%;animation:fdm 1.4s forwards}@keyframes fdm{0%{filter:brightness(1)}25%{filter:brightness(1)}32%{filter:brightness(3);transform:translateX(-8px)}40%{transform:translateX(8px)}50%{transform:none;filter:none}}
 .fdone .slash.d1 path{animation-delay:.3s}.fdone .slash.d2 path{animation-delay:.5s}.fdone .fnum.d3{left:50%;top:30%;opacity:0;animation:fnum 1.5s ease-out .55s forwards}
 .fko{position:absolute;left:0;right:0;top:40%;text-align:center;font:900 28px var(--mono);color:#ff5d6c;letter-spacing:.3em;text-shadow:0 0 14px #ff5d6c;opacity:0;animation:fban 2s .7s forwards}
+.brk{display:flex;align-items:center;gap:10px;background:#1a160f;border:1px solid #5a4a30;border-radius:14px;padding:10px 12px;margin-bottom:12px}.brk span{color:#e6d5b0}.brk b{font:800 26px var(--mono);flex:1;color:#f3e3bd}
 </style>
 </head>
 <body>
@@ -396,7 +397,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v29・11/21 01:40';
+const VER='v31・11/21 02:40';
 'use strict';
 /* =====================================================================
    RESET 系統 v4
@@ -898,7 +899,7 @@ function exportForClaude(){const t=today(),lines=[];
 
 /* ---------- 備份 ---------- */
 const bkDays=()=>S.lastBackup?Math.floor((Date.now()-S.lastBackup)/864e5):999;
-async function backupFile(){const pb=window.__pb||{},data=JSON.stringify(Object.keys(pb).length?Object.assign({},S,{__photos:pb}):S),name=`RESET備份_${today()}.json`;
+async function backupFile(){const pb=window.__pb||{},data=JSON.stringify(Object.assign({},S,Object.keys(pb).length?{__photos:pb}:{},{ghTok:undefined,tpid:undefined})),name=`RESET備份_${today()}.json`;
  const ok=()=>{S.lastBackup=Date.now();save();render();toast('<b>備份完成</b>　檔名：'+name)};
  try{const f=new File([data],name,{type:'application/json'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:name});return ok()}}
@@ -1462,7 +1463,8 @@ async function pushLocalTest(){try{const reg=await navigator.serviceWorker.ready
 function pushPanel(){const st=pushState();
  return`<div class="panel"><div class="ptitle">[通知]<span>${st==='on'?'<b style="color:var(--green,#3ee08f)">已開啟</b>':st==='denied'?'被拒絕':'未開啟'}</span></div>
  <p class="muted" style="margin:0 0 8px;font-size:12px;line-height:1.6">每天 08:23、21:17、23:47 各一則。看你差什麼、連續是不是快斷、夥伴餓不餓，說法每次都不一樣。</p>
- ${st==='on'?`<div class="row"><button class="btn sm grow" id="pPrev">預覽通知</button><button class="btn sm grow" id="pCfg">設定碼</button></div>`:`<button class="btn cy" id="pOn" style="width:100%">🔔 開啟通知</button>`}</div>`}
+ ${st==='on'?`<div class="row"><button class="btn sm grow" id="pPrev">預覽通知</button><button class="btn sm grow" id="pCfg">設定碼</button></div>`:`<button class="btn cy" id="pOn" style="width:100%">🔔 開啟通知</button>`}
+ <div class="sw" style="margin-top:10px"><div><b>⏰ 計時通知</b><div class="muted">專注、休息時間到就叫你，鎖屏也收得到</div></div><button class="btn sm ${S.ghTok?'':'cy'}" id="tSet">${S.ghTok?'已設定':'設定'}</button></div></div>`}
 
 /* ---------- 戰鬥與專注動畫 ---------- */
 const fxEv=e=>{if(F){F.fx=F.fx||[];F.fx.push(e)}};
@@ -1493,6 +1495,31 @@ function focusRing(){const tm=S.timer;if(!tm)return;const el=$('#fring');if(!el)
 function focusStage(f,col){const c=2*Math.PI*52;return`<div class="fstg"><svg viewBox="0 0 120 120" class="fringsvg"><circle cx="60" cy="60" r="52" fill="none" stroke="#16223a" stroke-width="6"/><circle id="fring" cx="60" cy="60" r="52" fill="none" stroke="${col}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c}" transform="rotate(-90 60 60)" style="filter:drop-shadow(0 0 6px ${col})"/></svg><div class="fmon idle">${minionSvg(f,96)}</div><i class="fp" style="--c:${col};left:22%;animation-delay:0s"></i><i class="fp" style="--c:${col};left:70%;animation-delay:1.1s"></i><i class="fp" style="--c:${col};left:48%;animation-delay:2.2s"></i><div class="fpct" id="fpct">0%</div></div>`}
 /* 專注完成：斬擊演出 */
 const focusHit=(f,txt,kill)=>`<div class="fdone"><div class="fdm">${minionSvg(f,130)}</div><svg class="slash crit d1" viewBox="0 0 100 100"><path d="M8 82 Q52 52 94 12"/></svg><svg class="slash d2" viewBox="0 0 100 100"><path d="M10 16 Q50 46 92 84"/></svg><div class="fnum big gold d3">${txt}</div>${kill?'<div class="fko">擊破</div>':''}</div>`;
+
+/* ---------- 計時通知：專注／休息結束時推播（GitHub Actions 等到時間再送） ---------- */
+const GH_API='https://api.github.com/repos/KAI11025/reset';
+const PAT_URL='https://github.com/settings/personal-access-tokens/new?name=RESET+timer&description=RESET+%E8%A8%88%E6%99%82%E9%80%9A%E7%9F%A5&target_name=KAI11025&expires_in=365&actions=write';
+async function gh(path,opt){opt=opt||{};const r=await fetch(GH_API+path,{method:opt.method||'GET',body:opt.body,headers:Object.assign({'Authorization':'Bearer '+S.ghTok,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},opt.body?{'Content-Type':'application/json'}:{})});
+ if(!r.ok)throw new Error(r.status===401?'金鑰無效或過期':r.status===403||r.status===404?'金鑰沒有 reset 的 Actions 權限':'GitHub 回應 '+r.status);return r.status===204?null:r.json().catch(()=>null)}
+const timerReady=()=>!!(S.ghTok&&S.pushCfg);
+async function timerPush(kind,end,min,cat){if(!timerReady())return;const id=uid();S.tpid=id;save();
+ try{await gh('/actions/workflows/timer.yml/dispatches',{method:'POST',body:JSON.stringify({ref:'main',inputs:{end:String(end),kind,min:String(min),cat:cat||'',id}})})}catch(e){toast('⏰ 計時通知沒設好：'+esc(e.message))}}
+async function timerCancel(){const id=S.tpid;if(!S.ghTok||!id)return;S.tpid=null;save();
+ const tryCancel=async n=>{try{const r=await gh('/actions/workflows/timer.yml/runs?per_page=15');const w=(r&&r.workflow_runs||[]).find(x=>x.display_title==='timer-'+id);
+  if(w){if(w.status!=='completed')await gh(`/actions/runs/${w.id}/cancel`,{method:'POST'});return}if(n<4)setTimeout(()=>tryCancel(n+1),8000)}catch(e){}};tryCancel(0)}
+function timerSetup(){const st=S.ghTok?'on':'off';
+ modal(`<h2>[計時通知]</h2><p class="muted" style="line-height:1.7;margin:0 0 8px">專注或休息時間到，就算 app 關著、手機鎖著也會跳通知。要給 RESET 一把「只能操作 reset 排程」的鑰匙，做一次就好。</p>
+ <ol class="psteps"><li>先完成上面的「開啟通知」和 PUSH 設定</li><li>打開 <a href="${PAT_URL}" target="_blank" rel="noopener">建立 GitHub 鑰匙</a>（欄位都幫你填好了）</li><li><b>Repository access</b> 選 <b>Only select repositories</b> → 勾 <code>reset</code></li><li>確認 Permissions 裡 <b>Actions</b> 是 <b>Read and write</b>，按最下面 <b>Generate token</b></li><li>複製那串 <code>github_pat_…</code>，貼到下面</li></ol>
+ <input id="patin" placeholder="github_pat_…" style="width:100%;font:12px var(--mono)" autocomplete="off" autocapitalize="off" spellcheck="false">${st==='on'?'<p class="muted" style="font-size:12px;margin:6px 0 0">目前已設定。貼新的會覆蓋。</p>':''}`,
+ [['關閉','btn'],...(st==='on'?[['移除','btn red',()=>{S.ghTok=null;save();render();toast('已移除鑰匙')}]]:[]),['儲存並測試','btn pri',async()=>{const v=($('#patin')||{}).value||'';const tok=v.trim();if(!tok)return toast('先貼上鑰匙');const old=S.ghTok;S.ghTok=tok;
+  try{await gh('/actions/workflows/timer.yml');save();render();if(S.pushCfg){await timerPush('tick',Date.now()+5000,0,'');toast('<b>鑰匙可以用</b>　約 1 分鐘內會收到測試通知')}else toast('<b>鑰匙可以用</b>　再完成 PUSH 設定就會通')}
+  catch(e){S.ghTok=old;save();modal(`<h2>[計時通知]</h2><p class="muted" style="line-height:1.7">測試失敗：${esc(e.message)}<br>確認 Repository access 選了 reset，Actions 是 Read and write。</p>`,[['再試一次','btn pri',timerSetup]])}}]])}
+/* 休息計時 */
+function startBreak(min){S.brk={end:Date.now()+min*6e4,min};save();timerPush('break',S.brk.end,min,'');toast(`<b>☕ 休息 ${min} 分鐘</b>　時間到會通知你`);render()}
+function brkTick(){const b=S.brk;if(!b)return;const left=b.end-Date.now();const el=$('#btmr');
+ if(left<=0){S.brk=null;S.tpid=null;save();sfx('lv');if(!$('#modal').classList.contains('on'))modal('<h2>[休息結束]</h2><div class="bigt" style="text-align:center">☕ → ⚔️</div><p class="muted" style="text-align:center">回來再戰一場？</p>',[['等等','btn'],['開始專注','btn pri',()=>{tab='battle';S.btab='fight';render()}]]);render();return}
+ if(el){const s=Math.ceil(left/1e3);el.textContent=pad(Math.floor(s/60))+':'+pad(s%60)}}
+setInterval(brkTick,1000);
 
 /* ---------- UI 基礎 ---------- */
 function toast(h,c=''){const box=$('#toasts');while(box.children.length>=3)box.firstChild.remove();const el=document.createElement('div');el.className='toast '+c;el.innerHTML=h;box.appendChild(el);setTimeout(()=>el.remove(),2600)}
@@ -1573,11 +1600,11 @@ function vBattle0(){const b=bossInfo(),D=dun(),m=minionOf(D.floor),fd=isFightDay
  const wk=focusMin(0,7);
  h+=`<div class="panel sys"><div class="ptitle">[專注討伐]<span>本週 ${fmtHM(wk)}</span></div>`;
  if(tm){const fc=FCATS[tm.cat||'study'];h+=`<div class="ftimer ftimer2"><div>${focusStage(D.floor,STATS[fc[2]].c)}</div><div><div class="muted sm">${fc[0]} ${fc[1]}・${fmtF(tm.min)}</div><div class="timer" id="tmr">--:--</div></div></div><button class="btn red" id="giveup" style="width:100%">放棄</button>`}
- else h+=`<div class="fcats">${Object.entries(FCATS).map(([k,v])=>`<button class="${fcat===k?'on':''}" data-fcat="${k}"><span>${v[0]}</span>${v[1]}${v[2]===m.w?'<i>弱點</i>':''}</button>`).join('')}</div>
+ else{if(S.brk)h+=`<div class="brk"><span>☕ 休息中</span><b id="btmr">--:--</b><button class="btn sm" id="brkEnd">結束休息</button></div>`;h+=`<div class="fcats">${Object.entries(FCATS).map(([k,v])=>`<button class="${fcat===k?'on':''}" data-fcat="${k}"><span>${v[0]}</span>${v[1]}${v[2]===m.w?'<i>弱點</i>':''}</button>`).join('')}</div>
  <div class="fset" style="margin-top:14px"><button class="fstep" data-fstep="-5">−</button><div class="fval"><b id="fminv">${fmtF(S.fmin||25)}</b></div><button class="fstep" data-fstep="5">＋</button></div>
  <input type="range" id="fmin" min="5" max="180" step="5" value="${S.fmin||25}" class="frange">
  <div class="fstatus" id="fstat">${fStatus(S.fmin||25)}</div>
- <button class="btn pri" data-focus="go" style="width:100%;margin-top:10px;font-size:17px">⚔️ 開始</button>`;
+ <button class="btn pri" data-focus="go" style="width:100%;margin-top:10px;font-size:17px">⚔️ 開始</button>`}
  return h+'</div>'}
 
 /* ---------- 商店頁 ---------- */
@@ -1649,7 +1676,6 @@ function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務・獎�
  <div class="sw"><div><b>🔊 音效</b></div><button class="tog c ${S.sound?'on':''}" id="tSnd"></button></div>
  <div class="sw"><div><b>🌙 一天從幾點開始</b><div class="muted">凌晨勾的任務算前一天</div></div><select id="dayStart" style="width:90px">${[0,2,3,4,5,6].map(x=>`<option value="${x}" ${S.dayStart===x?'selected':''}>${pad(x)}:00</option>`).join('')}</select></div>
  <div class="sw"><div><b>🔴 圖示顯示剩幾項</b></div><button class="tog c ${S.badge?'on':''}" id="tBadge"></button></div></div>
- <div class="panel"><div class="ptitle">[每日提醒]<span>用 iPhone 的「提醒事項」</span></div><p class="muted" style="margin:0">提醒事項 app 設每天重複就好，別用捷徑「打開 URL」。</p></div>
  <div class="panel ${bkDays()>=7?'pen':''}"><div class="ptitle">[備份]<span>${S.lastBackup?'上次備份：'+(bkDays()===0?'今天':bkDays()+' 天前'):'還沒備份過'}</span></div>
  <p style="margin:0 0 10px;font-size:13px;color:var(--red)">⚠️ 刪掉 app 資料會一起消失</p>
  <button class="btn pri" id="bkFile" style="width:100%">💾 備份到檔案（存到 iCloud 雲碟）</button>
@@ -1662,7 +1688,7 @@ function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務・獎�
 
 const VIEWS={today:vToday,battle:vBattle,shop:vShop,me:vMe,log:vLog,set:vSet};
 let jDraft='',xDraft='';
-function render(){const se=season();document.body.classList.toggle('snow',!!(se&&se[5]==='snow'));header();$('#view').innerHTML=VIEWS[tab]();if(tab==='log')bindBook();if(tab==='set')photoBundle().then(b=>{window.__pb=b}).catch(()=>{});const ta=$('#jtxt');if(ta){ta.value=jDraft;ta.oninput=()=>{jDraft=ta.value}}const xt=$('#xtxt');if(xt){xt.value=xDraft;xt.oninput=()=>{xDraft=xt.value}}tick()}
+function render(){const se=season();document.body.classList.toggle('snow',!!(se&&se[5]==='snow'));header();$('#view').innerHTML=VIEWS[tab]();if(tab==='log')bindBook();if(tab==='set')photoBundle().then(b=>{window.__pb=b}).catch(()=>{});brkTick();const ta=$('#jtxt');if(ta){ta.value=jDraft;ta.oninput=()=>{jDraft=ta.value}}const xt=$('#xtxt');if(xt){xt.value=xDraft;xt.oninput=()=>{xDraft=xt.value}}tick()}
 
 /* ---------- 事件 ---------- */
 $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-tt],[data-todo],[data-tdel],[data-mon],[data-item],[data-pet],[data-gomap],[data-bt],[data-region],[data-salv],[data-poke],[data-ver],[data-enc],[data-title],[data-dnav],[data-ph],[data-dgo],[data-gotab],[data-jt],[data-jedit],[data-fstep],[data-fcat],[data-spell],[data-xdel],[data-mood],[data-jf],[data-jdel],[data-info],[data-q],[data-side],[data-day],[data-shift],[data-pen],[data-focus],[data-buy],[data-gear],[data-eq],[data-skill],[data-delr],button[id]');if(!el||el.disabled)return;const d=el.dataset;
@@ -1706,7 +1732,7 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-tt],[da
  if(d.pen){const p=S.penalties.find(x=>x.id===d.pen);return modal(`<h2>[懲罰任務]</h2><div class="bigt">${esc(p.text)}</div><p class="muted">誠實點，真的做完了？</p>`,[['還沒','btn'],['做完了','btn red',()=>{p.done=true;jlog('✅',`完成懲罰任務：${p.text}`);toast('<b>[系統]</b> 懲罰解除，商店開放');after()}]])}
  if(d.fcat){S.fcat=d.fcat;save();document.querySelectorAll('[data-fcat]').forEach(b=>b.classList.toggle('on',b.dataset.fcat===S.fcat));return fUpd()}
  if(d.fstep){S.fmin=Math.max(5,Math.min(180,(S.fmin||25)+(+d.fstep)));save();return fUpd()}
- if(d.focus){const fc=S.fcat||'study',mn=d.focus==='go'?(S.fmin||25):+d.focus;S.timer={end:Date.now()+mn*6e4,min:mn,cat:fc};save();toast(`<b>[專注討伐]</b> 開始 ${fmtF(S.timer.min)}`);return render()}
+ if(d.focus){const fc=S.fcat||'study',mn=d.focus==='go'?(S.fmin||25):+d.focus;if(S.brk){S.brk=null;timerCancel()}S.timer={end:Date.now()+mn*6e4,min:mn,cat:fc};save();timerPush('focus',S.timer.end,mn,fc);toast(`<b>[專注討伐]</b> 開始 ${fmtF(S.timer.min)}`);return render()}
  if(d.buy){const r=REWARDS.find(x=>x.id===d.buy);if(!r)return;if(pendingPen().length)return toast('先完成懲罰任務');if(S.gold<r.cost)return toast('金幣不夠');
   return modal(`<h2>[確認購買]</h2><div class="bigt">${esc(r.name)}</div><p>花費 <span class="gold">${r.cost} G</span>，剩 <span class="gold">${S.gold-r.cost} G</span></p>`,[['算了','btn'],['買','btn pri',()=>{S.gold-=r.cost;S.buys.unshift({t:Date.now(),name:r.name,cost:r.cost});jlog('🎉',`花 ${r.cost} G 兌換了「${r.name}」`);S.buys=S.buys.slice(0,50);after();sfx('lv');toast(`<b>已購買</b>　${esc(r.name)}，去享受吧`)}]])}
  switch(el.id){
@@ -1718,12 +1744,14 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-tt],[da
   case'pOn':return pushEnable();
   case'pTest':return pushLocalTest();
   case'pPrev':return pushPreview();
+  case'tSet':return timerSetup();
+  case'brkEnd':S.brk=null;timerCancel();save();return render();
   case'pCfg':return showPushCfg();
   case'todoAdd':{const v=$('#todotx').value,dd=$('#todod').value;return todoAdd(v,dd||null)}
   case'jSave':{const tx=($('#jtxt').value||'').trim();if(!tx)return toast('先寫點什麼');S.journal=S.journal||[];S.journal.unshift({t:Date.now(),d:today(),type:'user',text:tx.slice(0,2000),mood:S.jm==null?null:S.jm});
    jDraft='';S.jm=null;if(S.jxp!==today()){S.jxp=today();S.stats.SPI=(S.stats.SPI||0)+1;gain(10,0);toast('<b>[勇者日誌]</b> 今天第一篇 +10 XP　心靈 +1')}else toast('<b>已寫入日誌</b>');sfx('done');return after()}
   case'fight':return startFight();
-  case'giveup':return modal('<h2>[專注討伐]</h2><div class="bigt">確定放棄？</div><p class="muted">這場不會有獎勵，會記在專注統計裡。</p>',[['繼續撐','btn pri'],['放棄','btn red',()=>{const L=dayLog(today());L.quit=(L.quit||0)+1;S.timer=null;save();render()}]]);
+  case'giveup':return modal('<h2>[專注討伐]</h2><div class="bigt">確定放棄？</div><p class="muted">這場不會有獎勵，會記在專注統計裡。</p>',[['繼續撐','btn pri'],['放棄','btn red',()=>{const L=dayLog(today());L.quit=(L.quit||0)+1;S.timer=null;timerCancel();save();render()}]]);
   case'tHard':S.hard=!S.hard;if(S.hard)S.lastClosed=addDays(today(),-1);return after();
   case'tSnd':S.sound=!S.sound;save();sfx('done');return render();
   case'tBadge':{if(!('setAppBadge'in navigator)){toast('這裡不支援，先「加入主畫面」再從主畫面打開');return}
@@ -1754,14 +1782,14 @@ function tick(){const tm=S.timer;if(!tm)return;const left=tm.end-Date.now();
   const mk=Object.keys(MATS)[Math.floor(Math.random()*3)];S.mats[mk]++;
   if(q){const lv=fLv(q,cum),was=cleared(t),r=reward(t,q.id+'L'+lv+'F',Math.round(q.xp*ELV[lv][1]*1.5*combo),q.stat,'quest');r.lv=lv;r.amt=cum;r.focus=1;L0.done[q.id]=r;
    L0.focus.push({min:tm.min,xp:0,cat:tm.cat,q:q.id});jlog('⚔️',`專注 ${fmtF(tm.min)} 完成「${q.name}」${ELV[lv][0]}`);settle(t,was);after();
-   modal(`<h2>[專注完成]</h2>${focusHit(f0,'+'+r.xp+' XP',dun().floor>f0)}<div class="bigt" style="text-align:center">${fc[0]} 完成「${esc(q.name)}」${ELV[lv][0]}</div><p style="text-align:center;line-height:1.8"><b style="color:var(--cyan)">+${r.xp} XP</b>　<span class="gold">+${r.gold} G</span>　${MATS[mk][0]}×1<br><span class="muted sm">專注加成 ×1.5${combo>1?`・連戰 ×${combo.toFixed(1)}`:''}</span></p>`,[['讚','btn pri']]);return}
+   modal(`<h2>[專注完成]</h2>${focusHit(f0,'+'+r.xp+' XP',dun().floor>f0)}<div class="bigt" style="text-align:center">${fc[0]} 完成「${esc(q.name)}」${ELV[lv][0]}</div><p style="text-align:center;line-height:1.8"><b style="color:var(--cyan)">+${r.xp} XP</b>　<span class="gold">+${r.gold} G</span>　${MATS[mk][0]}×1<br><span class="muted sm">專注加成 ×1.5${combo>1?`・連戰 ×${combo.toFixed(1)}`:''}</span></p>`,[['☕ 休息 5 分鐘','btn',()=>startBreak(5)],['讚','btn pri']]);return}
   if(qq&&L0.done[qid]&&L0.done[qid].lv!=null){const dd=L0.done[qid],nl=fLv(qq,cum);
    if(nl>dd.lv){const u=upgradeQuest(qq,t,nl,1.5*combo,cum);L0.focus.push({min:tm.min,xp:0,cat:tm.cat,q:qid});after();
-    modal(`<h2>[專注完成]</h2>${focusHit(f0,'+'+u.r.xp+' XP',dun().floor>f0)}<div class="bigt" style="text-align:center">${fc[0]}「${esc(qq.name)}」升級到${ELV[nl][0]}</div><p style="text-align:center;line-height:1.8">今天累計 <b>${cum}</b> 分鐘<br><b style="color:var(--cyan)">+${u.r.xp} XP</b>　<span class="gold">+${u.r.gold} G</span>　${MATS[mk][0]}×1</p>`,[['讚','btn pri']]);return}
+    modal(`<h2>[專注完成]</h2>${focusHit(f0,'+'+u.r.xp+' XP',dun().floor>f0)}<div class="bigt" style="text-align:center">${fc[0]}「${esc(qq.name)}」升級到${ELV[nl][0]}</div><p style="text-align:center;line-height:1.8">今天累計 <b>${cum}</b> 分鐘<br><b style="color:var(--cyan)">+${u.r.xp} XP</b>　<span class="gold">+${u.r.gold} G</span>　${MATS[mk][0]}×1</p>`,[['☕ 休息 5 分鐘','btn',()=>startBreak(5)],['讚','btn pri']]);return}
    dd.amt=cum}
   const r=reward(t,'focus'+Date.now(),focusXP(tm.min),fc[2],'focus');L0.focus.push({min:tm.min,xp:r.xp,cat:tm.cat});
   const m=minionOf(dun().floor),weak=m.w===fc[2],hit=Math.round(tm.min*3*combo);hitMinion(hit,'focus',fc[2]);jlog('⚔️',`專注討伐：${fc[1]} ${fmtF(tm.min)}`);after();
-  modal(`<h2>[專注完成]</h2>${focusHit(f0,'-'+hit*(weak?2:1),dun().floor>f0)}<div class="bigt" style="text-align:center">${fc[0]} ${fc[1]} ${fmtF(tm.min)}</div><p style="text-align:center;line-height:1.8"><b style="color:var(--cyan)">+${r.xp} XP</b>　<span class="gold">+${r.gold} G</span>　${MATS[mk][0]}×1<br>重擊 <b>${hit*(weak?2:1)}</b>${weak?'（弱點 ×2）':''}${combo>1?`・連戰 ×${combo.toFixed(1)}`:''}</p>`,[['讚','btn pri']]);return}
+  modal(`<h2>[專注完成]</h2>${focusHit(f0,'-'+hit*(weak?2:1),dun().floor>f0)}<div class="bigt" style="text-align:center">${fc[0]} ${fc[1]} ${fmtF(tm.min)}</div><p style="text-align:center;line-height:1.8"><b style="color:var(--cyan)">+${r.xp} XP</b>　<span class="gold">+${r.gold} G</span>　${MATS[mk][0]}×1<br>重擊 <b>${hit*(weak?2:1)}</b>${weak?'（弱點 ×2）':''}${combo>1?`・連戰 ×${combo.toFixed(1)}`:''}</p>`,[['☕ 休息 5 分鐘','btn',()=>startBreak(5)],['讚','btn pri']]);return}
  const el=$('#tmr');if(el){const s=Math.ceil(left/1e3);el.textContent=pad(Math.floor(s/60))+':'+pad(s%60)}focusRing()}
 setInterval(tick,1000);
 let lastDay=today();

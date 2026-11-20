@@ -1,0 +1,33 @@
+name: RESET 計時
+run-name: timer-${{ inputs.id }}
+on:
+  workflow_dispatch:
+    inputs:
+      end:
+        description: '結束時間（毫秒）'
+        required: true
+      kind:
+        default: 'focus'
+      min:
+        default: '25'
+      cat:
+        default: ''
+      id:
+        default: 'manual'
+jobs:
+  wait-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 200
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm i web-push@3 --no-save --no-audit --no-fund
+      - run: node .github/notify.mjs
+        env:
+          PUSH: ${{ secrets.PUSH }}
+          TYPE: ${{ inputs.kind }}
+          END: ${{ inputs.end }}
+          MIN: ${{ inputs.min }}
+          CAT: ${{ inputs.cat }}
