@@ -335,6 +335,43 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 .lg{display:inline-block;width:10px;height:3px;border-radius:2px;vertical-align:3px;margin:0 2px 0 6px}
 .tdel{color:var(--mute);font-size:18px;padding:0 4px 0 10px}
 .psteps{margin:0 0 6px;padding-left:20px;line-height:1.8;font-size:13px}.psteps a{color:var(--cyan)}.psteps code{background:#0b2233;padding:1px 6px;border-radius:6px;color:var(--cyan)}
+.pvw{display:flex;flex-direction:column;gap:2px;background:#0b1424;border:1px solid #1f3352;border-radius:14px;padding:10px 12px;margin:6px 0}.pvw small{font:11px var(--mono);color:var(--mute)}.pvw b{font-size:15px}.pvw span{font-size:13px;color:#cfe3ff;line-height:1.5}
+.fstage{position:relative;text-align:center}.ffx{position:absolute;inset:0;pointer-events:none;overflow:visible}
+#fbw{display:inline-block;transform-origin:50% 80%}
+.fhit{animation:fhit .45s}@keyframes fhit{0%{filter:brightness(3) saturate(0)}20%{transform:translateX(-8px) rotate(-3deg)}45%{transform:translateX(7px) rotate(2deg)}70%{transform:translateX(-3px)}100%{filter:none;transform:none}}
+.fin{animation:fin .9s cubic-bezier(.2,1.4,.4,1)}@keyframes fin{from{transform:scale(.4) translateY(30px);opacity:0;filter:brightness(4) blur(4px)}}
+.flunge{animation:flunge .55s}@keyframes flunge{30%{transform:translateY(-10px) scale(.96)}55%{transform:translateY(26px) scale(1.12)}100%{transform:none}}
+.flungeB{animation:flungeB .55s}@keyframes flungeB{30%{transform:translateY(-16px) scale(.92);filter:brightness(1.8) hue-rotate(-20deg)}55%{transform:translateY(34px) scale(1.22)}100%{transform:none}}
+.fdie{animation:fdie 1.6s forwards}@keyframes fdie{20%{filter:brightness(3)}100%{transform:scale(1.25) translateY(-10px);opacity:0;filter:brightness(2) blur(8px)}}
+.fshk{animation:fshk .35s}@keyframes fshk{25%{transform:translate(-5px,3px)}50%{transform:translate(5px,-3px)}75%{transform:translate(-3px,2px)}}
+.fflash{animation:fflash .3s}@keyframes fflash{40%{box-shadow:0 0 0 200vmax rgba(220,235,255,.55)}}
+.fred{animation:fred .45s}@keyframes fred{40%{box-shadow:inset 0 0 70px rgba(255,40,60,.85),0 0 30px rgba(255,40,60,.6)}}
+.fredS{animation:fredS .45s}@keyframes fredS{40%{box-shadow:inset 0 0 40px rgba(255,40,60,.55)}}
+.fgray{filter:grayscale(.85);transition:filter 1s}
+#mcard.fbusy [data-fa]{opacity:.45;pointer-events:none}
+#pbox{position:relative;border-radius:12px;padding:2px 0}
+.fheal{animation:fheal .9s}@keyframes fheal{40%{box-shadow:0 0 22px #3ee08f,inset 0 0 14px #3ee08f}}
+.fshield{animation:fshield .9s}@keyframes fshield{40%{box-shadow:0 0 0 3px #4fd1ff,0 0 26px #4fd1ff}}
+.frage{animation:frage .9s}@keyframes frage{40%{box-shadow:0 0 0 3px #ff5d6c,0 0 26px #ff5d6c}}
+.fnum{position:absolute;transform:translateX(-50%);font:900 22px var(--mono);color:#fff;text-shadow:0 2px 0 #000,0 0 12px rgba(255,255,255,.6);animation:fnum 1.2s ease-out forwards;white-space:nowrap;z-index:5}
+.fnum.big{font-size:32px}.fnum.gold{color:#f5c451;text-shadow:0 2px 0 #000,0 0 16px #f5c451}.fnum.fire{color:#fb923c}.fnum.bolt{color:#bfe9ff}.fnum.heal{color:#3ee08f;font-size:18px}.fnum.hurt{color:#ff5d6c;font-size:18px}.fnum.hurt.big{font-size:24px}.fnum.stun{color:#bfe9ff;font-size:16px}
+@keyframes fnum{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}15%{opacity:1;transform:translate(-50%,-6px) scale(1.15)}30%{transform:translate(-50%,-10px) scale(1)}100%{opacity:0;transform:translate(-50%,-50px)}}
+.fxw{position:absolute;inset:0;pointer-events:none}
+.slash{position:absolute;left:12%;top:5%;width:76%;height:85%;overflow:visible}.slash path{fill:none;stroke:#fff;stroke-width:5;stroke-linecap:round;stroke-dasharray:140;stroke-dashoffset:140;filter:drop-shadow(0 0 6px #fff);animation:slash .35s ease-out forwards}
+.slash.crit path{stroke:#f5c451;stroke-width:8;filter:drop-shadow(0 0 10px #f5c451)}@keyframes slash{60%{stroke-dashoffset:0;opacity:1}100%{stroke-dashoffset:0;opacity:0}}
+.spk{position:absolute;left:50%;top:45%;width:6px;height:6px;border-radius:50%;animation:spk .7s ease-out forwards}@keyframes spk{from{transform:translate(0,0) scale(1.4);opacity:1}to{transform:translate(var(--dx),var(--dy)) scale(.2);opacity:0}}
+.fball{position:absolute;left:50%;bottom:-30px;width:34px;height:34px;margin-left:-17px;border-radius:50%;background:radial-gradient(circle,#fff6c2,#fb923c 45%,#ef4444 75%,transparent);box-shadow:0 0 30px #fb923c;animation:fball .45s ease-in forwards}@keyframes fball{to{transform:translateY(-150px) scale(1.6);opacity:.9}}
+.bolt{position:absolute;left:30%;top:-10%;width:40%;height:100%;overflow:visible}.bolt polyline{fill:none;stroke:#e0f2ff;stroke-width:5;stroke-linejoin:round;filter:drop-shadow(0 0 10px #7dd3fc);animation:boltf .45s forwards}@keyframes boltf{0%,40%{opacity:1}20%,60%{opacity:.2}100%{opacity:0}}
+.beam{position:absolute;left:50%;top:-20px;bottom:-10px;width:40px;margin-left:-20px;background:linear-gradient(90deg,transparent,#fff 40%,#4fd1ff,#fff 60%,transparent);filter:blur(2px);animation:beam .7s forwards}@keyframes beam{0%{transform:scaleX(0);opacity:0}25%{transform:scaleX(1.4);opacity:1}100%{transform:scaleX(0);opacity:0}}
+.fbanner{position:absolute;left:0;right:0;top:38%;text-align:center;font:900 34px var(--mono);letter-spacing:.2em;animation:fban 1.8s forwards}.fbanner.win{color:#f5c451;text-shadow:0 0 20px #f5c451}.fbanner.lose{color:#ff5d6c;text-shadow:0 0 20px #ff5d6c}@keyframes fban{0%{opacity:0;transform:scale(2)}20%{opacity:1;transform:scale(1)}75%{opacity:1}100%{opacity:0}}
+.bar u{position:absolute;left:0;top:0;bottom:0;background:rgba(255,255,255,.55);transition:width .6s ease-in;z-index:0}.bar.fbar{position:relative}.bar.fbar>i{position:relative;z-index:1}
+.fstg{position:relative;width:120px;height:120px;margin:0 auto}.fringsvg{position:absolute;inset:0}.fmon{position:absolute;inset:12px;display:grid;place-items:center}.fmon.idle{animation:idle 2.6s ease-in-out infinite}@keyframes idle{50%{transform:translateY(-4px) scale(1.02)}}
+.fp{position:absolute;bottom:14px;width:5px;height:5px;border-radius:50%;background:var(--c);box-shadow:0 0 8px var(--c);animation:fp 3.3s linear infinite;opacity:0}@keyframes fp{0%{transform:translateY(0);opacity:0}15%{opacity:.9}100%{transform:translateY(-90px);opacity:0}}
+.fpct{position:absolute;left:0;right:0;bottom:-4px;text-align:center;font:700 11px var(--mono);color:var(--mute)}
+.ftimer2{display:grid;grid-template-columns:120px 1fr;align-items:center;gap:14px;margin-bottom:10px}
+.fdone{position:relative;width:180px;height:150px;margin:0 auto}.fdm{display:grid;place-items:center;height:100%;animation:fdm 1.4s forwards}@keyframes fdm{0%{filter:brightness(1)}25%{filter:brightness(1)}32%{filter:brightness(3);transform:translateX(-8px)}40%{transform:translateX(8px)}50%{transform:none;filter:none}}
+.fdone .slash.d1 path{animation-delay:.3s}.fdone .slash.d2 path{animation-delay:.5s}.fdone .fnum.d3{left:50%;top:30%;opacity:0;animation:fnum 1.5s ease-out .55s forwards}
+.fko{position:absolute;left:0;right:0;top:40%;text-align:center;font:900 28px var(--mono);color:#ff5d6c;letter-spacing:.3em;text-shadow:0 0 14px #ff5d6c;opacity:0;animation:fban 2s .7s forwards}
 </style>
 </head>
 <body>
@@ -359,7 +396,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v28・11/21 01:10';
+const VER='v29・11/21 01:40';
 'use strict';
 /* =====================================================================
    RESET 系統 v4
@@ -593,7 +630,7 @@ function hitBoss(){}
 /* ---------- 獎勵 ---------- */
 function gain(xp,gold){const before=lvInfo(S.xp).lv;S.xp+=xp;S.gold+=gold;const after=lvInfo(S.xp).lv;
  if(after>before){sfx('lv');const r0=rankOf(before),r1=rankOf(after);jlog('⬆️',`升到 Lv.${after}`);if(r1[1]!==r0[1])jlog('👑',`晉升 ${r1[1]} 級・${r1[2]}`);
-  setTimeout(()=>modal(`<h2>[系統] LEVEL UP</h2><div style="text-align:center">${avatarSvg(120)}</div><div class="bigt" style="text-align:center">Lv.${before} → <span style="color:var(--cyan)">Lv.${after}</span></div>${r1[1]!==r0[1]?`<p style="text-align:center">階級提升：<b style="color:var(--gold)">${r1[1]} 級・${r1[2]}</b></p>`:''}<p class="muted" style="text-align:center">${newUnlocks(before,after)}</p>`,[['繼續','btn pri']]),250)}}
+  setTimeout(()=>qModal(`<h2>[系統] LEVEL UP</h2><div style="text-align:center">${avatarSvg(120)}</div><div class="bigt" style="text-align:center">Lv.${before} → <span style="color:var(--cyan)">Lv.${after}</span></div>${r1[1]!==r0[1]?`<p style="text-align:center">階級提升：<b style="color:var(--gold)">${r1[1]} 級・${r1[2]}</b></p>`:''}<p class="muted" style="text-align:center">${newUnlocks(before,after)}</p>`,[['繼續','btn pri']]),250)}}
 function newUnlocks(a,b){const u=[];for(const k in GEAR)for(const it of GEAR[k].items)if(it[2]>a&&it[2]<=b)u.push(it[1]);return u.length?'商店解鎖：'+u.join('、'):'繼續變強。'}
 function reward(t,key,base,stat,kind){let m=1+(t===today()?buffOn('x'):0)+affix('xp')+(S.pet&&S.pet.sp&&PETS[S.pet.sp].stat===stat?petBuff():0);if(kind==='quest'&&t===today()){const n=new Date(),hh=n.getHours()+n.getMinutes()/60;if(hh>=4&&hh<6.5)setEgg('dawn')}if(kind==='quest'&&skl('grit')&&streak()>=7)m+=.05*skl('grit');if(kind==='side')m+=.2*skl('curio');if(kind==='focus')m+=.25*skl('focus');
  const crit=srand(t+key+'c')<critRate()+(t===today()?buffOn('crit'):0),xp=Math.round(base*m*(crit?2:1));
@@ -974,35 +1011,36 @@ function predict(b){const p=pStats(),ch=chargeOf(S.boss.week),est=ch+p.atk*FIGHT
 /* ---------- Boss 決戰 ---------- */
 let F=null;
 function startFight(){const b=bossInfo();if(S.boss.fought)return toast('這週已經挑戰過了');if(!isFightDay())return toast('決戰日是週六、週日');
- const p=pStats();F={L:p.L,b,bs:bossStats(b),php:p.hp,pmax:p.hp,atk:p.atk,crit:p.crit,bhp:b.hp,turn:0,used:0,shield:0,rage:0,stun:0,log:[],done:false};
+ const p=pStats();F={L:p.L,b,bs:bossStats(b),php:p.hp,pmax:p.hp,atk:p.atk,crit:p.crit,bhp:b.hp,sb:b.hp,sp:p.hp,turn:0,used:0,shield:0,rage:0,stun:0,log:[],done:false,fx:[{k:'intro'}]};
  S.boss.fought=true;save();const ch=chargeOf(S.boss.week);
- F.log.push(`⚔️ 決戰開始！`);if(ch>0){F.bhp=Math.max(0,F.bhp-ch);F.log.push(`💥 蓄力一擊！本週的努力化成 <b>${ch}</b> 點傷害`)}
+ F.log.push(`⚔️ 決戰開始！`);if(ch>0){F.bhp=Math.max(0,F.bhp-ch);F.log.push(`💥 蓄力一擊！本週的努力化成 <b>${ch}</b> 點傷害`);fxEv({k:'charge',dmg:ch,bTo:F.bhp})}
  sfx('crit');drawFight();if(F.bhp<=0)endFight(true)}
 function drawFight(){const b=F.b,inv=SPELLS.filter(s=>(S.items[s.id]||0)>0);
- const bar=(v,m,c)=>`<div class="bar ${c}" style="height:10px"><i style="width:${Math.max(0,v/m*100)}%"></i></div>`;
- let h=`<h2>[BOSS 決戰]　第 ${Math.min(F.turn+1,FIGHT_TURNS)}/${FIGHT_TURNS} 回合</h2><div style="text-align:center" class="${F.hitFx?'shake':''}">${bossSvg(b.i,b.t,170,F.done&&F.bhp<=0)}</div>
- <div class="row" style="justify-content:space-between;font:12px var(--mono)"><b>${b.name}</b><span>${Math.max(0,F.bhp)} / ${b.hp}</span></div>${bar(F.bhp,b.hp,'red')}
- <div class="row" style="justify-content:space-between;font:12px var(--mono);margin-top:8px"><b>你</b><span>${Math.max(0,F.php)} / ${F.pmax} HP${F.shield?'・🛡️'+F.shield:''}${F.rage?'・💢'+F.rage:''}</span></div>${bar(F.php,F.pmax,'')}
+ const fbar=(id,v,m,c)=>`<div class="bar fbar ${c}" id="${id}" style="height:10px"><u style="width:${Math.max(0,v/m*100)}%"></u><i style="width:${Math.max(0,v/m*100)}%"></i></div>`;
+ let h=`<h2>[BOSS 決戰]　第 ${Math.min(F.turn+1,FIGHT_TURNS)}/${FIGHT_TURNS} 回合</h2><div class="fstage"><div id="fbw">${bossSvg(b.i,b.t,170,F.done&&F.bhp<=0&&!(F.fx&&F.fx.length))}</div><div class="ffx" id="ffx"></div></div>
+ <div class="row" style="justify-content:space-between;font:12px var(--mono)"><b>${b.name}</b><span>${Math.max(0,F.bhp)} / ${b.hp}</span></div>${fbar('bbar',F.sb,b.hp,'red')}
+ <div id="pbox"><div class="row" style="justify-content:space-between;font:12px var(--mono);margin-top:8px"><b>你</b><span>${Math.max(0,F.php)} / ${F.pmax} HP${F.shield?'・🛡️'+F.shield:''}${F.rage?'・💢'+F.rage:''}</span></div>${fbar('pbar',F.sp,F.pmax,'')}</div>
  <div class="flog">${F.log.slice(-4).map(x=>`<div>${x}</div>`).join('')}</div>`;
  if(!F.done){h+=`<div class="fact"><button class="btn pri" data-fa="atk">⚔️ 攻擊（${F.atk}${F.rage?'×1.8':''}）</button></div>`;
   h+=inv.length&&F.used<SPELL_MAX?`<div class="fsp">${inv.map(s=>`<button class="btn sm" data-fa="${s.id}">${s.ic} ${s.n}×${S.items[s.id]}</button>`).join('')}</div><p class="muted" style="font-size:11px;margin:4px 0 0;text-align:center">魔法 ${F.used}/${SPELL_MAX}</p>`:`<p class="muted" style="font-size:12px;text-align:center;margin:6px 0 0">${inv.length?'魔法次數用完了':'沒有魔法，可以先去商店買'}</p>`}
- modal(h,F.done?[['結束','btn pri',()=>{F=null;render()}]]:[]);F.hitFx=false;
- $('#mcard').onclick=e=>{const x=e.target.closest('[data-fa]');if(!x||!F||F.done)return;fightTurn(x.dataset.fa)}}
-function fightTurn(a){const roll=()=>.85+Math.random()*.3;let dmg=0;
- if(a==='atk'){const c=Math.random()<F.crit;dmg=Math.round(F.atk*(F.rage?1.8:1)*roll()*(c?2:1));F.log.push(`${c?'⚡ 暴擊！':'⚔️ '}你造成 <b>${dmg}</b> 點傷害`);sfx(c?'crit':'done')}
+ modal(h,F.done?[['結束','btn pri',()=>{F=null;render()}]]:[]);$('#mcard').classList.remove('fgray');
+ $('#mcard').onclick=e=>{const x=e.target.closest('[data-fa]');if(!x||!F||F.done||F.busy)return;fightTurn(x.dataset.fa)};
+ if(F.fx&&F.fx.length)playFx();else{fxBar('bbar',F.bhp,b.hp);fxBar('pbar',F.php,F.pmax)}F.sb=F.bhp;F.sp=F.php}
+function fightTurn(a){if(!F||F.busy)return;const roll=()=>.85+Math.random()*.3;let dmg=0,crit=false,hv=0;
+ if(a==='atk'){const c=Math.random()<F.crit;crit=c;dmg=Math.round(F.atk*(F.rage?1.8:1)*roll()*(c?2:1));F.log.push(`${c?'⚡ 暴擊！':'⚔️ '}你造成 <b>${dmg}</b> 點傷害`);sfx(c?'crit':'done')}
  else{const sp=SPELLS.find(s=>s.id===a);if(!S.items[a]||F.used>=SPELL_MAX)return;S.items[a]--;F.used++;
   if(a==='fire'){dmg=60+F.L*4;F.log.push(`🔥 火球術！<b>${dmg}</b> 點傷害`)}
   if(a==='bolt'){dmg=30+F.L*2;F.stun=1;F.log.push(`⚡ 雷擊！<b>${dmg}</b> 點傷害，Boss 麻痺了`)}
-  if(a==='heal'){const hv=60+F.L*3;F.php=Math.min(F.pmax,F.php+hv);F.log.push(`💚 治癒術，回復 ${hv} HP`)}
-  if(a==='shield'){F.shield=2;F.log.push('🛡️ 護盾展開，2 回合傷害減半')}
-  if(a==='rage'){F.rage=3;F.log.push('💢 狂暴！3 回合攻擊力 ×1.8')}sfx('chest')}
- if(dmg){F.bhp-=dmg;F.hitFx=true}
+  if(a==='heal'){hv=60+F.L*3;F.php=Math.min(F.pmax,F.php+hv);fxEv({k:'heal',hv,pTo:F.php});F.log.push(`💚 治癒術，回復 ${hv} HP`)}
+  if(a==='shield'){F.shield=2;fxEv({k:'shield'});F.log.push('🛡️ 護盾展開，2 回合傷害減半')}
+  if(a==='rage'){F.rage=3;fxEv({k:'rage'});F.log.push('💢 狂暴！3 回合攻擊力 ×1.8')}sfx('chest')}
+ if(dmg){F.bhp-=dmg;fxEv({k:a==='atk'?'atk':a,dmg,crit,bTo:Math.max(0,F.bhp)})}
  if(a==='atk'&&F.rage)F.rage--;
  if(F.bhp<=0)return endFight(true);
- if(F.stun){F.stun=0;F.log.push(`${F.b.name} 麻痺中，無法行動`)}
- else{const big=(F.turn+1)%3===0;let bd=Math.round(F.bs.atk*(big?1.8:1)*roll());if(F.shield){bd=Math.round(bd/2);F.shield--}F.php-=bd;F.log.push(`${big?'☄️ '+F.b.name+' 放出大招！':'👊 '+F.b.name+' 攻擊'}，你受到 <b>${bd}</b> 傷害`)}
+ if(F.stun){F.stun=0;F.log.push(`${F.b.name} 麻痺中，無法行動`);fxEv({k:'stun'})}
+ else{const big=(F.turn+1)%3===0;let bd=Math.round(F.bs.atk*(big?1.8:1)*roll());if(F.shield){bd=Math.round(bd/2);F.shield--}F.php-=bd;F.log.push(`${big?'☄️ '+F.b.name+' 放出大招！':'👊 '+F.b.name+' 攻擊'}，你受到 <b>${bd}</b> 傷害`);fxEv({k:'boss',dmg:bd,big,pTo:Math.max(0,F.php)})}
  F.turn++;if(F.php<=0)return endFight(false);if(F.turn>=FIGHT_TURNS)return endFight(false,true);drawFight()}
-function endFight(win,timeout){F.done=true;const b=F.b;
+function endFight(win,timeout){F.done=true;const b=F.b;fxEv({k:win?'win':'lose'});
  if(win){S.boss.dead=true;S.bossKills++;jlog('💀',`決戰勝利！擊敗 ${b.name}（第 ${S.bossKills} 隻）`);gain(b.xp,b.gold);sfx('lv');
   F.log.push(`🏆 勝利！<span class="gold">+${b.gold} G</span> <b style="color:var(--cyan)">+${b.xp} XP</b>`);
   if(S.boss.rematch&&S.stolen){const gg=gearById(S.stolen);giveGear(S.stolen);jlog('🛡️',`復仇成功，奪回「${gg.it[1]}」`);F.log.push(`🛡️ 奪回了 ${gg.it[1]}！`);S.stolen=null}
@@ -1393,8 +1431,12 @@ const b64u=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,
 const ub64=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
 function metaPut(k,v){try{const r=indexedDB.open('reset_meta',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>{try{r.result.transaction('kv','readwrite').objectStore('kv').put(v,k)}catch(e){}}}catch(e){}}
 var stT=null;
-function pushStatus(){clearTimeout(stT);stT=setTimeout(()=>{try{const t=today(),act=actives(t),L=S.log[t],left=act.filter(q=>!(L&&L.done&&L.done[q.id])).map(q=>QSHORT[q.group||q.id]||q.gname||q.name),c=S.pet&&petCalc(),hatched=!!(S.pet&&S.pet.sp&&c&&c.stage>=1);
- metaPut('status',{d:t,ds:S.dayStart||0,left:[...new Set(left)],total:act.length,done:doneCount(t),need:need(t),cleared:cleared(t),streak:streak(),pet:hatched?petName():'',weak:hatched&&c.mood===0,at:Date.now()})}catch(e){}},600)}
+const QUICK={med:'冥想 1 分鐘',esp:'西文 5 分鐘',study:'讀書 10 分鐘',train:'散步或伸展 30 分鐘',woop:'寫今天的 1 件事',review:'復盤寫 1 行',nophone:'手機拿出房間',weekly:'每週回顧'};
+function pushStatus(){clearTimeout(stT);stT=setTimeout(()=>{try{const t=today(),act=actives(t),L=S.log[t],miss=act.filter(q=>!(L&&L.done&&L.done[q.id])),c=S.pet&&petCalc(),hatched=!!(S.pet&&S.pet.sp&&c&&c.stage>=1),m=mapInfo(),sk=streak(),b=bossInfo(),wd=parse(t).getDay();
+ const order=['med','esp','woop','review','study','train','nophone','weekly'],quick=miss.filter(q=>QUICK[q.id]).sort((x,y)=>order.indexOf(x.id)-order.indexOf(y.id)).map(q=>QUICK[q.id]);
+ metaPut('status',{d:t,ds:S.dayStart||0,left:[...new Set(miss.map(q=>QSHORT[q.group||q.id]||q.gname||q.name))],quick,total:act.length,done:doneCount(t),need:need(t),cleared:cleared(t),streak:sk,ym:yMissed(),ms:STREAK_MS.find(x=>x>sk)||null,
+  pet:hatched?petName():'',weak:hatched&&c.mood===0,egg:S.pet&&!hatched?Math.max(0,PSTAGE[1]-c.b):null,mapLeft:m.left,mapNext:m.nx?m.nx.n:'塔頂',
+  due:(S.todos||[]).filter(x=>!x.done&&x.d&&x.d<=t).map(x=>x.t),boss:(wd===0||wd===6)&&!S.boss.dead,bossName:b&&b.name,region:REGIONS[m.r].n,minion:minionOf(dun().floor).n,diary:!!(S.diary&&S.diary[t]&&(S.diary[t].text||'').trim()),at:Date.now()})}catch(e){}},600)}
 const pushOK=()=>'serviceWorker'in navigator&&'PushManager'in window&&'Notification'in window;
 const isApp=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
 const pushState=()=>!pushOK()?'none':Notification.permission==='denied'?'denied':Notification.permission==='granted'&&S.pushCfg?'on':'off';
@@ -1412,11 +1454,45 @@ function showPushCfg(){if(!S.pushCfg)return;
  modal(`<h2>[通知] 最後一步</h2><p class="muted" style="line-height:1.7;margin:0 0 8px">把這串設定碼存到 GitHub，排程就會準時推播給你。只要做一次。</p>
  <ol class="psteps"><li>按下面「複製設定碼」</li><li>打開 <a href="${PUSH_REPO}/settings/secrets/actions/new" target="_blank" rel="noopener">GitHub 新增 Secret</a></li><li>Name 填 <code>PUSH</code>，Secret 貼上，按 Add secret</li><li>打開 <a href="${PUSH_REPO}/actions/workflows/notify.yml" target="_blank" rel="noopener">RESET 通知</a> → Run workflow → 直接按綠色的 Run workflow，幾十秒內收到「通知測試成功」</li></ol>
  <textarea readonly id="pcfg" style="width:100%;height:64px;font:10px var(--mono);margin-top:4px">${S.pushCfg}</textarea>`,[['關閉','btn'],['複製設定碼','btn pri',()=>{const v=S.pushCfg;(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast('<b>已複製</b>　去 GitHub 貼上')).catch(()=>{showPushCfg();setTimeout(()=>{const a=$('#pcfg');if(a){a.focus();a.select()}},300);toast('請長按設定碼全選複製')})}]])}
+function pushPreview(){if(!('serviceWorker'in navigator)||!navigator.serviceWorker.controller)return toast('從主畫面的 RESET 打開才能預覽');pushStatus();
+ setTimeout(()=>{const ch=new MessageChannel();ch.port1.onmessage=e=>{const o=e.data||{},row=(k,n,tm)=>o[k]?`<div class="pvw"><small>${tm}・${n}</small><b>${esc(o[k][0])}</b><span>${esc(o[k][1])}</span></div>`:'';
+  modal(`<h2>[通知預覽]</h2><p class="muted" style="margin:0 0 8px;font-size:12px">照你「現在」的進度，三個時段會收到：</p>${row('morning','早上','08:23')}${row('evening','晚上','21:17')}${row('night','睡前','23:47')}<p class="muted" style="font-size:11px;margin:8px 0 0">同樣的狀況每次的說法會換。</p>`,[['關閉','btn'],['推一則試試','btn pri',()=>navigator.serviceWorker.controller.postMessage({preview:1,show:'evening'})]])};
+  navigator.serviceWorker.controller.postMessage({preview:1},[ch.port2])},700)}
 async function pushLocalTest(){try{const reg=await navigator.serviceWorker.ready;await reg.showNotification('🔔 本機測試',{body:'看到這則，代表通知權限開好了。',icon:'icon.png',tag:'local'});toast('已送出本機測試通知')}catch(e){toast('送不出去：'+esc(String(e&&e.message||e)))}}
 function pushPanel(){const st=pushState();
  return`<div class="panel"><div class="ptitle">[通知]<span>${st==='on'?'<b style="color:var(--green,#3ee08f)">已開啟</b>':st==='denied'?'被拒絕':'未開啟'}</span></div>
- <p class="muted" style="margin:0 0 8px;font-size:12px;line-height:1.6">每天 08:23 早安、21:17 提醒還差哪幾項、23:47 叫你放下手機。內容依你當下的進度自動變化。</p>
- ${st==='on'?`<div class="row"><button class="btn sm grow" id="pTest">本機測試</button><button class="btn sm grow" id="pCfg">設定碼</button></div>`:`<button class="btn cy" id="pOn" style="width:100%">🔔 開啟通知</button>`}</div>`}
+ <p class="muted" style="margin:0 0 8px;font-size:12px;line-height:1.6">每天 08:23、21:17、23:47 各一則。看你差什麼、連續是不是快斷、夥伴餓不餓，說法每次都不一樣。</p>
+ ${st==='on'?`<div class="row"><button class="btn sm grow" id="pPrev">預覽通知</button><button class="btn sm grow" id="pCfg">設定碼</button></div>`:`<button class="btn cy" id="pOn" style="width:100%">🔔 開啟通知</button>`}</div>`}
+
+/* ---------- 戰鬥與專注動畫 ---------- */
+const fxEv=e=>{if(F){F.fx=F.fx||[];F.fx.push(e)}};
+function fxNum(host,txt,cls,x,y){if(!host)return;const e=document.createElement('div');e.className='fnum '+(cls||'');e.textContent=txt;e.style.left=(x!=null?x:42+Math.random()*16)+'%';e.style.top=(y!=null?y:38)+'%';host.appendChild(e);setTimeout(()=>e.remove(),1300)}
+function fxAdd(host,html,ms){if(!host)return;const w=document.createElement('div');w.className='fxw';w.innerHTML=html;host.appendChild(w);setTimeout(()=>w.remove(),ms||900)}
+function fxCls(el,c,ms){if(!el)return;el.classList.remove(c);void el.offsetWidth;el.classList.add(c);setTimeout(()=>el.classList.remove(c),ms||500)}
+const fxBar=(id,v,m)=>{const b=$('#'+id);if(!b)return;const p=Math.max(0,v/m*100)+'%';const i=b.querySelector('i'),u=b.querySelector('u');if(i)i.style.width=p;if(u)setTimeout(()=>{u.style.width=p},380)};
+const sparks=(n,c)=>Array.from({length:n},(_,i)=>{const a=i/n*Math.PI*2,r=40+Math.random()*30;return`<i class="spk" style="--dx:${Math.cos(a)*r}px;--dy:${Math.sin(a)*r}px;background:${c};animation-delay:${Math.random()*.08}s"></i>`}).join('');
+function playFx(){if(!F||!F.fx||!F.fx.length){F&&(F.busy=false);return}
+ const Q=F.fx.splice(0),host=$('#ffx'),boss=$('#fbw'),card=$('#mcard'),pb=$('#pbox');F.busy=true;card&&card.classList.add('fbusy');let t=0;
+ const at=(ms,fn)=>setTimeout(()=>{try{fn()}catch(e){}},ms);
+ for(const e of Q){
+  if(e.k==='intro'){at(t,()=>{fxCls(boss,'fin',900)});t+=700}
+  else if(e.k==='charge'){at(t,()=>{fxAdd(host,'<div class="beam"></div>',800);fxCls(boss,'fhit',450);fxCls(card,'fshk',400);fxNum(host,'-'+e.dmg,'big gold');fxBar('bbar',e.bTo,F.b.hp)});t+=900}
+  else if(e.k==='atk'){at(t,()=>{fxAdd(host,`<svg class="slash ${e.crit?'crit':''}" viewBox="0 0 100 100"><path d="M8 82 Q52 52 94 12"/></svg>${e.crit?sparks(10,'#f5c451'):''}`,600);fxCls(boss,'fhit',450);if(e.crit)fxCls(card,'fshk',400);fxNum(host,(e.crit?'暴擊 ':'')+'-'+e.dmg,e.crit?'big gold':'');fxBar('bbar',e.bTo,F.b.hp)});t+=650}
+  else if(e.k==='fire'){at(t,()=>{fxAdd(host,'<div class="fball"></div>',700)});at(t+420,()=>{fxAdd(host,sparks(14,'#fb923c'),700);fxCls(boss,'fhit',450);fxNum(host,'-'+e.dmg,'fire');fxBar('bbar',e.bTo,F.b.hp)});t+=900}
+  else if(e.k==='bolt'){at(t,()=>{fxAdd(host,'<svg class="bolt" viewBox="0 0 100 100"><polyline points="55,0 40,38 58,42 38,100"/></svg>',500);fxCls(card,'fflash',300);fxCls(boss,'fhit',450);fxNum(host,'-'+e.dmg,'bolt');fxBar('bbar',e.bTo,F.b.hp)});t+=750}
+  else if(e.k==='heal'){at(t,()=>{fxCls(pb,'fheal',900);fxNum(pb,'+'+e.hv,'heal',70,0);fxBar('pbar',e.pTo,F.pmax)});t+=700}
+  else if(e.k==='shield'){at(t,()=>{fxCls(pb,'fshield',900)});t+=600}
+  else if(e.k==='rage'){at(t,()=>{fxCls(pb,'frage',900)});t+=600}
+  else if(e.k==='stun'){at(t,()=>{fxNum(host,'麻痺中','stun')});t+=500}
+  else if(e.k==='boss'){at(t,()=>{fxCls(boss,e.big?'flungeB':'flunge',550)});at(t+260,()=>{fxCls(card,e.big?'fred':'fredS',450);fxCls(pb,'fshk',350);fxNum(pb,'-'+e.dmg,e.big?'hurt big':'hurt',70,0);fxBar('pbar',e.pTo,F.pmax)});t+=800}
+  else if(e.k==='win'){at(t,()=>{fxCls(boss,'fdie',1600);fxAdd(host,sparks(18,'#f5c451')+'<div class="fbanner win">VICTORY</div>',1800)});t+=900}
+  else if(e.k==='lose'){at(t,()=>{card&&card.classList.add('fgray');fxAdd(host,'<div class="fbanner lose">DEFEAT</div>',1800)});t+=900}}
+ at(t,()=>{if(F)F.busy=false;card&&card.classList.remove('fbusy')})}
+/* 專注：蓄力圈 */
+function focusRing(){const tm=S.timer;if(!tm)return;const el=$('#fring');if(!el)return;const tot=tm.min*60e3,p=Math.max(0,Math.min(1,1-(tm.end-Date.now())/tot)),c=2*Math.PI*52;el.style.strokeDashoffset=c*(1-p);const pc=$('#fpct');if(pc)pc.textContent=Math.floor(p*100)+'%'}
+function focusStage(f,col){const c=2*Math.PI*52;return`<div class="fstg"><svg viewBox="0 0 120 120" class="fringsvg"><circle cx="60" cy="60" r="52" fill="none" stroke="#16223a" stroke-width="6"/><circle id="fring" cx="60" cy="60" r="52" fill="none" stroke="${col}" stroke-width="6" stroke-linecap="round" stroke-dasharray="${c}" stroke-dashoffset="${c}" transform="rotate(-90 60 60)" style="filter:drop-shadow(0 0 6px ${col})"/></svg><div class="fmon idle">${minionSvg(f,96)}</div><i class="fp" style="--c:${col};left:22%;animation-delay:0s"></i><i class="fp" style="--c:${col};left:70%;animation-delay:1.1s"></i><i class="fp" style="--c:${col};left:48%;animation-delay:2.2s"></i><div class="fpct" id="fpct">0%</div></div>`}
+/* 專注完成：斬擊演出 */
+const focusHit=(f,txt,kill)=>`<div class="fdone"><div class="fdm">${minionSvg(f,130)}</div><svg class="slash crit d1" viewBox="0 0 100 100"><path d="M8 82 Q52 52 94 12"/></svg><svg class="slash d2" viewBox="0 0 100 100"><path d="M10 16 Q50 46 92 84"/></svg><div class="fnum big gold d3">${txt}</div>${kill?'<div class="fko">擊破</div>':''}</div>`;
 
 /* ---------- UI 基礎 ---------- */
 function toast(h,c=''){const box=$('#toasts');while(box.children.length>=3)box.firstChild.remove();const el=document.createElement('div');el.className='toast '+c;el.innerHTML=h;box.appendChild(el);setTimeout(()=>el.remove(),2600)}
@@ -1496,7 +1572,7 @@ function vBattle0(){const b=bossInfo(),D=dun(),m=minionOf(D.floor),fd=isFightDay
  const tm=S.timer;
  const wk=focusMin(0,7);
  h+=`<div class="panel sys"><div class="ptitle">[專注討伐]<span>本週 ${fmtHM(wk)}</span></div>`;
- if(tm){const fc=FCATS[tm.cat||'study'];h+=`<div class="ftimer"><div>${minionSvg(D.floor,90)}</div><div><div class="muted sm">${fc[0]} ${fc[1]}・${fmtF(tm.min)}</div><div class="timer" id="tmr">--:--</div></div></div><button class="btn red" id="giveup" style="width:100%">放棄</button>`}
+ if(tm){const fc=FCATS[tm.cat||'study'];h+=`<div class="ftimer ftimer2"><div>${focusStage(D.floor,STATS[fc[2]].c)}</div><div><div class="muted sm">${fc[0]} ${fc[1]}・${fmtF(tm.min)}</div><div class="timer" id="tmr">--:--</div></div></div><button class="btn red" id="giveup" style="width:100%">放棄</button>`}
  else h+=`<div class="fcats">${Object.entries(FCATS).map(([k,v])=>`<button class="${fcat===k?'on':''}" data-fcat="${k}"><span>${v[0]}</span>${v[1]}${v[2]===m.w?'<i>弱點</i>':''}</button>`).join('')}</div>
  <div class="fset" style="margin-top:14px"><button class="fstep" data-fstep="-5">−</button><div class="fval"><b id="fminv">${fmtF(S.fmin||25)}</b></div><button class="fstep" data-fstep="5">＋</button></div>
  <input type="range" id="fmin" min="5" max="180" step="5" value="${S.fmin||25}" class="frange">
@@ -1641,6 +1717,7 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-tt],[da
   case'dcal':return openCal();
   case'pOn':return pushEnable();
   case'pTest':return pushLocalTest();
+  case'pPrev':return pushPreview();
   case'pCfg':return showPushCfg();
   case'todoAdd':{const v=$('#todotx').value,dd=$('#todod').value;return todoAdd(v,dd||null)}
   case'jSave':{const tx=($('#jtxt').value||'').trim();if(!tx)return toast('先寫點什麼');S.journal=S.journal||[];S.journal.unshift({t:Date.now(),d:today(),type:'user',text:tx.slice(0,2000),mood:S.jm==null?null:S.jm});
@@ -1670,22 +1747,22 @@ $('#view').addEventListener('change',e=>{if(e.target.id==='jsys'){S.jsys=e.targe
 
 /* ---------- 計時 ---------- */
 function tick(){const tm=S.timer;if(!tm)return;const left=tm.end-Date.now();
- if(left<=0){S.timer=null;S.maxFocus=Math.max(S.maxFocus||0,tm.min);const t=today(),fc=FCATS[tm.cat||'study'],L0=dayLog(t),combo=1+Math.min(3,L0.focus.length)*.2,q=fTask(tm.cat||'study',t);S.focusCount++;
+ if(left<=0){S.timer=null;S.maxFocus=Math.max(S.maxFocus||0,tm.min);const f0=dun().floor;const t=today(),fc=FCATS[tm.cat||'study'],L0=dayLog(t),combo=1+Math.min(3,L0.focus.length)*.2,q=fTask(tm.cat||'study',t);S.focusCount++;
   const qid=FQ[tm.cat||'study'],qq=qid&&QUESTS.find(x=>x.id===qid);L0.mins=L0.mins||{};
   if(qq&&activeOn(qq,t)){const dd=L0.done[qid];L0.mins[qid]=(L0.mins[qid]!=null?L0.mins[qid]:(dd&&dd.amt||0))+tm.min}
   const cum=qq?L0.mins[qid]||tm.min:tm.min;
   const mk=Object.keys(MATS)[Math.floor(Math.random()*3)];S.mats[mk]++;
   if(q){const lv=fLv(q,cum),was=cleared(t),r=reward(t,q.id+'L'+lv+'F',Math.round(q.xp*ELV[lv][1]*1.5*combo),q.stat,'quest');r.lv=lv;r.amt=cum;r.focus=1;L0.done[q.id]=r;
    L0.focus.push({min:tm.min,xp:0,cat:tm.cat,q:q.id});jlog('⚔️',`專注 ${fmtF(tm.min)} 完成「${q.name}」${ELV[lv][0]}`);settle(t,was);after();
-   modal(`<h2>[專注完成]</h2><div style="text-align:center">${minionSvg(dun().floor,130)}</div><div class="bigt" style="text-align:center">${fc[0]} 完成「${esc(q.name)}」${ELV[lv][0]}</div><p style="text-align:center;line-height:1.8"><b style="color:var(--cyan)">+${r.xp} XP</b>　<span class="gold">+${r.gold} G</span>　${MATS[mk][0]}×1<br><span class="muted sm">專注加成 ×1.5${combo>1?`・連戰 ×${combo.toFixed(1)}`:''}</span></p>`,[['讚','btn pri']]);return}
+   modal(`<h2>[專注完成]</h2>${focusHit(f0,'+'+r.xp+' XP',dun().floor>f0)}<div class="bigt" style="text-align:center">${fc[0]} 完成「${esc(q.name)}」${ELV[lv][0]}</div><p style="text-align:center;line-height:1.8"><b style="color:var(--cyan)">+${r.xp} XP</b>　<span class="gold">+${r.gold} G</span>　${MATS[mk][0]}×1<br><span class="muted sm">專注加成 ×1.5${combo>1?`・連戰 ×${combo.toFixed(1)}`:''}</span></p>`,[['讚','btn pri']]);return}
   if(qq&&L0.done[qid]&&L0.done[qid].lv!=null){const dd=L0.done[qid],nl=fLv(qq,cum);
    if(nl>dd.lv){const u=upgradeQuest(qq,t,nl,1.5*combo,cum);L0.focus.push({min:tm.min,xp:0,cat:tm.cat,q:qid});after();
-    modal(`<h2>[專注完成]</h2><div style="text-align:center">${minionSvg(dun().floor,130)}</div><div class="bigt" style="text-align:center">${fc[0]}「${esc(qq.name)}」升級到${ELV[nl][0]}</div><p style="text-align:center;line-height:1.8">今天累計 <b>${cum}</b> 分鐘<br><b style="color:var(--cyan)">+${u.r.xp} XP</b>　<span class="gold">+${u.r.gold} G</span>　${MATS[mk][0]}×1</p>`,[['讚','btn pri']]);return}
+    modal(`<h2>[專注完成]</h2>${focusHit(f0,'+'+u.r.xp+' XP',dun().floor>f0)}<div class="bigt" style="text-align:center">${fc[0]}「${esc(qq.name)}」升級到${ELV[nl][0]}</div><p style="text-align:center;line-height:1.8">今天累計 <b>${cum}</b> 分鐘<br><b style="color:var(--cyan)">+${u.r.xp} XP</b>　<span class="gold">+${u.r.gold} G</span>　${MATS[mk][0]}×1</p>`,[['讚','btn pri']]);return}
    dd.amt=cum}
   const r=reward(t,'focus'+Date.now(),focusXP(tm.min),fc[2],'focus');L0.focus.push({min:tm.min,xp:r.xp,cat:tm.cat});
   const m=minionOf(dun().floor),weak=m.w===fc[2],hit=Math.round(tm.min*3*combo);hitMinion(hit,'focus',fc[2]);jlog('⚔️',`專注討伐：${fc[1]} ${fmtF(tm.min)}`);after();
-  modal(`<h2>[專注完成]</h2><div style="text-align:center">${minionSvg(dun().floor,130)}</div><div class="bigt" style="text-align:center">${fc[0]} ${fc[1]} ${fmtF(tm.min)}</div><p style="text-align:center;line-height:1.8"><b style="color:var(--cyan)">+${r.xp} XP</b>　<span class="gold">+${r.gold} G</span>　${MATS[mk][0]}×1<br>重擊 <b>${hit*(weak?2:1)}</b>${weak?'（弱點 ×2）':''}${combo>1?`・連戰 ×${combo.toFixed(1)}`:''}</p>`,[['讚','btn pri']]);return}
- const el=$('#tmr');if(el){const s=Math.ceil(left/1e3);el.textContent=pad(Math.floor(s/60))+':'+pad(s%60)}}
+  modal(`<h2>[專注完成]</h2>${focusHit(f0,'-'+hit*(weak?2:1),dun().floor>f0)}<div class="bigt" style="text-align:center">${fc[0]} ${fc[1]} ${fmtF(tm.min)}</div><p style="text-align:center;line-height:1.8"><b style="color:var(--cyan)">+${r.xp} XP</b>　<span class="gold">+${r.gold} G</span>　${MATS[mk][0]}×1<br>重擊 <b>${hit*(weak?2:1)}</b>${weak?'（弱點 ×2）':''}${combo>1?`・連戰 ×${combo.toFixed(1)}`:''}</p>`,[['讚','btn pri']]);return}
+ const el=$('#tmr');if(el){const s=Math.ceil(left/1e3);el.textContent=pad(Math.floor(s/60))+':'+pad(s%60)}focusRing()}
 setInterval(tick,1000);
 let lastDay=today();
 setInterval(()=>{if(today()!==lastDay){lastDay=today();closeDays();render();checkLogin(askScreen)}},30000);
