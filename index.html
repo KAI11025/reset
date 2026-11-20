@@ -262,6 +262,27 @@ nav button i{display:grid;place-items:center;height:24px}nav button i svg{displa
 .chapter{text-align:center;margin:26px 0 6px;font-family:"Noto Serif TC","Songti TC",serif;color:#e6d5b0}
 .chapter .orn{color:#8a7350;letter-spacing:.3em;font-size:12px}.chapter .ct{font-size:22px;font-weight:700;letter-spacing:.35em;margin:2px 0}.chapter .cs{font-size:13px;color:#a8957a;letter-spacing:.1em}
 .jsys{display:flex;align-items:center;gap:6px;justify-content:flex-end;font-size:12px;color:var(--mute);margin:10px 2px 0}.jsys input{width:auto;margin:0}
+
+.book{margin-top:6px}
+.bnav{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;gap:6px;margin:8px 0 4px}
+.bnav>button{height:44px;border-radius:12px;border:1px solid var(--line);font-size:24px;color:#e6d5b0;background:#0b1120}.bnav>button:disabled{opacity:.25}
+.bdate{display:flex;flex-direction:column;align-items:center;gap:1px;font-family:"Noto Serif TC","Songti TC",serif;color:#e6d5b0}.bdate b{font-size:17px;letter-spacing:.05em}.bdate small{font-size:11px;color:#a8957a;font-family:-apple-system,"PingFang TC",sans-serif}
+.dpage{min-height:420px;transition:transform .18s ease,opacity .18s ease;transform-origin:left center}
+.dpage.flipL{transform:translateX(-40px) rotateY(18deg);opacity:0}.dpage.flipR{transform:translateX(40px) rotateY(-18deg);opacity:0}
+.dpage.inR{animation:inR .22s ease}.dpage.inL{animation:inL .22s ease}
+@keyframes inR{from{transform:translateX(40px);opacity:0}}@keyframes inL{from{transform:translateX(-40px);opacity:0}}
+#dtxt{min-height:180px;overflow:hidden;background-attachment:local}
+.dphotos{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0 4px}
+.dph{aspect-ratio:1;border-radius:6px;overflow:hidden;padding:0;border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.25);background:#e8dcc2;transform:rotate(-1.5deg)}.dph:nth-child(2n){transform:rotate(1.5deg)}
+.dph img{width:100%;height:100%;object-fit:cover;display:block}
+.dadd{aspect-ratio:1;border:2px dashed rgba(91,70,50,.35);border-radius:6px;display:grid;place-items:center;font-size:26px;color:#8a6a3f;cursor:pointer}
+.dfoot{display:flex;justify-content:space-between;font:11px -apple-system,"PingFang TC",sans-serif;color:#9a8466;margin-top:6px}
+.dadv{margin-top:14px;padding-top:6px}.dah{text-align:center;font-size:12px;color:#8a6a3f;letter-spacing:.2em;margin-bottom:6px}.dab{text-align:center;font:12.5px -apple-system,"PingFang TC",sans-serif;color:#5b4632;margin-bottom:6px}
+.paper.note{cursor:pointer}
+.calh{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;text-align:center;margin-bottom:8px}.calh button{font-size:22px;color:var(--cyan)}.calh button:disabled{opacity:.2}
+.calg{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}.calg em{font-style:normal;font-size:11px;color:var(--mute)}
+.cd2{aspect-ratio:1;border-radius:10px;border:1px solid var(--line);font:600 13px var(--mono);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;background:#070c18}
+.cd2 span{font-size:12px;line-height:1}.cd2.has{border-color:#8a7350;background:#1a160f;color:#e6d5b0}.cd2.today{outline:2px solid var(--cyan)}.cd2:disabled{opacity:.25}
 </style>
 </head>
 <body>
@@ -284,7 +305,7 @@ nav button i{display:grid;place-items:center;height:24px}nav button i svg{displa
 <div id="toasts"></div>
 <div id="modal"><div class="card" id="mcard"></div></div>
 <script>
-const VER='v22・11/20 01:40';
+const VER='v23・11/20 13:30';
 'use strict';
 /* =====================================================================
    RESET 系統 v4
@@ -527,18 +548,25 @@ function reward(t,key,base,stat,kind){let m=1;if(kind==='quest'&&skl('grit')&&st
  gain(xp,gold);hitMinion(dmg,kind,stat);
  if(crit){sfx('crit');toast(`<b>CRITICAL!</b> 經驗值 ×2　+${xp} XP`,'crit')}else{sfx('done');toast(`<b>+${xp} XP</b>　+${gold-loot} G　${STATS[stat].n} +1`)}
  if(loot)toast(`<b>寶箱掉落！</b> +${loot} G`,'crit');return r}
-function undo(r){S.xp-=r.xp;S.gold-=r.gold;const st=STATS[r.stat]?r.stat:'SPI';S.stats[st]=Math.max(0,(S.stats[st]||0)-1);
+function undo(r){S.xp-=r.xp;S.gold-=r.gold;const st=STATS[r.stat]?r.stat:'SPI';S.stats[st]=Math.max(0,(S.stats[st]||0)-1-(r.ups||0));
  if(r.kind==='side')S.sideCount--;else if(r.kind==='quest')S.questCount--;if(r.crit)S.crits--;dun();S.dun.dmg=Math.max(0,S.dun.dmg-(r.dmg||r.xp))}
 function settle(t,was){if(!was&&cleared(t)){if(t===today())setTimeout(()=>toast(`<b>[系統]</b> 今日任務達成，連續 ${streak()} 天 🔥`),500);
  else setTimeout(()=>toast(`<b>[系統]</b> ${t.slice(5).replace('-','/')} 補登通關`),500)}}
 function doLevel(q,t,i){const was=cleared(t),L=dayLog(t);const r=reward(t,q.id+'L'+i,Math.round(q.xp*ELV[i][1]),q.stat,'quest');r.lv=i;r.amt=q.amt?q.amt[i]:1;L.done[q.id]=r;settle(t,was);after()}
 const lvButtons=q=>`<div class="lvpick">${q.lv.map((l,i)=>`<button data-pick="${i}" style="border-color:${ELV[i][2]}66"><b style="color:${ELV[i][2]}">${ELV[i][0]}</b><span>${esc(l)}</span><small>+${Math.round(q.xp*ELV[i][1])} XP</small></button>`).join('')}</div>`;
 function guideHtml(G){const p=x=>esc(x).replace(/\n/g,'<br>');return(G.why?`<div class="gd"><h4>為什麼要做</h4><p>${p(G.why)}</p></div>`:'')+(G.how?`<div class="gd"><h4>怎麼做</h4><ol>${G.how.map(x=>`<li>${p(x)}</li>`).join('')}</ol></div>`:'')+(G.when?`<div class="gd"><h4>什麼時候做</h4><p>${p(G.when)}</p></div>`:'')+(G.ex?`<div class="gd ex"><h4>例子</h4><p>${p(G.ex)}</p></div>`:'')+(G.tip?`<div class="gd"><h4>小提醒</h4><p>${p(G.tip)}</p></div>`:'')}
+// 彈性任務升級：累積的分鐘數或手動，把迷你→標準→精英，補差額獎勵
+function upgradeQuest(q,t,newLv,mult,cum){const L=dayLog(t),d=L.done[q.id];if(!d||d.lv==null||newLv<=d.lv)return null;
+ const extra=Math.max(1,Math.round(q.xp*(ELV[newLv][1]-ELV[d.lv][1])*(mult||1)));const r=reward(t,q.id+'U'+newLv,extra,q.stat,'up');
+ d.xp+=r.xp;d.gold+=r.gold;d.ups=(d.ups||0)+1;d.dmg=(d.dmg||0)+r.dmg;if(r.crit)d.crit=true;const from=d.lv;d.lv=newLv;if(cum!=null)d.amt=cum;else if(q.amt)d.amt=Math.max(d.amt||0,q.amt[newLv]);
+ jlog('⬆️',`「${q.name}」從${ELV[from][0]}升級到${ELV[newLv][0]}`);return{r,from}}
 function openInfo(k,D){const[kind,key]=k.split(':'),L=dayLog(D);
  if(kind==='q'){const q=QUESTS.find(x=>x.id===key),G=GUIDE[key]||{why:q.hint},d=L.done[key];
   let h=`<h2>[任務說明]</h2><div class="bigt" style="font-size:22px">${q.type==='screen'?'📱 ':''}${esc(q.name)}</div><div class="row" style="gap:8px;margin:0 0 10px">${tag(q.stat)}<span class="muted" style="font:12px var(--mono)">${q.lv?`+${Math.round(q.xp*.5)}~${Math.round(q.xp*1.6)} XP`:`+${q.xp} XP`}${q.days?'・週'+q.days.map(x=>WD[x]).join(''):''}</span></div>`+guideHtml(G);
   if(q.type==='screen')return modal(h,[['關閉','btn'],[L.scr!=null?'修改時數':'輸入時數','btn pri',()=>openScreen(key,D)]]);
-  if(d)return modal(h+`<p class="muted" style="text-align:center">已完成${d.lv!=null&&q.lv?`：${ELV[d.lv][0]}・${esc(q.lv[d.lv])}`:''}</p>`,[['關閉','btn'],['取消完成','btn red',()=>toggleQuest(key,D)]]);
+  if(d){const up=q.lv&&d.lv!=null&&d.lv<2;
+   modal(h+`<p class="muted" style="text-align:center;margin:0 0 6px">已完成${d.lv!=null&&q.lv?`：${ELV[d.lv][0]}${q.amt&&d.amt?`・累計 ${d.amt} 分鐘`:''}`:''}</p>${up?`<div class="gd"><h4>做更多了？升級</h4></div><div class="lvpick">${[1,2].filter(i=>i>d.lv).map(i=>`<button data-up="${i}" style="border-color:${ELV[i][2]}66"><b style="color:${ELV[i][2]}">${ELV[i][0]}</b><span>${esc(q.lv[i])}</span><small>+${Math.round(q.xp*(ELV[i][1]-ELV[d.lv][1]))} XP</small></button>`).join('')}</div>`:''}`,[['關閉','btn'],['取消完成','btn red',()=>toggleQuest(key,D)]]);
+   if(up)$('#mcard').onclick=e=>{const b=e.target.closest('[data-up]');if(!b)return;$('#modal').classList.remove('on');$('#mcard').onclick=null;const u=upgradeQuest(q,D,+b.dataset.up,1);if(u)toast(`<b>升級！</b>　${q.name} → ${ELV[+b.dataset.up][0]}`);after()};return}
   if(q.lv){modal(h+`<div class="gd"><h4>今天做到哪一段？迷你也算完成</h4></div>`+lvButtons(q),[['關閉','btn']]);
    $('#mcard').onclick=e=>{const b=e.target.closest('[data-pick]');if(!b)return;$('#modal').classList.remove('on');$('#mcard').onclick=null;doLevel(q,D,+b.dataset.pick)};return}
   return modal(h,[['關閉','btn'],['完成 ✓','btn pri',()=>toggleQuest(key,D)]])}
@@ -722,36 +750,17 @@ const CN='〇一二三四五六七八九';
 const cnNum=n=>n<=10?(n===10?'十':CN[n]):n<20?'十'+CN[n%10]:CN[Math.floor(n/10)]+'十'+(n%10?CN[n%10]:'');
 const dateCN=d=>{const x=parse(d);return`${x.getMonth()+1} 月 ${x.getDate()} 日　星期${WD[x.getDay()]}`};
 const hm=t=>{const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes())};
-function vLog(){const J=S.journal||[],t=today(),sub=S.jtab||'book',showSys=S.jsys!==false;
+function vLog(){const t=today(),sub=S.jtab||'book';
  let h=`<div class="seg jtab">${[['book','📖 日記本'],['ana','📊 分析']].map(([k,n])=>`<button class="${sub===k?'on':''}" data-jt="${k}">${n}</button>`).join('')}</div>`;
- if(sub==='ana'){h+=insightPanel();
-  const mine=J.filter(e=>e.type==='user'),mood=[];for(let i=13;i>=0;i--){const d=addDays(t,-i),e=mine.find(x=>x.d===d&&x.mood!=null);mood.push([d,e?e.mood:null])}
+ if(sub==='ana'){h+=insightPanel();const mood=[];for(let i=13;i>=0;i--){const d=addDays(t,-i),p=S.diary&&S.diary[d];mood.push([d,p&&p.mood!=null?p.mood:null])}
   if(mood.some(x=>x[1]!=null))h+=`<div class="panel"><div class="ptitle">[心情軌跡]<span>近 14 天</span></div><div class="mtrack">${mood.map(([d,m])=>`<div><span>${m!=null?MOODS[m]:'·'}</span><small>${parse(d).getDate()}</small></div>`).join('')}</div></div>`;
   return h}
- h+=`<div class="paper compose"><div class="pdate">${dateCN(t)}</div>
- <div class="pmoods">${MOODS.map((m,i)=>`<button data-mood="${i}" class="${S.jm===i?'on':''}">${m}</button>`).join('')}</div>
- <textarea id="jtxt" class="ptext" placeholder="今天發生了什麼……"></textarea>
- <div class="prow"><span>${S.jxp===t?'':'今天第一篇 +10 XP'}</span><button class="pbtn" id="jSave">寫下</button></div></div>`;
- const old=J.filter(e=>e.type==='user'&&diff(e.d,t)>=7);
- if(old.length){const e=old[Math.floor(srand(t+'fb')*old.length)];h+=`<div class="paper note"><div class="pnh">✦ ${diff(e.d,t)} 天前的你寫道</div><p class="hand">${e.mood!=null?MOODS[e.mood]+' ':''}${esc(e.text)}</p></div>`}
- const list=J.filter(e=>showSys||e.type==='user');
- h+=`<label class="jsys"><input type="checkbox" id="jsys" ${showSys?'checked':''}> 顯示冒險紀錄</label>`;
- if(!list.length)return h+'<p class="muted" style="text-align:center;margin:24px 0">還沒有紀錄。</p>';
- let ch=null,day=null,open=false;
- list.slice(0,300).forEach(e=>{const c=chapOf(e.d);
-  if(c!==ch){if(open){h+='</div>';open=false}ch=c;day=null;const wk=addDays(weekKey(S.start),(c-1)*7),bi=S.chap&&S.chap[wk];
-   h+=`<div class="chapter"><div class="orn">— ✦ —</div><div class="ct">${c>0?`第${cnNum(c)}章`:'序章'}</div>${bi!=null&&BOSS[bi]?`<div class="cs">${BOSS[bi].n}</div>`:''}</div>`}
-  if(e.d!==day){if(open)h+='</div>';day=e.d;open=true;const dm=list.find(x=>x.d===e.d&&x.type==='user'&&x.mood!=null);h+=`<div class="paper pday"><div class="pdate">${dateCN(e.d)}${dm?`<span class="pm">${MOODS[dm.mood]}</span>`:''}</div>`}
-  if(e.type==='user')h+=`<div class="pent" data-jedit="${e.t}"><p class="hand">${esc(e.text)}</p><div class="ptime">${hm(e.t)}</div></div>`;
-  else if(e.type==='report')h+=`<div class="preport">${esc(e.text)}</div>`;
-  else h+=`<div class="stamp"><span>${e.icon}</span>${esc(e.text)}<em>${hm(e.t)}</em></div>`});
- if(open)h+='</div>';
- return h}
+ return h+vBook()}
 
 /* ---------- 冒險分析（統計日誌心情 × 任務紀錄） ---------- */
 const mEmo=v=>MOODS[Math.max(0,Math.min(4,Math.round(v)))];
-function insights(){const t=today(),J=(S.journal||[]).filter(e=>e.type==='user'&&e.mood!=null),M={};
- J.forEach(e=>{(M[e.d]=M[e.d]||[]).push(e.mood)});const md=d=>M[d]?M[d].reduce((a,b)=>a+b,0)/M[d].length:null;
+function insights(){const t=today(),M={};
+ for(const d in S.diary||{}){const p=S.diary[d];if(p.mood!=null)M[d]=[p.mood]}const md=d=>M[d]?M[d].reduce((a,b)=>a+b,0)/M[d].length:null;
  const days=Object.keys(M).filter(d=>diff(d,t)<=60);if(days.length<5)return{need:5-days.length};
  const avg=a=>a.reduce((x,y)=>x+y,0)/a.length,out=[];
  const cmp=(title,a,b,la,lb,good,meh)=>{if(a.length<2||b.length<2)return;const x=avg(a),y=avg(b),dv=x-y;
@@ -778,7 +787,7 @@ function exportForClaude(){const t=today(),lines=[];
  lines.push('以下是我「RESET 系統」最近 30 天的紀錄。請用教練的角度分析我的狀況：哪些習慣有在進步、哪裡卡住、心情跟作息／訓練／螢幕時間有什麼關聯、日誌裡有沒有反覆出現的情緒或想法。最後給我下週 1～2 個具體的調整建議。');
  lines.push(`我的目標：作息、心態、西文、少滑手機、讀書。目前 Lv.${lvInfo(S.xp).lv}、連續通關 ${streak()} 天、最佳 ${S.best||0} 天。`);lines.push('');
  for(let i=29;i>=0;i--){const d=addDays(t,-i);if(diff(S.start,d)<-1)continue;const L=S.log[d]||{},act=actives(d),done=act.filter(q=>L.done&&L.done[q.id]),miss=act.filter(q=>!(L.done&&L.done[q.id]));
-  const js=(S.journal||[]).filter(e=>e.type==='user'&&e.d===d).reverse();if(!done.length&&!js.length&&L.scr==null)continue;
+  const dp=S.diary&&S.diary[d],js=dp&&(dp.text||'').trim()?[{text:dp.text,mood:dp.mood}]:[];if(!done.length&&!js.length&&L.scr==null)continue;
   const nm=q=>q.name+(L.done[q.id]&&L.done[q.id].lv!=null&&q.lv?`(${ELV[L.done[q.id].lv][0]})`:'');
   lines.push(`${d.slice(5).replace('-','/')} 週${WD[parse(d).getDay()]}｜${isShift(d)?'有班':'沒班'}｜通關 ${done.length}/${act.length}${cleared(d)?' ✓':''}${L.scr!=null?'｜螢幕 '+fmtMin(L.scr):''}`);
   if(done.length)lines.push('  完成：'+done.map(nm).join('、'));if(miss.length)lines.push('  沒做：'+miss.map(q=>q.name).join('、'));
@@ -790,7 +799,7 @@ function exportForClaude(){const t=today(),lines=[];
 
 /* ---------- 備份 ---------- */
 const bkDays=()=>S.lastBackup?Math.floor((Date.now()-S.lastBackup)/864e5):999;
-async function backupFile(){const data=JSON.stringify(S),name=`RESET備份_${today()}.json`;
+async function backupFile(){const pb=window.__pb||{},data=JSON.stringify(Object.keys(pb).length?Object.assign({},S,{__photos:pb}):S),name=`RESET備份_${today()}.json`;
  const ok=()=>{S.lastBackup=Date.now();save();render();toast('<b>備份完成</b>　檔名：'+name)};
  try{const f=new File([data],name,{type:'application/json'});
   if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:name});return ok()}}
@@ -799,7 +808,7 @@ async function backupFile(){const data=JSON.stringify(S),name=`RESET備份_${tod
  catch(e){toast('這裡不能存檔，改用「複製文字」')}}
 function restoreData(o){const d=new Date(o.lastBackup||Date.now());
  modal(`<h2>[還原備份]</h2><div class="bigt" style="font-size:22px">用這份備份蓋掉現在的資料？</div><p class="muted" style="line-height:1.7">備份內容：Lv.${lvInfo(o.xp||0).lv}・${o.gold||0} G・${Object.keys(o.log||{}).length} 天紀錄・${(o.journal||[]).filter(e=>e.type==='user').length} 篇日誌<br>現在這支手機上的資料會被取代。</p>`,
- [['取消','btn'],['還原','btn red',()=>{try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}load();save();render();toast('<b>還原成功</b>')}]])}
+ [['取消','btn'],['還原','btn red',()=>{const ph=o.__photos;delete o.__photos;if(ph)for(const k in ph)PDB.put(k,ph[k]).catch(()=>{});try{localStorage.setItem(KEY,JSON.stringify(o))}catch(e){}load();migrateDiary();save();render();toast('<b>還原成功</b>')}]])}
 function askBackup(){if(bkDays()<7||S.bkAsk===today()||Object.keys(S.log).length<3)return false;S.bkAsk=today();save();
  modal(`<h2>[每週備份]</h2><div class="bigt" style="font-size:22px">${S.lastBackup?bkDays()+' 天沒備份了':'還沒備份過'}</div><p class="muted" style="line-height:1.7">資料只存在這個 app 裡，刪掉 app 或換手機就會不見。按一下存到 iCloud 雲碟就安全了，10 秒搞定。</p>`,[['晚點','btn'],['💾 現在備份','btn pri',()=>backupFile()]]);return true}
 /* ---------- 額外修練（自己加的，系統判定加分） ---------- */
@@ -818,7 +827,7 @@ function judgeExtra(tx){let stat='SPI';for(const[k,re]of XKW)if(re.test(tx)){sta
  const notes=[why];
  if(/間歇|HIIT|衝刺|高強度|對打|sparring|比賽|爬坡/i.test(tx)){base=Math.round(base*1.3);notes.push('高強度 ×1.3')}
  else if(/散步|慢走|伸展|輕鬆|放鬆/.test(tx)){base=Math.round(base*.8);notes.push('低強度 ×0.8')}
- return{stat,base,why:notes.join('・'),raw:base}}
+ return{stat,base,why:notes.join('・'),raw:base,min}}
 const QMATCH={study:/讀書|作業|複習|預習|課本|考試|報告/,esp:/西文|西班牙/,med:/冥想/,train:/訓練|練拳|練柔術|去練|上課練/,review:/復盤/};
 function dimMul(D,stat){const n=(dayLog(D).extra||[]).filter(e=>e.stat===stat).length;return[1,.8,.6,.5][Math.min(n,3)]}
 const extraUsed=t=>(dayLog(t).extra||[]).reduce((a,e)=>a+(e.base||0),0);
@@ -828,7 +837,9 @@ function vExtra(D){const L=dayLog(D),X=L.extra||[],left=Math.max(0,XCAP-extraUse
  if(X.length)h+=X.map((e,i)=>`<div class="item"><span class="nm">${esc(e.text)}<div class="muted" style="font-size:12px">${STATS[e.stat].n}・${esc(e.why)}</div></span><span class="xp" style="color:var(--green)">${e.r?'+'+e.r.xp:'+0'}</span><button class="jdel" data-xdel="${i}">✕</button></div>`).join('');
  return h+'</div>'}
 function openExtra(D,tx,skipQ){if(!tx)return toast('先寫做了什麼');
- if(!skipQ){const L=dayLog(D),hit=actives(D).find(q=>QMATCH[q.id]&&QMATCH[q.id].test(tx)&&!L.done[q.id]);
+ if(!skipQ){const L=dayLog(D),jm=judgeExtra(tx).min,up=jm&&actives(D).find(q=>q.lv&&q.amt&&QMATCH[q.id]&&QMATCH[q.id].test(tx)&&L.done[q.id]&&L.done[q.id].lv!=null&&fLv(q,(L.done[q.id].amt||0)+jm)>L.done[q.id].lv);
+  if(up){const dd=L.done[up.id],cum=(dd.amt||0)+jm,nl=fLv(up,cum);return modal(`<h2>[額外修練]</h2><div class="bigt" style="font-size:22px">「${esc(up.name)}」可以升級到${ELV[nl][0]}</div><p class="muted">今天累計 ${cum} 分鐘。</p>`,[['還是當額外修練','btn',()=>openExtra(D,tx,true)],['升級','btn pri',()=>{xDraft='';upgradeQuest(up,D,nl,1,cum);toast(`<b>升級！</b>　${up.name} → ${ELV[nl][0]}`);after()}]])}
+  const hit=actives(D).find(q=>QMATCH[q.id]&&QMATCH[q.id].test(tx)&&!L.done[q.id]);
   if(hit)return modal(`<h2>[額外修練]</h2><div class="bigt" style="font-size:22px">這個可以直接算「${esc(hit.name)}」</div><p class="muted" style="line-height:1.7">今天的「${esc(hit.name)}」還沒完成。用它完成每日任務，分數比較多，也會算進通關。</p>`,[['還是當額外修練','btn',()=>openExtra(D,tx,true)],['完成任務','btn pri',()=>{xDraft='';toggleQuest(hit.id,D)}]])}
  const j=judgeExtra(tx),dm=dimMul(D,j.stat),left=Math.max(0,XCAP-extraUsed(D));let st=j.stat,base=Math.min(Math.round(j.base*dm),left);if(dm<1)j.why+=`・今天同類第 ${[1,.8,.6,.5].indexOf(dm)+1} 次 ×${dm}`;
  const draw=()=>{$('#xst').innerHTML=Object.keys(STATS).map(k=>`<button class="${k===st?'on':''}" data-xst="${k}">${STATS[k].n}</button>`).join('')};
@@ -936,6 +947,64 @@ function endFight(win,timeout){F.done=true;const b=F.b;
  else{sfx('bad');F.log.push(timeout?`⌛ 8 回合沒打倒，${b.name} 逃走了…`:'💀 你倒下了…');const msg=bossLost({idx:S.boss.idx,tier:S.boss.tier},true);F.log.push(msg.replace(/。$/,'')+'。下週同一隻會再來。')}
  after();drawFight()}
 
+/* ---------- 日記本（每天一頁，自動儲存，可翻頁、選日期、放照片） ---------- */
+const PDB={db:null,
+ open(){return this.db?Promise.resolve(this.db):new Promise((res,rej)=>{try{const r=indexedDB.open('reset_photos',1);r.onupgradeneeded=()=>r.result.createObjectStore('p');r.onsuccess=()=>{this.db=r.result;res(this.db)};r.onerror=()=>rej(r.error)}catch(e){rej(e)}})},
+ tx(mode,fn){return this.open().then(db=>new Promise((res,rej)=>{const t=db.transaction('p',mode),st=t.objectStore('p');const out=fn(st);t.oncomplete=()=>res(out&&out.result);t.onerror=()=>rej(t.error)}))},
+ put(k,v){return this.tx('readwrite',st=>st.put(v,k))},get(k){return this.tx('readonly',st=>st.get(k))},del(k){return this.tx('readwrite',st=>st.delete(k))}};
+function compressImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),img=new Image();
+ img.onload=()=>{const M=1000,sc=Math.min(1,M/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.75))};
+ img.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('img'))};img.src=u})}
+const dpage=d=>{S.diary=S.diary||{};return S.diary[d]||(S.diary[d]={text:'',mood:null,photos:[]})};
+const hasPage=d=>{const p=S.diary&&S.diary[d];return!!(p&&((p.text||'').trim()||(p.photos||[]).length||p.mood!=null))};
+let dTimer=null;
+function diaryInput(d,v){const p=dpage(d);p.text=v;p.upd=Date.now();clearTimeout(dTimer);
+ const st=$('#dsave');if(st)st.textContent='儲存中…';
+ dTimer=setTimeout(()=>{save();const s2=$('#dsave');if(s2)s2.textContent='✓ 已自動儲存 '+hm(Date.now());
+  if(d===today()&&S.jxp!==d&&v.trim().length>=10){S.jxp=d;S.stats.SPI=(S.stats.SPI||0)+1;gain(10,0);save();header();toast('<b>[日記]</b> 今天第一頁 +10 XP　心靈 +1')}},700)}
+document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(dTimer);save()}});window.addEventListener('pagehide',()=>save());
+function growTA(ta){ta.style.height='auto';ta.style.height=Math.max(180,ta.scrollHeight+2)+'px'}
+function earliestDay(){let e=S.start;for(const d in S.diary||{})if(d<e)e=d;(S.journal||[]).forEach(x=>{if(x.d<e)e=x.d});return addDays(e,-1)<e?e:e}
+function dayAdventure(d){const L=S.log[d],act=actives(d),done=L&&L.done?act.filter(q=>L.done[q.id]).length:0,fm=(L&&L.focus||[]).reduce((a,f)=>a+(f.min||0),0);
+ const bits=[];if(diff(S.start,d)>=0)bits.push(`任務 ${done}/${act.length}${cleared(d)?' ✓':''}`);if(fm)bits.push(`專注 ${fmtHM(fm)}`);if(L&&L.scr!=null)bits.push(`螢幕 ${fmtMin(L.scr)}`);
+ const ev=(S.journal||[]).filter(e=>e.d===d&&e.type!=='user').reverse();
+ if(!bits.length&&!ev.length)return'';
+ return`<div class="dadv"><div class="dah">— 今日冒險 —</div>${bits.length?`<div class="dab">${bits.join('・')}</div>`:''}${ev.map(e=>e.type==='report'?`<div class="preport">${esc(e.text)}</div>`:`<div class="stamp"><span>${e.icon}</span>${esc(e.text)}<em>${hm(e.t)}</em></div>`).join('')}</div>`}
+function vBook(){const t=today(),d=S.jday&&S.jday<=t?S.jday:t,p=(S.diary&&S.diary[d])||{text:'',mood:null,photos:[]},c=chapOf(d),wk=addDays(weekKey(S.start),(c-1)*7),bi=S.chap&&S.chap[wk],dn=diff(S.start,d)+1;
+ const prevOk=d>earliestDay(),nextOk=d<t;
+ let h=`<div class="book" id="book"><div class="bnav"><button data-dnav="-1" ${prevOk?'':'disabled'}>‹</button><button class="bdate" id="dcal"><b>${dateCN(d)}</b><small>${c>0?`第${cnNum(c)}章${bi!=null&&BOSS[bi]?'・'+BOSS[bi].n:''}`:'序章'}${dn>=1?`・DAY ${dn}`:''}</small></button><button data-dnav="1" ${nextOk?'':'disabled'}>›</button></div>
+ <div class="paper dpage" id="dpage">
+ <div class="pmoods">${MOODS.map((m,i)=>`<button data-mood="${i}" class="${p.mood===i?'on':''}">${m}</button>`).join('')}</div>
+ <textarea id="dtxt" class="ptext" placeholder="${d===t?'今天發生了什麼……':'這一天發生了什麼……'}">${esc(p.text||'')}</textarea>
+ <div class="dphotos">${(p.photos||[]).map(id=>`<button class="dph" data-ph="${id}"><img data-pid="${id}" alt=""></button>`).join('')}<label class="dadd">📷<input type="file" id="dpic" accept="image/*" multiple class="hide"></label></div>
+ <div class="dfoot"><span id="dsave">${p.upd?'✓ 已自動儲存 '+hm(p.upd):'會自動儲存'}</span>${d===t&&S.jxp!==t?'<span>寫滿 10 字 +10 XP</span>':''}</div>
+ ${dayAdventure(d)}</div></div>`;
+ const old=Object.keys(S.diary||{}).filter(x=>diff(x,t)>=7&&(S.diary[x].text||'').trim());
+ if(d===t&&old.length){const od=old[Math.floor(srand(t+'fb')*old.length)],op=S.diary[od];h+=`<div class="paper note" data-dgo="${od}"><div class="pnh">✦ ${diff(od,t)} 天前的你寫道　›</div><p class="hand">${op.mood!=null?MOODS[op.mood]+' ':''}${esc(op.text.slice(0,120))}${op.text.length>120?'…':''}</p></div>`}
+ return h}
+function bindBook(){const ta=$('#dtxt');if(!ta)return;const d=S.jday&&S.jday<=today()?S.jday:today();growTA(ta);
+ ta.oninput=()=>{growTA(ta);diaryInput(d,ta.value)};
+ document.querySelectorAll('img[data-pid]').forEach(im=>PDB.get(im.dataset.pid).then(v=>{if(v)im.src=v}).catch(()=>{}));
+ const pic=$('#dpic');if(pic)pic.onchange=async()=>{const fs=[...pic.files];pic.value='';if(!fs.length)return;toast('照片處理中…');
+  for(const f of fs){try{const url=await compressImg(f),id='ph'+Date.now()+Math.random().toString(36).slice(2,6);await PDB.put(id,url);dpage(d).photos.push(id);dpage(d).upd=Date.now()}catch(e){toast('有一張照片讀不了')}}
+  save();render();toast('<b>照片已加進日記</b>')};
+ const bk=$('#book');if(bk){let x0=null,y0=null;bk.addEventListener('touchstart',e=>{if(e.target.closest('textarea'))return;x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
+  bk.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.5)flipDay(dx<0?1:-1)},{passive:true})}}
+function flipDay(dir){const t=today(),d=S.jday&&S.jday<=t?S.jday:t,nd=addDays(d,dir);if(nd>t||nd<earliestDay())return;
+ const pg=$('#dpage');if(pg){pg.classList.add(dir>0?'flipL':'flipR');setTimeout(()=>{S.jday=nd;render();const p2=$('#dpage');if(p2){p2.classList.add(dir>0?'inR':'inL')}},180)}else{S.jday=nd;render()}}
+function openCal(month){const t=today(),cur=month||(S.jday||t).slice(0,7),[y,m]=cur.split('-').map(Number),first=new Date(y,m-1,1),days=new Date(y,m,0).getDate(),off=first.getDay();
+ let g='';for(let i=0;i<off;i++)g+='<i></i>';
+ for(let k=1;k<=days;k++){const d=`${y}-${pad(m)}-${pad(k)}`,fut=d>t,has=hasPage(d),pm=S.diary&&S.diary[d]&&S.diary[d].mood;
+  g+=`<button class="cd2 ${d===t?'today':''} ${has?'has':''}" ${fut?'disabled':''} data-cal="${d}">${k}${has?`<span>${pm!=null?MOODS[pm]:'•'}</span>`:''}</button>`}
+ const pm2=new Date(y,m-2,1),nm2=new Date(y,m,1),pk=fmt(pm2).slice(0,7),nk=fmt(nm2).slice(0,7);
+ modal(`<h2>[翻到哪一天]</h2><div class="calh"><button data-calm="${pk}">‹</button><b>${y} 年 ${m} 月</b><button data-calm="${nk}" ${nk>t.slice(0,7)?'disabled':''}>›</button></div><div class="calg">${'日一二三四五六'.split('').map(x=>`<em>${x}</em>`).join('')}${g}</div>`,[['回到今天','btn',()=>{S.jday=t;render()}],['關閉','btn']]);
+ $('#mcard').onclick=e=>{const b=e.target.closest('[data-cal],[data-calm]');if(!b||b.disabled)return;if(b.dataset.calm)return openCal(b.dataset.calm);$('#modal').classList.remove('on');$('#mcard').onclick=null;S.jday=b.dataset.cal;render()}}
+function viewPhoto(id,d){PDB.get(id).then(v=>{modal(`<div style="text-align:center"><img src="${v||''}" style="max-width:100%;max-height:70vh;border-radius:8px"></div>`,[['刪除照片','btn red',()=>{const p=dpage(d);p.photos=p.photos.filter(x=>x!==id);PDB.del(id).catch(()=>{});save();render()}],['關閉','btn pri']])})}
+function migrateDiary(){if(S.diaryMig)return;S.diary=S.diary||{};const U=(S.journal||[]).filter(e=>e.type==='user').sort((a,b)=>a.t-b.t);
+ U.forEach(e=>{const p=dpage(e.d);p.text=(p.text?p.text+'\n\n':'')+e.text;if(e.mood!=null)p.mood=e.mood;p.upd=Math.max(p.upd||0,e.t)});
+ S.journal=(S.journal||[]).filter(e=>e.type!=='user');S.diaryMig=1}
+async function photoBundle(){const out={};for(const d in S.diary||{})for(const id of S.diary[d].photos||[]){try{const v=await PDB.get(id);if(v)out[id]=v}catch(e){}}return out}
+
 /* ---------- UI 基礎 ---------- */
 function toast(h,c=''){const box=$('#toasts');while(box.children.length>=3)box.firstChild.remove();const el=document.createElement('div');el.className='toast '+c;el.innerHTML=h;box.appendChild(el);setTimeout(()=>el.remove(),2600)}
 let mActs=[];
@@ -953,7 +1022,7 @@ function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)
  let h=`<div class="panel sys"><div class="ptitle">[RESET PROGRAM]<span>${dn>66?'第 '+Math.ceil(dn/66)+' 輪':'66 天計畫'}</span></div>
  <div class="day"><div class="big">DAY ${dn>66?((dn-1)%66)+1:dn}<small> / 66</small></div><div class="grow"></div><div style="text-align:right"><div style="font:800 24px var(--mono);color:${dc>=nd?'var(--cyan)':'var(--text)'}">${dc}/${act.length}</div><div class="muted">達標需 ${nd}</div></div></div>
  <div class="bar" style="margin-top:10px"><i style="width:${nd?Math.min(100,dc/nd*100):100}%"></i></div>
- <div class="chips"><span class="chip hot">🔥 連續 ${st} 天</span><span class="chip">📅 簽到 ${S.login.streak||0} 天</span>${!(S.journal||[]).some(e=>e.type==='user'&&e.d===t)&&new Date().getHours()>=18&&!viewY?'<button class="chip" data-gotab="log" style="color:#e6d5b0;border-color:#5a4a30">✎ 今天還沒寫日誌</button>':''}${yMissed()&&!cleared(t)?'<span class="chip" style="color:var(--gold);border-color:#5a4a18">⚠️ 昨天沒過，今天別再錯過</span>':''}${S.hard?'<span class="chip" style="color:var(--red);border-color:#552030">😈 硬核</span>':''}</div>
+ <div class="chips"><span class="chip hot">🔥 連續 ${st} 天</span><span class="chip">📅 簽到 ${S.login.streak||0} 天</span>${!(S.diary&&S.diary[t]&&(S.diary[t].text||'').trim())&&new Date().getHours()>=18&&!viewY?'<button class="chip" data-gotab="log" onclick="S.jday=null" style="color:#e6d5b0;border-color:#5a4a30">✎ 今天還沒寫日誌</button>':''}${yMissed()&&!cleared(t)?'<span class="chip" style="color:var(--gold);border-color:#5a4a18">⚠️ 昨天沒過，今天別再錯過</span>':''}${S.hard?'<span class="chip" style="color:var(--red);border-color:#552030">😈 硬核</span>':''}</div>
  ${dn<=0?'<p class="quote" style="color:var(--gold)">今天是暖身日，任務照做、XP 照拿，明天正式 DAY 1</p>':`<p class="quote">「${q}」</p>`}</div>`;
  const pp=pendingPen();
  if(pp.length)h+=`<div class="panel pen"><div class="ptitle">[懲罰任務]<span>完成前商店鎖定</span></div>${pp.map(p=>`<button class="q" data-pen="${p.id}"><span class="box"></span><span class="nm">${esc(p.text)}<div class="muted">${p.date.slice(5)} 失敗的代價</div></span></button>`).join('')}</div>`;
@@ -962,7 +1031,7 @@ function vToday(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t)
  if(viewY)h+=`<p class="muted" style="margin:0 0 4px;font-size:12px">只能補登昨天</p>`;
  const row=q=>{const d=L.done[q.id];
   if(q.type==='screen'){const v=L.scr,over=v!=null&&!d;return`<div class="q ${d?'done':''}"><button class="box" data-q="${q.id}" style="${over?'border-color:var(--red);color:var(--red)':''}">${d?'✓':over?'✕':''}</button><button class="nm" data-info="q:${q.id}"><span class="qn">📱 ${esc(q.name)}</span><span class="cntw">${v!=null?`<b style="color:${over?'var(--red)':'var(--cyan)'}">${fmtMin(v)}</b><span class="muted">/ 目標 ${fmtMin(q.goal)}</span>`:`<span class="muted">目標 ${fmtMin(q.goal)} 內</span>`}</span></button>${tag(q.stat)}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:'+'+q.xp+'↑'}</span></div>`}
-  const lb=d&&d.lv!=null&&q.lv?`<span class="lvb" style="color:${ELV[d.lv][2]};border-color:${ELV[d.lv][2]}66">${ELV[d.lv][0]}・${esc(q.lv[d.lv])}</span>`:'';
+  const lb=d&&d.lv!=null&&q.lv?`<span class="lvb" style="color:${ELV[d.lv][2]};border-color:${ELV[d.lv][2]}66">${ELV[d.lv][0]}・${q.amt&&d.amt?d.amt+' 分鐘':esc(q.lv[d.lv])}</span>`:'';
   return`<div class="q ${d?'done':''}"><button class="box" data-q="${q.id}">${d?'✓':''}</button><button class="nm" data-info="q:${q.id}"><span class="qn">${esc(q.name)}</span>${lb}</button>${tag(q.stat)}<span class="xp">${d?(d.crit?'⚡':'')+'+'+d.xp:(q.lv?'+'+Math.round(q.xp*.5)+'~':'+')+(q.lv?Math.round(q.xp*1.6):q.xp)}</span></div>`};
  h+=act.length?Object.keys(SLOTS).map(k=>{const g=act.filter(q=>q.slot===k);return g.length?`<div class="slot">${SLOTS[k]}</div>`+g.map(row).join(''):''}).join(''):'<p class="muted">今天沒有排任務 😴</p>';
  h+='</div>';
@@ -982,8 +1051,10 @@ const fTask=(cat,t)=>{const q=FQ[cat]&&QUESTS.find(x=>x.id===FQ[cat]);return q&&
 const fLv=(q,min)=>{let lv=0;q.amt.forEach((a,k)=>{if(min>=a)lv=k});return lv};
 const fmtHM=m=>m>=60?`${Math.floor(m/60)}h${m%60?` ${m%60}m`:''}`:`${m}m`;
 function focusMin(a,b){let n=0;for(let i=a;i<b;i++){const L=S.log[addDays(today(),-i)];(L&&L.focus||[]).forEach(f=>n+=f.min||0)}return n}
-function fStatus(n){const t=today(),cat=S.fcat||'study',q=fTask(cat,t),combo=1+Math.min(3,(dayLog(t).focus||[]).length)*.2,cb=combo>1?`・連戰 ×${combo.toFixed(1)}`:'';
- if(q){const lv=fLv(q,n);return`✨ 完成「${q.name}」${ELV[lv][0]}・獎勵 ×1.5${cb}`}
+function fStatus(n){const t=today(),cat=S.fcat||'study',q=fTask(cat,t),L=dayLog(t),combo=1+Math.min(3,(L.focus||[]).length)*.2,cb=combo>1?`・連戰 ×${combo.toFixed(1)}`:'';
+ const qid=FQ[cat],qq=qid&&QUESTS.find(x=>x.id===qid),dd=qq&&L.done[qid],base=L.mins&&L.mins[qid]!=null?L.mins[qid]:(dd&&dd.amt||0);
+ if(q){const lv=fLv(q,base+n);return`✨ 完成「${q.name}」${ELV[lv][0]}・獎勵 ×1.5${cb}`}
+ if(dd&&dd.lv!=null&&activeOn(qq,t)){const nl=fLv(qq,base+n);if(nl>dd.lv)return`⬆️「${qq.name}」升級到${ELV[nl][0]}（累計 ${base+n} 分）`}
  const m=minionOf(dun().floor),weak=FCATS[cat][2]===m.w;return`單獨討伐・重擊 ${focusDmg(n,combo,weak)}・+${focusXP(n)} XP${cb}`}
 function fUpd(){const n0=S.fmin||25,st=$('#fstat');if(st)st.textContent=fStatus(n0);const n=S.fmin||25,m=minionOf(dun().floor),combo=1+Math.min(3,(dayLog(today()).focus||[]).length)*.2,weak=FCATS[S.fcat||'study'][2]===m.w;
  const v=$('#fminv'),r=$('#fmin');if(v)v.textContent=fmtF(n);if(r)r.value=n}
@@ -1096,18 +1167,22 @@ function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務・獎�
 
 const VIEWS={today:vToday,battle:vBattle,shop:vShop,me:vMe,log:vLog,set:vSet};
 let jDraft='',xDraft='';
-function render(){header();$('#view').innerHTML=VIEWS[tab]();const ta=$('#jtxt');if(ta){ta.value=jDraft;ta.oninput=()=>{jDraft=ta.value}}const xt=$('#xtxt');if(xt){xt.value=xDraft;xt.oninput=()=>{xDraft=xt.value}}tick()}
+function render(){header();$('#view').innerHTML=VIEWS[tab]();if(tab==='log')bindBook();if(tab==='set')photoBundle().then(b=>{window.__pb=b}).catch(()=>{});const ta=$('#jtxt');if(ta){ta.value=jDraft;ta.oninput=()=>{jDraft=ta.value}}const xt=$('#xtxt');if(xt){xt.value=xDraft;xt.oninput=()=>{xDraft=xt.value}}tick()}
 
 /* ---------- 事件 ---------- */
-$('#view').addEventListener('click',e=>{const el=e.target.closest('[data-gotab],[data-jt],[data-jedit],[data-fstep],[data-fcat],[data-spell],[data-xdel],[data-mood],[data-jf],[data-jdel],[data-info],[data-q],[data-side],[data-day],[data-shift],[data-pen],[data-focus],[data-buy],[data-gear],[data-eq],[data-skill],[data-delr],button[id]');if(!el||el.disabled)return;const d=el.dataset;
+$('#view').addEventListener('click',e=>{const el=e.target.closest('[data-dnav],[data-ph],[data-dgo],[data-gotab],[data-jt],[data-jedit],[data-fstep],[data-fcat],[data-spell],[data-xdel],[data-mood],[data-jf],[data-jdel],[data-info],[data-q],[data-side],[data-day],[data-shift],[data-pen],[data-focus],[data-buy],[data-gear],[data-eq],[data-skill],[data-delr],button[id]');if(!el||el.disabled)return;const d=el.dataset;
  const D=viewY?addDays(today(),-1):today();
  if(d.spell){const sp=SPELLS.find(x=>x.id===d.spell);if(S.gold<sp.g||!Object.entries(sp.m).every(([k,n])=>(S.mats[k]||0)>=n))return toast('金幣或素材不夠');
   S.gold-=sp.g;Object.entries(sp.m).forEach(([k,n])=>S.mats[k]-=n);S.items[sp.id]=(S.items[sp.id]||0)+1;sfx('chest');toast(`<b>${sp.ic} ${sp.n}</b> 製作完成`);return after()}
  if(d.xdel!==undefined){const L=dayLog(D),e=(L.extra||[])[+d.xdel];if(!e)return;return modal(`<h2>[額外修練]</h2><div class="bigt" style="font-size:22px">刪除「${esc(e.text)}」？</div><p class="muted">加的分會扣回來。</p>`,[['取消','btn'],['刪除','btn red',()=>{if(e.r)undo(e.r);L.extra.splice(+d.xdel,1);after()}]])}
+ if(d.dnav)return flipDay(+d.dnav);
+ if(d.ph)return viewPhoto(d.ph,S.jday&&S.jday<=today()?S.jday:today());
+ if(d.dgo){S.jday=d.dgo;window.scrollTo(0,0);return render()}
  if(d.gotab){tab=d.gotab;document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x.dataset.t===tab));window.scrollTo(0,0);return render()}
  if(d.jt){S.jtab=d.jt;save();return render()}
  if(d.jedit){const t0=+d.jedit,en=(S.journal||[]).find(x=>x.t===t0&&x.type==='user');if(!en)return;
   modal(`<h2>[${dateCN(en.d)}]</h2><textarea id="jedt" class="ptext" style="min-height:140px;background-color:#f4ecd8;color:#3b2f22;padding:8px">${esc(en.text)}</textarea>`,[['刪除','btn red',()=>modal('<h2>[勇者日誌]</h2><div class="bigt">刪除這篇？</div>',[['取消','btn'],['刪除','btn red',()=>{S.journal=S.journal.filter(x=>x!==en);save();render()}]])],['取消','btn'],['儲存','btn pri',()=>{const v=($('#jedt').value||'').trim();if(v){en.text=v.slice(0,2000);save();render();toast('<b>已修改</b>')}}]]);return}
+ if(d.mood!==undefined&&tab==='log'){const dd=S.jday&&S.jday<=today()?S.jday:today(),p=dpage(dd),m=+d.mood;p.mood=p.mood===m?null:m;p.upd=Date.now();save();document.querySelectorAll('[data-mood]').forEach(b=>b.classList.toggle('on',+b.dataset.mood===p.mood));return}
  if(d.mood!==undefined){const m=+d.mood;S.jm=S.jm===m?null:m;document.querySelectorAll('[data-mood]').forEach(b=>b.classList.toggle('on',+b.dataset.mood===S.jm));return}
  if(d.jf){S.jf=d.jf;save();return render()}
  if(d.jdel){const t0=+d.jdel;return modal('<h2>[勇者日誌]</h2><div class="bigt">刪除這篇？</div>',[['取消','btn'],['刪除','btn red',()=>{S.journal=S.journal.filter(e=>!(e.t===t0&&e.type==='user'));save();render()}]])}
@@ -1130,6 +1205,7 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-gotab],
    const fb=()=>modal(`<h2>[手動複製]</h2><p class="muted">長按下面的文字 → 全選 → 拷貝</p><textarea style="min-height:220px;font-size:12px">${esc(tx)}</textarea>`,[['關閉','btn']]);
    try{navigator.clipboard.writeText(tx).then(done,fb)}catch(e){fb()}return}
   case'xJudge':return openExtra(D,($('#xtxt').value||'').trim());
+  case'dcal':return openCal();
   case'jSave':{const tx=($('#jtxt').value||'').trim();if(!tx)return toast('先寫點什麼');S.journal=S.journal||[];S.journal.unshift({t:Date.now(),d:today(),type:'user',text:tx.slice(0,2000),mood:S.jm==null?null:S.jm});
    jDraft='';S.jm=null;if(S.jxp!==today()){S.jxp=today();S.stats.SPI=(S.stats.SPI||0)+1;gain(10,0);toast('<b>[勇者日誌]</b> 今天第一篇 +10 XP　心靈 +1')}else toast('<b>已寫入日誌</b>');sfx('done');return after()}
   case'fight':return startFight();
@@ -1158,10 +1234,17 @@ $('#view').addEventListener('change',e=>{if(e.target.id==='jsys'){S.jsys=e.targe
 /* ---------- 計時 ---------- */
 function tick(){const tm=S.timer;if(!tm)return;const left=tm.end-Date.now();
  if(left<=0){S.timer=null;const t=today(),fc=FCATS[tm.cat||'study'],L0=dayLog(t),combo=1+Math.min(3,L0.focus.length)*.2,q=fTask(tm.cat||'study',t);S.focusCount++;
+  const qid=FQ[tm.cat||'study'],qq=qid&&QUESTS.find(x=>x.id===qid);L0.mins=L0.mins||{};
+  if(qq&&activeOn(qq,t)){const dd=L0.done[qid];L0.mins[qid]=(L0.mins[qid]!=null?L0.mins[qid]:(dd&&dd.amt||0))+tm.min}
+  const cum=qq?L0.mins[qid]||tm.min:tm.min;
   const mk=Object.keys(MATS)[Math.floor(Math.random()*3)];S.mats[mk]++;
-  if(q){const lv=fLv(q,tm.min),was=cleared(t),r=reward(t,q.id+'L'+lv+'F',Math.round(q.xp*ELV[lv][1]*1.5*combo),q.stat,'quest');r.lv=lv;r.amt=q.amt?Math.max(tm.min,q.amt[lv]):1;r.focus=1;L0.done[q.id]=r;
+  if(q){const lv=fLv(q,cum),was=cleared(t),r=reward(t,q.id+'L'+lv+'F',Math.round(q.xp*ELV[lv][1]*1.5*combo),q.stat,'quest');r.lv=lv;r.amt=cum;r.focus=1;L0.done[q.id]=r;
    L0.focus.push({min:tm.min,xp:0,cat:tm.cat,q:q.id});jlog('⚔️',`專注 ${fmtF(tm.min)} 完成「${q.name}」${ELV[lv][0]}`);settle(t,was);after();
    modal(`<h2>[專注完成]</h2><div style="text-align:center">${minionSvg(dun().floor,130)}</div><div class="bigt" style="text-align:center">${fc[0]} 完成「${esc(q.name)}」${ELV[lv][0]}</div><p style="text-align:center;line-height:1.8"><b style="color:var(--cyan)">+${r.xp} XP</b>　<span class="gold">+${r.gold} G</span>　${MATS[mk][0]}×1<br><span class="muted sm">專注加成 ×1.5${combo>1?`・連戰 ×${combo.toFixed(1)}`:''}</span></p>`,[['讚','btn pri']]);return}
+  if(qq&&L0.done[qid]&&L0.done[qid].lv!=null){const dd=L0.done[qid],nl=fLv(qq,cum);
+   if(nl>dd.lv){const u=upgradeQuest(qq,t,nl,1.5*combo,cum);L0.focus.push({min:tm.min,xp:0,cat:tm.cat,q:qid});after();
+    modal(`<h2>[專注完成]</h2><div style="text-align:center">${minionSvg(dun().floor,130)}</div><div class="bigt" style="text-align:center">${fc[0]}「${esc(qq.name)}」升級到${ELV[nl][0]}</div><p style="text-align:center;line-height:1.8">今天累計 <b>${cum}</b> 分鐘<br><b style="color:var(--cyan)">+${u.r.xp} XP</b>　<span class="gold">+${u.r.gold} G</span>　${MATS[mk][0]}×1</p>`,[['讚','btn pri']]);return}
+   dd.amt=cum}
   const r=reward(t,'focus'+Date.now(),focusXP(tm.min),fc[2],'focus');L0.focus.push({min:tm.min,xp:r.xp,cat:tm.cat});
   const m=minionOf(dun().floor),weak=m.w===fc[2],hit=Math.round(tm.min*3*combo);hitMinion(hit,'focus',fc[2]);jlog('⚔️',`專注討伐：${fc[1]} ${fmtF(tm.min)}`);after();
   modal(`<h2>[專注完成]</h2><div style="text-align:center">${minionSvg(dun().floor,130)}</div><div class="bigt" style="text-align:center">${fc[0]} ${fc[1]} ${fmtF(tm.min)}</div><p style="text-align:center;line-height:1.8"><b style="color:var(--cyan)">+${r.xp} XP</b>　<span class="gold">+${r.gold} G</span>　${MATS[mk][0]}×1<br>重擊 <b>${hit*(weak?2:1)}</b>${weak?'（弱點 ×2）':''}${combo>1?`・連戰 ×${combo.toFixed(1)}`:''}</p>`,[['讚','btn pri']]);return}
@@ -1177,7 +1260,7 @@ if(S.bossKills===undefined)S.bossKills=0;S.chap=S.chap||{};if(S.boss.week&&S.cha
 {const ON=['怠惰之王','無限滑動獸','拖延巨像','宵夜惡龍','熬夜幽靈','藉口魔偶','沙發吸血鬼'],MN=['墮夢君主','藍屏巨蛇','明日巨像','暴食炎龍','不眠亡靈','千面傀儡師','沙發伯爵'];
  for(const k in S.chap){const v=S.chap[k];if(typeof v==='string'){let i=ON.indexOf(v);if(i<0)i=MN.indexOf(v);if(i<0)i=BOSS.findIndex(b=>b.n===v);S.chap[k]=i<0?null:i}}
  if(!S.jnameFix){(S.journal||[]).forEach(e=>{if(e.type==='user')return;[ON,MN].forEach(L=>L.forEach((n,i)=>{e.text=e.text.split(n).join(BOSS[i].n)}))});S.jnameFix=1}}
-dun();closeDays();bossInfo();checkAch();save();render();updBadge();
+dun();migrateDiary();closeDays();bossInfo();checkAch();save();render();updBadge();
 try{if('serviceWorker'in navigator&&location.protocol==='https:'&&!/claude/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
 function boot(){try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 if(S.pendingMsg){const h=S.pendingMsg;S.pendingMsg=null;save();sfx('bad');modal(h,[['可惡','btn red',()=>{if(!checkLogin(askScreen))askScreen()}]]);return}
