@@ -439,7 +439,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v37・11/21 09:10';
+const VER='v38・11/21 10:00';
 const PROG=100;
 'use strict';
 /* =====================================================================
@@ -583,8 +583,8 @@ const REWARDS=[
 const RANKS=[[1,'E','見習者'],[5,'D','覺醒者'],[10,'C','獵人'],[20,'B','精英獵人'],[35,'A','王牌'],[50,'S','君主']];
 const AURA={E:'#7d8aa6',D:'#3ee08f',C:'#4fd1ff',B:'#b48cff',A:'#f5c451',S:'#ff5d6c'};
 const GEAR={
- weapon:{n:'武器',eff:'Boss 傷害',items:[['w1','木棍',1,100,.05],['w2','鐵劍',5,300,.10],['w3','雙刃匕首',10,700,.18],['w4','寒冰長槍',20,1400,.28],['w5','暗影大鎌',35,2500,.40]]},
- armor:{n:'防具',eff:'金幣',items:[['a1','布衣',1,100,.05],['a2','皮甲',5,300,.10],['a3','鎖子甲',10,700,.15],['a4','獵人戰甲',20,1400,.22],['a5','君主黑甲',35,2500,.30]]},
+ weapon:{n:'武器',eff:'攻擊',items:[['w1','木棍',1,100,.05],['w2','鐵劍',5,300,.10],['w3','雙刃匕首',10,700,.18],['w4','寒冰長槍',20,1400,.28],['w5','暗影大鎌',35,2500,.40]]},
+ armor:{n:'防具',eff:'減傷',items:[['a1','布衣',1,100,.04],['a2','皮甲',5,300,.08],['a3','鎖子甲',10,700,.12],['a4','獵人戰甲',20,1400,.17],['a5','君主黑甲',35,2500,.22]]},
  acc:{n:'飾品',eff:'暴擊率',items:[['r1','銅戒指',1,150,.02],['r2','銀項鍊',5,350,.04],['r3','藍寶石墜',10,800,.06],['r4','雷電護符',20,1500,.08],['r5','王者之冠',35,2800,.10]]}};
 const SKILLS=[
  ['grit','🔥','毅力',lv=>`連續通關 7 天以上，任務 XP +${lv*5}%`],
@@ -613,6 +613,7 @@ function load(){let d=defaults(),r=null;try{r=JSON.parse(localStorage.getItem(KE
  delete S.quests;delete S.safari;delete S.igUntil;
  S.stats=Object.assign({STR:0,VIT:0,INT:0,SPI:0,DIS:0},S.stats);if(S.stats.CHA){S.stats.SPI+=S.stats.CHA;delete S.stats.CHA}
  S.rewards=(S.rewards||[]).filter(x=>!(x.ig>0));const RP={'追劇一集':[50,120],'手搖飲一杯':[80,150],'睡到自然醒':[120,250],'放縱餐':[200,400],'買一個想要的小東西':[400,1000]};S.rewards.forEach(r=>{const p=RP[r.name];if(p&&r.cost===p[0])r.cost=p[1]});S.shift=S.shift||{};S.gear=S.gear||{own:[],eq:{}};S.skills=S.skills||{};S.login=S.login||{last:null,streak:0,best:0};
+ if(!S.afx2){S.afx2=1;for(const id in S.loot||{}){const x=S.loot[id];if(x.afx&&x.afx.k==='xp')x.afx={k:'mag',v:Math.round(x.afx.v*1.6*1000)/1000};if(x.afx&&x.afx.k==='gold')x.afx={k:'hp',v:x.afx.v};if(x.slot==='armor')x.v=Math.round(x.v*.75*1000)/1000}}
  if(!S.d0fix){if(S.start==='2026-11-19')S.start='2026-11-20';S.d0fix=1}
  if(!S.wk1fix){S.wk1fix=1;if(S.pet&&!S.pet.born)S.pet.born=S.start;S.pet=S.pet||{born:S.start,max:0,sp:null};if(parse(S.start).getDay()!==1&&diff(S.start,today())<7){const o=S.start;S.start=nextMon(o);S.warm0=o}}
  if(S.dayStart===undefined)S.dayStart=4;if(S.sound===undefined)S.sound=true;if(S.boss.tier===undefined)S.boss.tier=S.bossKills}
@@ -682,7 +683,7 @@ function newUnlocks(a,b){const u=[];for(const k in GEAR)for(const it of GEAR[k].
 function reward(t,key,base,stat,kind){let m=1+(t===today()?buffOn('x'):0)+affix('xp')+(S.pet&&S.pet.sp&&PETS[S.pet.sp].stat===stat?petBuff():0)+(S.cls&&CLASSES[S.cls]&&CLASSES[S.cls].stat===stat&&kind!=='up'?.1:0);if(kind==='quest'&&t===today()){const n=new Date(),hh=n.getHours()+n.getMinutes()/60;if(hh>=4&&hh<6.5)setEgg('dawn')}if(kind==='quest'&&skl('grit')&&streak()>=7)m+=.05*skl('grit');if(kind==='side')m+=.2*skl('curio');if(kind==='focus')m+=.25*skl('focus');
  const crit=srand(t+key+'c')<critRate()+(t===today()?buffOn('crit'):0),xp=Math.round(base*m*(crit?2:1));
  const loot=srand(t+key+'l')<.1?Math.round((10+Math.floor(srand(t+key+'a')*31))*(1+.3*skl('luck'))):0;
- const gold=Math.round(base/2*(1+eqv('armor')+affix('gold'))*goldMul(t))+loot,dmg=Math.round(xp*(1+eqv('weapon')));
+ const gold=Math.round(base/2*(1+affix('gold'))*goldMul(t))+loot,dmg=Math.round(xp*(1+eqv('weapon')));
  const r={xp,gold,loot,crit,stat,dmg,kind};if(crit)S.crits++;S.stats[stat]=(S.stats[stat]||0)+1;if(kind==='side')S.sideCount++;else if(kind==='quest')S.questCount++;
  gain(xp,gold);hitMinion(dmg,kind,stat);
  haptic(crit?2:1);if(crit){sfx('crit');toast(`<b>CRITICAL!</b> 經驗值 ×2　+${xp} XP`,'crit')}else{sfx('done');toast(`<b>+${xp} XP</b>　+${gold-loot} G　${STATS[stat].n} +1`)}
@@ -754,7 +755,7 @@ function openChest(big){const lk=1+.3*skl('luck');
 function checkLogin(then){const t=today();if(S.login.last===t)return false;const y=addDays(t,-1);
  S.login.streak=S.login.last===y?S.login.streak+1:1;S.login.last=t;S.login.best=Math.max(S.login.best||0,S.login.streak);
  const k=(S.login.streak-1)%7,r=LOGIN[k];let res;
- if(r[0]==='g'){const g=Math.round(r[1]*(1+eqv('armor')));S.gold+=g;res={ic:'💰',txt:`<span class="gold">+${g} G</span>`}}else res=openChest(r[0]==='C');
+ if(r[0]==='g'){const g=r[1];S.gold+=g;res={ic:'💰',txt:`<span class="gold">+${g} G</span>`}}else res=openChest(r[0]==='C');
  sfx('chest');checkAch();save();
  const cal=LOGIN.map((x,i)=>`<div class="cd ${i<k?'got':i===k?'now':''}"><small>D${i+1}</small><span>${x[0]==='g'?'💰':x[0]==='c'?'🎁':'👑'}</span><small>${x[0]==='g'?x[1]+'G':x[0]==='c'?'寶箱':'大寶箱'}</small></div>`).join('');
  modal(`<h2>[每日簽到] 連續 ${S.login.streak} 天</h2><div class="cal">${cal}</div><div class="chestbox"><div class="chest">${r[0]==='g'?'💰':'🎁'}</div><div class="reveal"><div style="font-size:44px">${res.ic}</div><div class="bigt" style="font-size:22px">${res.txt}</div></div></div>`,[['收下','btn pri',()=>{render();then&&then()}]]);
@@ -1047,8 +1048,8 @@ function minionSvg(f,w){const m=minionOf(f),c=m.rare?'#f5c451':m.c,g=rid();
 
 /* ---------- 玩家能力（決戰用） ---------- */
 function pStats(){const L=lvInfo(S.xp).lv,st=S.stats;
- const hp=Math.round((100+L*5+(st.VIT||0)*1.5)*(1+eqv('armor'))),atk=Math.round((18+L*2.5+(st.STR||0)*.7)*(1+eqv('weapon')));
- return{hp,atk,crit:critRate(),L}}
+ const hp=Math.round((100+L*5+(st.VIT||0)*1.5)*(1+affix('hp'))),atk=Math.round((18+L*2.5+(st.STR||0)*.7)*(1+eqv('weapon')));
+ return{hp,atk,crit:critRate(),L,dr:eqv('armor'),dodge:affix('dodge'),mag:affix('mag')}}
 function weekXP(wk){let x=0;for(let i=0;i<7;i++){const L=S.log[addDays(wk,i)];if(!L)continue;
  for(const k in L.done||{})x+=L.done[k].xp||0;for(const k in L.side||{})x+=L.side[k].xp||0;(L.extra||[]).forEach(e=>x+=e.r?e.r.xp:0);(L.focus||[]).forEach(f=>x+=f.xp||0)}return x}
 const chargeOf=wk=>Math.round(weekXP(wk)*.7);
@@ -1230,13 +1231,13 @@ const mkRng=seed=>{let i=0;return()=>hrand(seed+'#'+(i++))};
 /* ---------- 隨機裝備 ---------- */
 const RAR=[['普通','#a3adc2',1,62],['稀有','#4fd1ff',1.25,28],['史詩','#b48cff',1.6,8.5],['傳說','#f5c451',2.2,1.5]];
 const PREF=[[],['精鍛','銳利','堅固','迅捷'],['暗紋','龍骨','星鐵','血契'],['神諭','終焉','天命','君王']];
-const AFX={xp:['經驗',.03,.08],crit:['暴擊率',.02,.04],gold:['金幣',.05,.10]};
+const AFX={crit:['暴擊率',.02,.04],hp:['HP',.05,.12],dodge:['閃避',.03,.06],mag:['法術傷害',.06,.14],xp:['經驗',0,0],gold:['金幣',0,0]};
 const BAG_MAX=30;
 function lootTier(){const L=lvInfo(S.xp).lv;return L<5?1:L<10?2:L<20?3:L<35?4:5}
 function rollRar(r,good){const w=good?[0,62,30,8]:RAR.map(x=>x[3]),sum=w.reduce((a,b)=>a+b,0);let x=r*sum;for(let i=0;i<4;i++){x-=w[i];if(x<0)return i}return 3}
 function makeLoot(rng,good){S.loot=S.loot||{};const slot=['weapon','armor','acc'][Math.floor(rng()*3)],tier=Math.min(5,lootTier()+(rng()<.1?1:0)),rar=rollRar(rng(),good),
  base=GEAR[slot].items[tier-1],v=Math.round(base[4]*RAR[rar][2]*(.9+rng()*.2)*1000)/1000,pf=PREF[rar],n=(pf.length?pf[Math.floor(rng()*pf.length)]:'')+base[1];
- let afx=null;if(rar>=2){const ks=Object.keys(AFX).filter(k=>!(slot==='armor'&&k==='gold')&&!(slot==='acc'&&k==='crit')),k=ks[Math.floor(rng()*ks.length)],a=AFX[k];afx={k,v:Math.round((a[1]+(a[2]-a[1])*rng())*(rar===3?1.5:1)*1000)/1000}}
+ let afx=null;if(rar>=2){const ks=['crit','hp','dodge','mag'].filter(k=>!(slot==='acc'&&k==='crit')),k=ks[Math.floor(rng()*ks.length)],a=AFX[k];afx={k,v:Math.round((a[1]+(a[2]-a[1])*rng())*(rar===3?1.5:1)*1000)/1000}}
  let id;do{id='L'+Date.now().toString(36)+Math.floor(rng()*1e6).toString(36)+Math.floor(Math.random()*1e3).toString(36)}while(S.loot[id]);
  S.loot[id]={slot,tier,rar,n,v,afx,t:Date.now()};S.gear.own.push(id);return id}
 const affix=k=>['weapon','armor','acc'].reduce((a,s)=>{const g=eqItem(s);return a+(g&&g.afx&&g.afx.k===k?g.afx.v:0)},0);
@@ -1549,9 +1550,9 @@ setInterval(brkTick,1000);
 
 /* ====================== v32：職業・寶可夢式 Boss 戰 ====================== */
 const CLS_LV=3,CLS_CHANGE=300;
-const BAL={rage:1.3,rageT:2,sage:1.15,regen:.04,gHP:1.25,wAtk:1.05,rCrit:.08,poison:.04,poisonT:3,assas:2.5,counter:2,guardCut:.4,guardHeal:.08,guardChg:1.3,medHeal:.2,medChg:1.3,zenHeal:.3,shieldCut:.5};
+const BAL={batk:1.4,wHP:1.12,rage:1.3,rageT:2,sage:1.15,regen:.04,gHP:1.25,wAtk:1.05,rCrit:.08,poison:.04,poisonT:3,assas:2.5,counter:2,guardCut:.4,guardHeal:.08,guardChg:1.3,medHeal:.2,medChg:1.3,zenHeal:.3,shieldCut:.5};
 const CLASSES={
- warrior:{n:'狂戰士',ic:'⚔️',stat:'STR',c:'#ff5d6c',d:'正面硬幹。攻擊力 +5%，血越少打越痛。',
+ warrior:{n:'狂戰士',ic:'⚔️',stat:'STR',c:'#ff5d6c',d:'正面硬幹。攻擊 +5%、HP +12%，血越少打越痛。',
   mv:[['重斬',1,0,'slash',''],['戰吼',0,1,'rage','狂暴 2 回合，攻擊 ×1.3'],['破甲斬',1.35,2,'slash',''],['背水一戰',1,1,'slash','血越少傷害越高']]},
  sage:{n:'賢者',ic:'📖',stat:'INT',c:'#4fd1ff',d:'讀過的書都是武器。法術與魔法道具 +15%。',
   mv:[['魔力彈',1,0,'bolt',''],['火球',1.25,2,'fire',''],['冰封',.6,1,'bolt','Boss 凍結 1 回合'],['隕石',1.6,1,'fire','']]},
@@ -1583,8 +1584,8 @@ function clsPick(){const L=lvInfo(S.xp).lv;if(L<CLS_LV)return toast(`Lv.${CLS_LV
 
 /* ---------- 寶可夢式戰鬥畫面 ---------- */
 const REG_BG=['#0f2a1c','#0d2418','#2a1c0c','#2e220c','#0c2230','#0c1f2e','#1c1430','#2a0c12'];
-function fightInit(){const c=clsOf(),p=pStats();F.cls=S.cls||null;F.pp={};myMoves().forEach(m=>{if(m.pp)F.pp[m.id]=m.pp});F.poison=0;F.dodge=0;F.counter=0;F.chg=1;F.petUsed=false;F.menu='main';F.maxT=FIGHT_TURNS;F.bless=0;F.weak=0;
- if(c&&S.cls==='guardian'){F.pmax=Math.round(F.pmax*BAL.gHP);F.php=F.pmax;F.sp=F.pmax}if(c&&S.cls==='warrior')F.atk=Math.round(F.atk*BAL.wAtk);if(c&&S.cls==='ranger')F.crit+=BAL.rCrit}
+function fightInit(){const c=clsOf(),p=pStats();F.cls=S.cls||null;F.pp={};myMoves().forEach(m=>{if(m.pp)F.pp[m.id]=m.pp});F.poison=0;F.dodge=0;F.counter=0;F.chg=1;F.petUsed=false;F.menu='main';F.maxT=FIGHT_TURNS;F.bless=0;F.weak=0;F.dr=p.dr||0;F.dodgeP=p.dodge||0;F.mag=p.mag||0;
+ if(c&&S.cls==='guardian'){F.pmax=Math.round(F.pmax*BAL.gHP);F.php=F.pmax;F.sp=F.pmax}if(c&&S.cls==='warrior'){F.atk=Math.round(F.atk*BAL.wAtk);F.pmax=Math.round(F.pmax*BAL.wHP);F.php=F.pmax;F.sp=F.pmax}if(c&&S.cls==='ranger')F.crit+=BAL.rCrit}
 function petAssist(){const P=S.pet,c=P&&P.sp&&petCalc();return c&&c.stage>=1&&c.mood>0?{n:petName(),st:c.stage,sp:P.sp}:null}
 function drawFight(){const b=F.b,m=mapInfo(),bg=REG_BG[m.r]||REG_BG[0],c=clsOf(),pa=petAssist();
  const fbar=(id,v,mx,cl)=>`<div class="bar fbar ${cl}" id="${id}" style="height:8px"><u style="width:${Math.max(0,v/mx*100)}%"></u><i style="width:${Math.max(0,v/mx*100)}%"></i></div>`;
@@ -1604,10 +1605,10 @@ function pkMenu(){const pa=petAssist();
  if(F.menu==='bag'){const inv=SPELLS.filter(s=>(S.items[s.id]||0)>0);return`<div class="pkgrid">${inv.length?inv.map(s=>`<button data-pk="it:${s.id}" ${F.used>=SPELL_MAX||(s.id==='meteor'&&F.met)?'disabled':''}><b>${s.ic} ${s.n}</b><small>×${S.items[s.id]}</small></button>`).join(''):'<p class="muted" style="grid-column:1/-1;margin:6px 0;font-size:13px">背包是空的。去商店做魔法。</p>'}</div><button class="pkback" data-pk="back">‹ 返回　<small class="muted">道具 ${F.used}/${SPELL_MAX}</small></button>`}
  return`<div class="pkgrid main"><button data-pk="fight" class="pk-f">⚔️ 戰鬥</button><button data-pk="bag" class="pk-b">🎒 道具</button><button data-pk="pet" class="pk-p" ${!pa||F.petUsed?'disabled':''}>🐾 夥伴</button><button data-pk="guard" class="pk-r">🛡️ 防禦</button></div>`}
 function pkSay(t){const el=$('#pkmsg');if(!el)return;el.textContent='';let i=0;clearInterval(pkSay.t);pkSay.t=setInterval(()=>{el.textContent=t.slice(0,++i);if(i>=t.length)clearInterval(pkSay.t)},22)}
-function fightTurn(a){if(!F||F.busy||F.done)return;haptic(1);const roll=()=>.85+Math.random()*.3,c=clsOf(),B=F.b.name,sageX=S.cls==='sage'?BAL.sage:1;let dmg=0,crit=false;
+function fightTurn(a){if(!F||F.busy||F.done)return;haptic(1);const roll=()=>.85+Math.random()*.3,c=clsOf(),B=F.b.name,sageX=(S.cls==='sage'?BAL.sage:1)*(1+(F.mag||0));let dmg=0,crit=false;
  const hit=(pw,fx,name,magic)=>{crit=F.bless>0||Math.random()<F.crit;if(F.bless>0)F.bless--;let d=F.atk*pw*(F.rage?BAL.rage:1)*F.chg*roll()*(crit?2:1)*(magic?sageX:1);F.chg=1;d=Math.round(d);F.bhp-=d;fxEv({k:fx==='fire'?'fire':fx==='bolt'?'bolt':'atk',dmg:d,crit,bTo:Math.max(0,F.bhp),msg:`${name}！${crit?'會心一擊！':''}造成 ${d} 點傷害`});F.log.push(`${name}：${d}${crit?'（暴擊）':''}`);return d};
  if(a.mv){const m=myMoves().find(x=>x.id===a.mv);if(!m||m.lock)return;if(m.pp){if(!F.pp[m.id])return;F.pp[m.id]--}const mg=m.pp>0&&(m.fx==='fire'||m.fx==='bolt');
-  if(m.p>0){let pw=m.p;if(m.n==='背水一戰')pw*=1+(1-F.php/F.pmax)*1.5;if(m.n==='暗殺'&&F.bhp/F.b.hp<=.35)pw*=BAL.assas;if(m.n==='快刀'){F.crit+=.15}if(m.n==='聖光審判')F.bhp-=Math.round(F.pmax*.2);hit(pw,m.fx,`你使出「${m.n}」`,S.cls==='sage'&&mg);if(m.n==='快刀')F.crit-=.15}
+  if(m.p>0){let pw=m.p;if(m.n==='背水一戰')pw*=1+(1-F.php/F.pmax)*1.5;if(m.n==='暗殺'&&F.bhp/F.b.hp<=.35)pw*=BAL.assas;if(m.n==='快刀'){F.crit+=.15}if(m.n==='聖光審判')F.bhp-=Math.round(F.pmax*.2);hit(pw,m.fx,`你使出「${m.n}」`,mg);if(m.n==='快刀')F.crit-=.15}
   else fxEv({k:m.fx==='shield'?'shield':m.fx==='rage'?'rage':'none',msg:`你使出「${m.n}」！`});
   if(m.n==='戰吼')F.rage=BAL.rageT;if(m.n==='蓄力'){F.chg=2}if(m.n==='冰封')F.stun=1;if(m.n==='毒刃')F.poison=BAL.poisonT;if(m.n==='影分身')F.dodge=1;if(m.n==='鐵壁')F.shield=2;if(m.n==='反擊架勢')F.counter=1;if(m.n==='盾擊')F.guard=1;
   if(m.n==='冥想'||m.n==='天人合一'){const hv=Math.round(F.pmax*(m.n==='冥想'?BAL.medHeal:BAL.zenHeal));F.php=Math.min(F.pmax,F.php+hv);if(m.n==='冥想')F.chg=BAL.medChg;fxEv({k:'heal',hv,pTo:F.php,msg:`回復了 ${hv} HP`})}
@@ -1630,8 +1631,9 @@ function fightTurn(a){if(!F||F.busy||F.done)return;haptic(1);const roll=()=>.85+
  if(F.poison>0&&F.bhp>0){const pd=Math.round(F.b.hp*BAL.poison);F.bhp-=pd;F.poison--;fxEv({k:'stun',msg:`${B}受到毒的傷害 ${pd}`,dmg:pd,bTo:Math.max(0,F.bhp),poison:1})}
  if(F.bhp<=0)return endFight(true);
  if(F.stun){F.stun=0;fxEv({k:'stun',msg:`${B}動彈不得！`})}
- else{const big=(F.turn+1)%3===0;let bd=Math.round(F.bs.atk*(big?1.8:1)*roll()*(F.weak>0?.7:1));if(F.weak>0)F.weak--;const atkName=big?`${B}放出大招！`:`${B}發動攻擊！`;
+ else{const big=(F.turn+1)%3===0;let bd=Math.round(F.bs.atk*BAL.batk*(big?1.8:1)*roll()*(F.weak>0?.7:1)*(1-(F.dr||0)));if(F.weak>0)F.weak--;const atkName=big?`${B}放出大招！`:`${B}發動攻擊！`;
   if(F.dodge){F.dodge=0;fxEv({k:'stun',msg:`${atkName}……但打中的是分身！`})}
+  else if(F.dodgeP&&Math.random()<F.dodgeP){fxEv({k:'stun',msg:`${atkName}……被你閃開了！`})}
   else{if(F.shield){bd=Math.round(bd/2);F.shield--}if(F.guard){bd=Math.round(bd*.7);F.guard=0}if(F.guarding){bd=Math.round(bd*BAL.guardCut);F.guarding=0}F.php-=bd;fxEv({k:'boss',dmg:bd,big,pTo:Math.max(0,F.php),msg:`${atkName}你受到 ${bd} 點傷害`});
    if(F.counter){F.counter=0;const cd=Math.round(bd*BAL.counter+F.atk*.6);F.bhp-=cd;fxEv({k:'atk',dmg:cd,bTo:Math.max(0,F.bhp),msg:`反擊！打回 ${cd} 點傷害`});if(F.bhp<=0)return endFight(true)}}
   F.log.push(`${B}：${bd}`)}
@@ -1670,10 +1672,10 @@ function notice(icon,title,body,cls){qModal(`<button class="mx" data-m="0">×</b
 /* ---------- v36：裝備變體・新魔法・商店分類 ---------- */
 // 每個部位每一階除了基本款，還有 3 種走向：主屬性換副屬性，或花更多錢換更高主屬性
 const ALT_DEF={
- weapon:[['axe','斧',1.1,null,1.35,['手斧','戰斧','巨人之斧','霜巨人戰斧','滅世巨斧']],['dagger','匕首',.8,'crit',1.1,['獵刀','銀匕首','毒蛇之牙','影刃','虛空匕首']],['staff','法杖',.75,'xp',1.1,['練習杖','橡木法杖','星辰法杖','賢者之杖','世界樹之杖']]],
- armor:[['heavy','重甲',1.1,null,1.35,['厚布甲','鐵片甲','騎士板甲','龍鱗重甲','不朽聖鎧']],['light','輕甲',.8,'crit',1.1,['皮背心','遊俠輕甲','夜行衣','影舞者皮甲','幻影之衣']],['robe','法袍',.7,'xp',1.1,['亞麻法袍','學徒法袍','秘法長袍','星紋法袍','大賢者之袍']]],
- acc:[['fury','戰戒',1.2,null,1.35,['怒火戒','狂戰戒','血月戒','修羅戒','魔神戒']],['coin','護符',.5,'gold',1.1,['招財銅幣','幸運金幣','財神護符','黃金之心','點金石']],['book','徽章',.5,'xp',1.1,['學徒徽章','智慧書籤','賢者之眼','真理之冠','全知之環']]]};
-const AFX_V={crit:t=>.01+.008*t,xp:t=>.02+.01*t,gold:t=>.04+.02*t};
+ weapon:[['axe','斧',1.12,null,1.35,['手斧','戰斧','巨人之斧','霜巨人戰斧','滅世巨斧']],['dagger','匕首',.8,'crit',1.1,['獵刀','銀匕首','毒蛇之牙','影刃','虛空匕首']],['staff','法杖',.8,'mag',1.1,['練習杖','橡木法杖','星辰法杖','賢者之杖','世界樹之杖']]],
+ armor:[['heavy','重甲',1.3,null,1.35,['厚布甲','鐵片甲','騎士板甲','龍鱗重甲','不朽聖鎧']],['light','輕甲',.6,'dodge',1.1,['皮背心','遊俠輕甲','夜行衣','影舞者皮甲','幻影之衣']],['life','生命鎧',.6,'hp',1.1,['亞麻護衣','活力皮甲','巨木之鎧','不死鳥羽衣','世界樹之鎧']]],
+ acc:[['fury','戰戒',1.3,null,1.35,['怒火戒','狂戰戒','血月戒','修羅戒','魔神戒']],['heart','護身符',.5,'hp',1.1,['木護符','玉墜','守護之心','龍心護符','不滅之心']],['orb','魔導石',.5,'mag',1.1,['魔石墜','秘銀晶','星辰之眼','虛空寶珠','創世魔核']]]};
+const AFX_V={crit:t=>.01+.008*t,dodge:t=>.02+.012*t,hp:t=>.04+.025*t,mag:t=>.05+.03*t};
 var GEAR_ALT={};for(const k in ALT_DEF){GEAR_ALT[k]=[];GEAR[k].items.forEach((b,i)=>{const t=i+1;for(const[c,cn,vm,ak,pm,names]of ALT_DEF[k]){GEAR_ALT[k].push([`${k[0]}${c}${t}`,names[i],b[2],Math.round(b[3]*pm/10)*10,Math.round(b[4]*vm*1000)/1000,ak?{k:ak,v:Math.round(AFX_V[ak](t)*1000)/1000}:null,t,cn])}})}
 const SPELLS2=[
  {id:'ice',ic:'🧊',n:'冰槍',d:'0.9 倍攻擊傷害，Boss 攻擊 −30% 兩回合',g:110,m:{stone:2,soul:1}},
@@ -1683,11 +1685,11 @@ const SPELLS2=[
  {id:'meteor',ic:'☄️',n:'隕石卷軸',d:'1.9 倍攻擊傷害（每場限 1 張）',g:260,m:{stone:4,fang:2}}];
 SPELLS.push(...SPELLS2);
 const SHOP_TABS=[['bag','🎒 背包'],['weapon','⚔️ 武器'],['armor','🛡️ 防具'],['acc','💍 飾品'],['magic','🔮 魔法'],['skill','📘 技能']];
-function gearList(k){const G=GEAR[k],L=lvInfo(S.xp).lv,pp=pendingPen().length,maxT=G.items.filter(it=>it[2]<=L).length,showT=Math.min(5,maxT+1);let h='';
+function gearList(k){const G=GEAR[k],L=lvInfo(S.xp).lv,pp=pendingPen().length,maxT=G.items.filter(it=>it[2]<=L).length,showT=Math.min(5,maxT+2);let h='';
  for(let t=Math.max(1,maxT-1);t<=showT;t++){const base=G.items[t-1],rows=[[base[0],base[1],base[2],base[3],base[4],null,t,'基本']].concat(GEAR_ALT[k].filter(x=>x[6]===t)),lock=L<base[2];
   h+=`<div class="tierh ${lock?'lock':''}">T${t}${lock?`<span>Lv.${base[2]} 解鎖</span>`:''}</div>`+rows.map(it=>{const own=S.gear.own.includes(it[0]),on=S.gear.eq[k]===it[0];
    return`<div class="item gi ${lock?'lock':''}"><span class="gic">${gearIcon(k,t)}</span><span class="nm">${it[1]} <small class="muted">${it[7]}</small><div class="muted" style="font-size:12px">${effTxt(k,it[4],it[5])}</div></span>${on?'<span class="chip" style="color:var(--cyan);border-color:var(--cyan)">使用中</span>':own?`<button class="btn sm" data-eq="${it[0]}">裝備</button>`:`<button class="btn sm cy" data-gear="${it[0]}" ${pp||lock||S.gold<it[3]?'disabled':''}>${it[3]} G</button>`}</div>`}).join('')}
- return`<div class="panel"><div class="ptitle">[${G.n}]<span>主屬性：${G.eff}</span></div><p class="muted" style="margin:-2px 0 6px;font-size:12px">基本款最平均；${ALT_DEF[k].map(a=>a[1]).join('、')}各有取捨。</p>${h}</div>`}
+ return`<div class="panel"><div class="ptitle">[${G.n}]<span>主屬性：${G.eff}</span></div><p class="muted" style="margin:-2px 0 6px;font-size:12px">${{weapon:'攻擊＝每一下的傷害',armor:'減傷＝Boss 打你少掉的比例',acc:'暴擊＝打出兩倍傷害的機率'}[k]}。基本款最平均，${ALT_DEF[k].map(a=>a[1]).join('、')}各有取捨。</p>${h}</div>`}
 
 /* ---------- UI 基礎 ---------- */
 function toast(h,c=''){const box=$('#toasts');while(box.children.length>=3)box.firstChild.remove();const el=document.createElement('div');el.className='toast '+c;el.innerHTML=h;el.onclick=()=>el.remove();box.appendChild(el);setTimeout(()=>el.remove(),c==='crit'?5000:4200)}
