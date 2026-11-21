@@ -415,6 +415,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 .stabs{display:flex;gap:6px;overflow-x:auto;margin:0 0 10px;padding-bottom:2px;scrollbar-width:none}.stabs::-webkit-scrollbar{display:none}
 .stabs button{flex:0 0 auto;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:#070c18;color:var(--mute);font-size:13px;white-space:nowrap}.stabs button.on{color:var(--cyan);border-color:var(--cyan);background:#0b2233}
 .tierh{display:flex;justify-content:space-between;font:800 12px var(--mono);color:var(--cyan);margin:12px 0 2px;letter-spacing:.1em}.tierh.lock{color:var(--mute)}.tierh span{font-weight:400}
+.warmb{display:flex;gap:14px;align-items:center}.warmsil{flex:0 0 110px;opacity:.55;filter:blur(.5px)}.fstat small+small{display:block;font-size:10px;color:var(--mute)}
 </style>
 </head>
 <body>
@@ -439,7 +440,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v39・11/21 10:30';
+const VER='v40・11/21 10:50';
 const PROG=100;
 'use strict';
 /* =====================================================================
@@ -1320,7 +1321,7 @@ const REGIONS=[
  {n:'暗影沼澤',ic:'swamp',c:'#a78bfa',at:75,s:'沼澤會吞掉猶豫的人。你的腳步比以前穩多了。'},
  {n:'終焉之塔',ic:'evil-tower',c:'#ef4444',at:90,s:'塔就在眼前。魔王不是別人——是那個想放棄的自己。'}];
 const MAP_N=PROG,MAP_END='你推開塔頂的門，裡面只有一面鏡子。鏡子裡的人，已經不是 100 天前的你。';
-function mapPos(){const t=today();let p=0,d=S.start,n=0;while(d<=t&&n<3000){if(cleared(d))p++;d=addDays(d,1);n++}return p}
+function mapPos(){const t=today();let p=0,d=S.warm0&&S.warm0<S.start?S.warm0:S.start,n=0;while(d<=t&&n<3000){if(cleared(d))p++;d=addDays(d,1);n++}return p}
 const regionOf=step=>{let r=0;REGIONS.forEach((x,i)=>{if(step>=x.at)r=i});return r};
 function mapInfo(){const pos=mapPos(),lap=Math.floor(pos/MAP_N),step=pos-lap*MAP_N,r=regionOf(step),nx=REGIONS[r+1];return{pos,lap,step,r,nx,left:nx?nx.at-step:MAP_N-step}}
 function mapCheck(){const m=mapInfo();S.mapGot=S.mapGot||{};const K=i=>S.start+'|'+m.lap+'|'+i;
@@ -1709,7 +1710,7 @@ function vToday0(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t
  let h=`<div class="panel sys"><div class="ptitle">[RESET PROGRAM]<span>${dn>PROG?'第 '+Math.ceil(dn/PROG)+' 輪':dn<=0?'新手村・暖身週':PROG+' 天計畫'}</span></div>
  <div class="day"><div class="big">${dn<=0?`暖身<small> 還有 ${1-dn} 天</small>`:`DAY ${dn>PROG?((dn-1)%PROG)+1:dn}<small> / ${PROG}</small>`}</div><div class="grow"></div><div style="text-align:right"><div style="font:800 24px var(--mono);color:${dc>=nd?'var(--cyan)':'var(--text)'}">${dc}/${act.length}</div><div class="muted">達標需 ${nd}</div></div></div>
  <div class="bar" style="margin-top:10px"><i style="width:${nd?Math.min(100,dc/nd*100):100}%"></i></div>
- <div class="chips"><span class="chip hot">🔥 連續 ${st} 天</span><span class="chip">📅 簽到 ${S.login.streak||0} 天</span>${(m=>`<button class="chip" data-gomap="1" style="color:${REGIONS[m.r].c};border-color:${REGIONS[m.r].c}55">🗺️ ${REGIONS[m.r].n} ${m.step}/${MAP_N}</button>`)(mapInfo())}${season()?`<span class="chip" style="color:var(--gold);border-color:#5a4a18">${season()[2]} ${season()[3]}</span>`:''}${buffOn('x')||buffOn('crit')?`<span class="chip" style="color:var(--cyan)">${esc(S.buff.n)}</span>`:''}${S.chal&&S.chal.d===t&&!S.chal.paid?`<span class="chip" style="color:#e6d5b0;border-color:#5a4a30">📜 委託：${esc((QUESTS.find(x=>x.id===S.chal.q)||{}).name||'')}精英</span>`:''}${!(S.diary&&S.diary[t]&&(S.diary[t].text||'').trim())&&new Date().getHours()>=18&&!viewY?'<button class="chip" data-gotab="log" onclick="S.jday=null" style="color:#e6d5b0;border-color:#5a4a30">✎ 今天還沒寫日誌</button>':''}${yMissed()&&!cleared(t)?'<span class="chip" style="color:var(--gold);border-color:#5a4a18">⚠️ 昨天沒過，今天別再錯過</span>':''}${S.hard?'<span class="chip" style="color:var(--red);border-color:#552030">😈 硬核</span>':''}</div>
+ <div class="chips">${dn<=0?`<span class="chip hot">🏕️ 暖身通關 ${(()=>{let n=0,d=S.warm0||t;while(d<=t&&d<S.start){if(cleared(d))n++;d=addDays(d,1)}return n})()} 天</span>`:`<span class="chip hot">🔥 連續 ${st} 天</span>`}<span class="chip">📅 簽到 ${S.login.streak||0} 天</span>${(m=>`<button class="chip" data-gomap="1" style="color:${REGIONS[m.r].c};border-color:${REGIONS[m.r].c}55">🗺️ ${REGIONS[m.r].n} ${m.step}/${MAP_N}</button>`)(mapInfo())}${season()?`<span class="chip" style="color:var(--gold);border-color:#5a4a18">${season()[2]} ${season()[3]}</span>`:''}${buffOn('x')||buffOn('crit')?`<span class="chip" style="color:var(--cyan)">${esc(S.buff.n)}</span>`:''}${S.chal&&S.chal.d===t&&!S.chal.paid?`<span class="chip" style="color:#e6d5b0;border-color:#5a4a30">📜 委託：${esc((QUESTS.find(x=>x.id===S.chal.q)||{}).name||'')}精英</span>`:''}${!(S.diary&&S.diary[t]&&(S.diary[t].text||'').trim())&&new Date().getHours()>=18&&!viewY?'<button class="chip" data-gotab="log" onclick="S.jday=null" style="color:#e6d5b0;border-color:#5a4a30">✎ 今天還沒寫日誌</button>':''}${yMissed()&&!cleared(t)?'<span class="chip" style="color:var(--gold);border-color:#5a4a18">⚠️ 昨天沒過，今天別再錯過</span>':''}${S.hard?'<span class="chip" style="color:var(--red);border-color:#552030">😈 硬核</span>':''}</div>
  ${dn<=0?`<p class="quote" style="color:var(--gold)">新手村暖身週：任務照做、XP 照拿，不算連續和主線。週一正式 DAY 1</p>`:`<button class="petline" data-pet="1"><span class="petmini">${petSvg(52)}</span><span class="bubble">${esc((h=>h>=1&&h<4)(new Date().getHours())?npcLine():petLine()||npcLine())}</span></button>`}</div>`+(viewY?'':encCard());
  const pp=pendingPen();
  if(pp.length)h+=`<div class="panel pen"><div class="ptitle">[懲罰任務]<span>完成前商店鎖定</span></div>${pp.map(p=>`<button class="q" data-pen="${p.id}"><span class="box"></span><span class="nm">${esc(p.text)}<div class="muted">${p.date.slice(5)} 失敗的代價</div></span></button>`).join('')}</div>`;
@@ -1750,17 +1751,20 @@ function vBattle(){if(S.btab==='map')return btSeg()+vMap();return btSeg()+vBattl
 const btSeg=()=>`<div class="seg jtab">${[['fight','⚔️ 戰鬥'],['map','🗺️ 主線地圖']].map(([k,n])=>`<button class="${(S.btab||'fight')===k?'on':''}" data-bt="${k}">${n}</button>`).join('')}</div>`;
 function vBattle0(){const b=bossInfo(),D=dun(),m=minionOf(D.floor),fd=isFightDay(),ch=chargeOf(S.boss.week),p=pStats(),pr=predict(b);
  const wd=parse(today()).getDay(),toSat=(6-wd+7)%7,fcat=S.fcat||'study',nF=(dayLog(today()).focus||[]).length,combo=1+Math.min(3,nF)*.2;
- let h=`<div class="panel sys boss ${b.dead?'dead':''}"><div class="ptitle">[本週 BOSS]<span>Lv.${b.t+1}・週六日決戰</span></div>${bossSvg(b.i,b.t,180,b.dead)}
+ const warm=diff(S.start,today())<0;let h='';
+ if(warm)h=`<div class="panel sys"><div class="ptitle">[新手村]<span>暖身週・還有 ${-diff(S.start,today())} 天</span></div><div class="warmb"><div class="warmsil">${bossSvg(b.i,b.t,110,true)}</div><div><b>週一正式出發</b><p class="muted" style="margin:4px 0 0;font-size:13px;line-height:1.6">之後每個週六日會有一隻 Boss。<br>第一隻：<b style="color:#e6eefc">${BOSS[b.i].n}</b></p></div></div><p class="muted" style="margin:10px 0 0;font-size:12px">這週先練：打地城小怪、試試專注討伐。</p></div>`;
+ else h=`<div class="panel sys boss ${b.dead?'dead':''}"><div class="ptitle">[本週 BOSS]<span>Lv.${b.t+1}・週六日決戰</span></div>${bossSvg(b.i,b.t,180,b.dead)}
  <h3>${b.name}${b.rematch?' <span class="chip" style="color:var(--red);border-color:#552030">復仇戰</span>':''}</h3><p class="muted bt">「${b.title}」</p>
  ${S.stolen&&b.rematch&&!b.dead?`<p style="color:var(--gold);margin:0 0 6px">打倒牠就能奪回 ${gearById(S.stolen).it[1]}</p>`:''}
- <div class="fstat"><div><small>Boss HP</small><b style="color:var(--red)">${b.hp}</b></div><div><small>Boss 攻擊</small><b>${bossStats(b).atk}</b></div><div><small>你的 HP</small><b style="color:var(--green)">${p.hp}</b></div><div><small>你的攻擊</small><b>${p.atk}</b></div></div>
+ <div class="fstat"><div><small>Boss HP</small><b style="color:var(--red)">${b.hp}</b></div><div><small>Boss 攻擊</small><b>${Math.round(bossStats(b).atk*BAL.batk)}</b></div><div><small>你的 HP</small><b style="color:var(--green)">${p.hp}</b>${p.dr?`<small>減傷 ${Math.round(p.dr*100)}%</small>`:''}</div><div><small>你的攻擊</small><b>${p.atk}</b></div></div>
  <div class="chg"><span>💥 本週蓄力</span><div class="bar gold"><i style="width:${Math.min(100,ch/b.hp*100)}%"></i></div><b>${ch}</b></div>`;
- if(b.dead)h+=`<div class="bstate" style="color:var(--green)">✅ 已擊破，下週一換更強的</div>`;
+ if(!warm){if(b.dead)h+=`<div class="bstate" style="color:var(--green)">✅ 已擊破，下週一換更強的</div>`;
  else if(S.boss.fought)h+=`<div class="bstate" style="color:var(--red)">這週挑戰過了，下週復仇</div>`;
  else if(diff(S.start,today())<0)h+=`<div class="bstate">🏕️ 新手村暖身週，下週一正式出發後才有 Boss</div>`;
  else if(fd)h+=`<div class="bstate">預估 <b style="color:${pr[1]}">${pr[0]}</b>・魔法 ${SPELLS.reduce((a,s)=>a+(S.items[s.id]||0),0)} 個</div><button class="btn pri" id="fight" style="width:100%;font-size:17px">⚔️ 開始決戰</button>`;
  else h+=`<div class="bstate">⏳ 再 <b>${toSat}</b> 天開戰・預估 <b style="color:${pr[1]}">${pr[0]}</b></div>`;
- h+=`</div><div class="panel sys"><div class="ptitle">[地城]<span>第 ${D.floor} 層・擊倒 ${D.kills} 隻</span></div>
+ h+='</div>'}
+ h+=`<div class="panel sys"><div class="ptitle">[地城]<span>第 ${D.floor} 層・擊倒 ${D.kills} 隻</span></div>
  <div class="dun"><div class="dsv">${minionSvg(D.floor,130)}</div><div class="dinfo">
   <b class="dn">${m.rare?'<span style="color:var(--gold)">✨稀有・金色</span><br>':''}${m.n}</b><span class="dep">${m.e}</span>
   <span class="weak">弱點：<b style="color:${STATS[m.w].c}">${STATS[m.w].n}</b>　傷害 ×2</span>
