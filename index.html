@@ -322,8 +322,8 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 .regart{display:grid;place-items:center;margin:4px auto 6px;width:140px;height:140px;border-radius:50%;background:radial-gradient(circle,color-mix(in srgb,var(--rc) 22%,transparent),transparent 70%)}
 .story{font-family:"Noto Serif TC","Songti TC",serif;line-height:1.85;color:#e6d5b0;text-align:center;margin:6px 4px 10px}
 
-.bact{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}.bact button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border-radius:12px;border:1px solid var(--line);background:#070c18;color:var(--text);font-size:11px}.bact button span{font-size:22px}.bact button.on{border-color:var(--cyan);background:#0b2233;color:var(--cyan)}
-.bint{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.bint button{display:flex;flex-direction:column;gap:2px;padding:8px 4px;border-radius:12px;border:1px solid var(--line);background:#070c18;color:var(--text)}.bint small{font-size:10px;color:var(--mute)}.bint button.on{border-color:var(--cyan);background:#0b2233}.bint button.on b{color:var(--cyan)}
+.bact{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.bact button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 2px;border-radius:12px;border:1px solid var(--line);background:#070c18;color:var(--text);font-size:11px}.bact button span{font-size:22px}.bact button.on{border-color:var(--cyan);background:#0b2233;color:var(--cyan)}
+.bint{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}.bint button{display:flex;flex-direction:column;gap:2px;padding:8px 4px;border-radius:12px;border:1px solid var(--line);background:#070c18;color:var(--text)}.bint small{font-size:10px;color:var(--mute)}.bint button.on{border-color:var(--cyan);background:#0b2233}.bint button.on b{color:var(--cyan)}
 .bprev{text-align:center;margin:12px 0 2px}
 
 .tseg{margin-bottom:10px}
@@ -445,7 +445,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v52・11/21 18:40';
+const VER='v53・11/21 23:30';
 function TS(){return S.warm0&&S.warm0<S.start?S.warm0:S.start}
 const PROG=100;
 'use strict';
@@ -619,6 +619,7 @@ function load(){let d=defaults(),r=null;try{r=JSON.parse(localStorage.getItem(KE
  if(!S.afx2){S.afx2=1;for(const id in S.loot||{}){const x=S.loot[id];if(x.afx&&x.afx.k==='xp')x.afx={k:'mag',v:Math.round(x.afx.v*1.6*1000)/1000};if(x.afx&&x.afx.k==='gold')x.afx={k:'hp',v:x.afx.v};if(x.slot==='armor')x.v=Math.round(x.v*.75*1000)/1000}}
  if(!S.d0fix){if(S.start==='2026-11-19')S.start='2026-11-20';S.d0fix=1}
  if(!S.wk1fix){S.wk1fix=1;if(S.pet&&!S.pet.born)S.pet.born=S.start;S.pet=S.pet||{born:S.start,max:0,sp:null};if(parse(S.start).getDay()!==1&&diff(S.start,today())<7){const o=S.start;S.start=nextMon(o);S.warm0=o}}
+ if(!S.int4){S.int4=1;for(const d in S.log||{})(S.log[d].body||[]).forEach(x=>{if(x.i===2)x.i=3})}
  if(S.dayStart===undefined)S.dayStart=4;if(S.sound===undefined)S.sound=true;if(S.boss.tier===undefined)S.boss.tier=S.bossKills}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}try{pushStatus()}catch(e){}}
 load();
@@ -1389,8 +1390,8 @@ function regionStory(k){const m=mapInfo();if(k==='end')return modal(`<h2>[塔頂
  const i=+k,R=REGIONS[i],seen=m.lap>0||m.step>=R.at;modal(`<h2>[${seen?R.n:'？？？'}]</h2><div class="regart" style="--rc:${seen?R.c:'#33435f'}"><svg viewBox="0 0 512 512" width="100">${icoPaths(R.ic,seen?R.c:'#33435f')}</svg></div><p class="story">${seen?R.s:`主線第 ${R.at} 步。還沒走到這裡。`}</p>`,[['關閉','btn pri']])}
 
 /* ---------- 身體修練：時間 × 強度 = 修練點數 ---------- */
-const ACTS=[['dojo','🥋','道館訓練',90,1],['run','🏃','跑步',30,1],['swim','🏊','游泳',30,1],['gym','🏋️','重訓',45,1],['hiit','🔥','間歇・衝刺',20,2],['ball','🏀','球類',60,1],['bike','🚴','騎車',40,1],['walk','🚶','走路・健行',40,0],['mob','🧘','伸展・滾筒',20,0],['other','✨','其他',30,1]];
-const INT=[['輕鬆',.5,'還能唱歌'],['中等',1,'能講話、不能唱歌'],['高強度',2,'只能講幾個字']];
+const ACTS=[['dojo','🥋','道館訓練',90,2],['fight','🥊','格鬥・對打',60,3],['run','🏃','跑步',30,1],['swim','🏊','游泳',30,1],['gym','🏋️','重訓',45,1],['hiit','🔥','間歇・衝刺',20,3],['ball','🏀','球類',60,1],['bike','🚴','騎車',40,1],['walk','🚶','走路・健行',40,0],['mob','🧘','伸展・滾筒',20,0],['other','✨','其他',30,1]];
+const INT=[['輕鬆',.5,'還能唱歌'],['中等',1,'能聊天、不太喘'],['費力',1.5,'能講短句、會喘'],['很硬',2,'只能講幾個字']];
 const BODY_WK=300;
 const bodyPts=(min,i)=>Math.round(min*INT[i][1]);
 const bodyTotal=t=>((S.log[t]&&S.log[t].body)||[]).reduce((a,x)=>a+x.pts,0);
