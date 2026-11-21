@@ -1,14 +1,20 @@
 name: RESET 通知
 on:
   schedule:
-    - cron: '23 0 * * *'    # 08:23 台灣
-    - cron: '17 13 * * *'   # 21:17 台灣
-    - cron: '47 15 * * *'   # 23:47 台灣
+    - cron: '23 0 * * *'    # 08:23 台灣 早安
+    - cron: '53 0 * * *'    # 08:53 備援（08:23 沒跑才送）
+    - cron: '17 13 * * *'   # 21:17 台灣 晚上
+    - cron: '47 13 * * *'   # 21:47 備援
+    - cron: '47 15 * * *'   # 23:47 台灣 睡前
+    - cron: '9 16 * * *'    # 00:09 備援
   workflow_dispatch:
     inputs:
       type:
         description: 'test / morning / evening / night'
         default: 'test'
+permissions:
+  actions: read
+  contents: read
 jobs:
   push:
     runs-on: ubuntu-latest
@@ -23,3 +29,6 @@ jobs:
           PUSH: ${{ secrets.PUSH }}
           SCHED: ${{ github.event.schedule }}
           TYPE: ${{ github.event.inputs.type }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
