@@ -439,7 +439,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v38・11/21 10:00';
+const VER='v39・11/21 10:30';
 const PROG=100;
 'use strict';
 /* =====================================================================
@@ -1060,7 +1060,7 @@ function predict(b){const p=pStats(),ch=chargeOf(S.boss.week),est=ch+p.atk*FIGHT
 
 /* ---------- Boss 決戰 ---------- */
 let F=null;
-function startFight(){const b=bossInfo();if(S.boss.fought)return toast('這週已經挑戰過了');if(!isFightDay())return toast('決戰日是週六、週日');
+function startFight(){const b=bossInfo();if(diff(S.start,today())<0)return toast('新手村暖身週沒有 Boss，週一正式開始');if(S.boss.fought)return toast('這週已經挑戰過了');if(!isFightDay())return toast('決戰日是週六、週日');
  const p=pStats();F={L:p.L,b,bs:bossStats(b),php:p.hp,pmax:p.hp,atk:p.atk,crit:p.crit,bhp:b.hp,sb:b.hp,sp:p.hp,turn:0,used:0,shield:0,rage:0,stun:0,log:[],done:false,fx:[{k:'intro',msg:`${b.name}出現了！`}]};fightInit();
  S.boss.fought=true;save();const ch=chargeOf(S.boss.week);
  F.log.push(`⚔️ 決戰開始！`);if(ch>0){F.bhp=Math.max(0,F.bhp-ch);F.log.push(`💥 蓄力一擊！本週的努力化成 <b>${ch}</b> 點傷害`);fxEv({k:'charge',dmg:ch,bTo:F.bhp,msg:`蓄力一擊！這週的努力化成 ${ch} 點傷害`})}
@@ -1462,7 +1462,7 @@ function pushStatus(){clearTimeout(stT);stT=setTimeout(()=>{try{const t=today(),
  const order=['med','esp','woop','review','study','train','nophone','weekly'],quick=miss.filter(q=>QUICK[q.id]).sort((x,y)=>order.indexOf(x.id)-order.indexOf(y.id)).map(q=>QUICK[q.id]);
  metaPut('status',{d:t,ds:S.dayStart||0,left:[...new Set(miss.map(q=>QSHORT[q.group||q.id]||q.gname||q.name))],quick,total:act.length,done:doneCount(t),need:need(t),cleared:cleared(t),streak:sk,ym:yMissed(),ms:STREAK_MS.find(x=>x>sk)||null,
   pet:hatched?petName():'',weak:hatched&&c.mood===0,egg:S.pet&&!hatched?Math.max(0,PSTAGE[1]-c.b):null,mapLeft:m.left,mapNext:m.nx?m.nx.n:'塔頂',
-  due:(S.todos||[]).filter(x=>!x.done&&x.d&&x.d<=t).map(x=>x.t),boss:(wd===0||wd===6)&&!S.boss.dead,bossName:b&&b.name,region:REGIONS[m.r].n,minion:minionOf(dun().floor).n,diary:!!(S.diary&&S.diary[t]&&(S.diary[t].text||'').trim()),at:Date.now()})}catch(e){}},600)}
+  due:(S.todos||[]).filter(x=>!x.done&&x.d&&x.d<=t).map(x=>x.t),warm:diff(S.start,t)<0?diff(t,S.start):0,boss:diff(S.start,t)>=0&&(wd===0||wd===6)&&!S.boss.dead&&!S.boss.fought,bossName:b&&b.name,region:REGIONS[m.r].n,minion:minionOf(dun().floor).n,diary:!!(S.diary&&S.diary[t]&&(S.diary[t].text||'').trim()),at:Date.now()})}catch(e){}},600)}
 const pushOK=()=>'serviceWorker'in navigator&&'PushManager'in window&&'Notification'in window;
 const isApp=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
 const pushState=()=>!pushOK()?'none':Notification.permission==='denied'?'denied':Notification.permission==='granted'&&S.pushCfg?'on':'off';
@@ -1482,12 +1482,12 @@ function showPushCfg(){if(!S.pushCfg)return;
  <textarea readonly id="pcfg" style="width:100%;height:64px;font:10px var(--mono);margin-top:4px">${S.pushCfg}</textarea>`,[['關閉','btn'],['複製設定碼','btn pri',()=>{const v=S.pushCfg;(navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(v):Promise.reject()).then(()=>toast('<b>已複製</b>　去 GitHub 貼上')).catch(()=>{showPushCfg();setTimeout(()=>{const a=$('#pcfg');if(a){a.focus();a.select()}},300);toast('請長按設定碼全選複製')})}]])}
 function pushPreview(){if(!('serviceWorker'in navigator)||!navigator.serviceWorker.controller)return toast('從主畫面的 RESET 打開才能預覽');pushStatus();
  setTimeout(()=>{const ch=new MessageChannel();ch.port1.onmessage=e=>{const o=e.data||{},row=(k,n,tm)=>o[k]?`<div class="pvw"><small>${tm}・${n}</small><b>${esc(o[k][0])}</b><span>${esc(o[k][1])}</span></div>`:'';
-  modal(`<h2>[通知預覽]</h2><p class="muted" style="margin:0 0 8px;font-size:12px">照你「現在」的進度，三個時段會收到：</p>${row('morning','早上','08:23')}${row('evening','晚上','21:17')}${row('night','睡前','23:47')}<p class="muted" style="font-size:11px;margin:8px 0 0">同樣的狀況每次的說法會換。</p>`,[['關閉','btn'],['推一則試試','btn pri',()=>navigator.serviceWorker.controller.postMessage({preview:1,show:'evening'})]])};
+  modal(`<h2>[通知預覽]</h2><p class="muted" style="margin:0 0 8px;font-size:12px">照你「現在」的進度，三個時段會收到：</p>${row('morning','早上','08 點左右')}${row('afternoon','下午','隨機')}${row('night','睡前','22:30 左右')}<p class="muted" style="font-size:11px;margin:8px 0 0">同樣的狀況每次的說法會換。</p>`,[['關閉','btn'],['推一則試試','btn pri',()=>navigator.serviceWorker.controller.postMessage({preview:1,show:'evening'})]])};
   navigator.serviceWorker.controller.postMessage({preview:1},[ch.port2])},700)}
 async function pushLocalTest(){try{const reg=await navigator.serviceWorker.ready;await reg.showNotification('🔔 本機測試',{body:'看到這則，代表通知權限開好了。',icon:'icon.png',tag:'local'});toast('已送出本機測試通知')}catch(e){toast('送不出去：'+esc(String(e&&e.message||e)))}}
 function pushPanel(){const st=pushState();
  return`<div class="panel"><div class="ptitle">[通知]<span>${st==='on'?'<b style="color:var(--green,#3ee08f)">已開啟</b>':st==='denied'?'被拒絕':'未開啟'}</span></div>
- <p class="muted" style="margin:0 0 8px;font-size:12px;line-height:1.6">每天 08:23、21:17、23:47 各一則。看你差什麼、連續是不是快斷、夥伴餓不餓，說法每次都不一樣。</p>
+ <p class="muted" style="margin:0 0 8px;font-size:12px;line-height:1.6">早上、下午（時間隨機）、睡前各一則。看你差什麼、連續是不是快斷、夥伴餓不餓，說法每次都不一樣。</p>
  ${st==='on'?`<div class="row"><button class="btn sm grow" id="pPrev">預覽通知</button><button class="btn sm grow" id="pCfg">設定碼</button></div>`:`<button class="btn cy" id="pOn" style="width:100%">🔔 開啟通知</button>`}
  <div class="sw" style="margin-top:10px"><div><b>⏰ 計時通知</b><div class="muted">專注、休息時間到就叫你，鎖屏也收得到</div></div><button class="btn sm ${S.ghTok?'':'cy'}" id="tSet">${S.ghTok?'已設定':'設定'}</button></div></div>`}
 
@@ -1757,6 +1757,7 @@ function vBattle0(){const b=bossInfo(),D=dun(),m=minionOf(D.floor),fd=isFightDay
  <div class="chg"><span>💥 本週蓄力</span><div class="bar gold"><i style="width:${Math.min(100,ch/b.hp*100)}%"></i></div><b>${ch}</b></div>`;
  if(b.dead)h+=`<div class="bstate" style="color:var(--green)">✅ 已擊破，下週一換更強的</div>`;
  else if(S.boss.fought)h+=`<div class="bstate" style="color:var(--red)">這週挑戰過了，下週復仇</div>`;
+ else if(diff(S.start,today())<0)h+=`<div class="bstate">🏕️ 新手村暖身週，下週一正式出發後才有 Boss</div>`;
  else if(fd)h+=`<div class="bstate">預估 <b style="color:${pr[1]}">${pr[0]}</b>・魔法 ${SPELLS.reduce((a,s)=>a+(S.items[s.id]||0),0)} 個</div><button class="btn pri" id="fight" style="width:100%;font-size:17px">⚔️ 開始決戰</button>`;
  else h+=`<div class="bstate">⏳ 再 <b>${toSat}</b> 天開戰・預估 <b style="color:${pr[1]}">${pr[0]}</b></div>`;
  h+=`</div><div class="panel sys"><div class="ptitle">[地城]<span>第 ${D.floor} 層・擊倒 ${D.kills} 隻</span></div>

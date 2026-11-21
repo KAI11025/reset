@@ -1,16 +1,16 @@
 name: RESET 通知
 on:
   schedule:
-    - cron: '23 0 * * *'    # 08:23 台灣 早安
-    - cron: '53 0 * * *'    # 08:53 備援（08:23 沒跑才送）
-    - cron: '17 13 * * *'   # 21:17 台灣 晚上
-    - cron: '47 13 * * *'   # 21:47 備援
-    - cron: '47 15 * * *'   # 23:47 台灣 睡前
-    - cron: '9 16 * * *'    # 00:09 備援
+    - cron: '41 23 * * *'   # 早上 07:41 起，隨機延後 0~50 分
+    - cron: '53 0 * * *'    # 早上備援 08:53
+    - cron: '33 4 * * *'    # 下午 12:33 起，隨機延後 0~5 小時
+    - cron: '43 5 * * *'    # 下午備援
+    - cron: '7 14 * * *'    # 睡前 22:07 起，隨機延後 0~40 分
+    - cron: '59 14 * * *'   # 睡前備援 22:59
   workflow_dispatch:
     inputs:
       type:
-        description: 'test / morning / evening / night'
+        description: 'test / morning / afternoon / night'
         default: 'test'
 permissions:
   actions: read
@@ -18,6 +18,7 @@ permissions:
 jobs:
   push:
     runs-on: ubuntu-latest
+    timeout-minutes: 330
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
