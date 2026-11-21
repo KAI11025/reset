@@ -419,6 +419,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 .achlist{display:flex;flex-direction:column;gap:6px;max-height:46vh;overflow:auto;margin-top:6px}.achlist>div{display:grid;grid-template-columns:34px 1fr;column-gap:8px;background:#070c18;border:1px solid var(--line);border-radius:10px;padding:7px 9px}.achlist span{grid-row:1/3;font-size:24px;align-self:center}.achlist small{font-size:11px;color:var(--mute)}
 .rpg{display:flex;align-items:center;gap:10px;background:#070c18;border:1px solid var(--line);border-radius:12px;padding:8px 12px}.rpg b{font-size:30px;color:var(--gold);font-family:inherit}.rpg span{font-size:13px;color:var(--mute)}.rpw{max-height:48vh;overflow:auto}.rps{margin-top:10px}.rph{font-weight:700;font-size:14px;margin-bottom:4px}.rpi{background:#070c18;border:1px solid var(--line);border-radius:10px;padding:7px 10px;margin-top:5px;font-size:13px;line-height:1.6}.rpi small{display:block;color:var(--mute);font-size:11px}
 .slist{padding:4px 14px}.sg{font-size:11px;color:var(--mute);letter-spacing:.12em;padding:8px 0 2px}.srow{display:flex;align-items:center;gap:12px;width:100%;min-height:50px;padding:8px 0;background:none;border:0;border-top:1px solid var(--line);color:inherit;font:inherit;text-align:left}.sg+.srow{border-top:0}.srow .si{font-size:19px;width:24px;text-align:center}.srow .st{flex:1;font-size:15px;font-weight:600}.srow .st small{display:block;font-size:11px;font-weight:400;color:var(--mute);margin-top:2px}.srow .sv{font-size:12px;color:var(--mute)}.srow .sv.warn{color:var(--gold)}.srow .sc{color:var(--mute);font-size:20px;line-height:1}.sback{background:none;border:0;color:var(--cyan);font:inherit;font-size:15px;padding:4px 0 2px}.sh{font-size:20px;font-weight:800;margin:4px 0 12px}
+.panel .rpw{max-height:none}
 </style>
 </head>
 <body>
@@ -443,7 +444,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v47・11/21 13:50';
+const VER='v48・11/21 14:10';
 function TS(){return S.warm0&&S.warm0<S.start?S.warm0:S.start}
 const PROG=100;
 'use strict';
@@ -902,7 +903,8 @@ const cnNum=n=>n<=10?(n===10?'十':CN[n]):n<20?'十'+CN[n%10]:CN[Math.floor(n/10
 const dateCN=d=>{const x=parse(d);return`${x.getMonth()+1} 月 ${x.getDate()} 日　星期${WD[x.getDay()]}`};
 const hm=t=>{const d=new Date(t);return pad(d.getHours())+':'+pad(d.getMinutes())};
 function vLog(){const t=today(),sub=S.jtab||'book';
- let h=`<div class="seg jtab">${[['book','📖 日記本'],['ana','📊 分析']].map(([k,n])=>`<button class="${sub===k?'on':''}" data-jt="${k}">${n}</button>`).join('')}</div>`;
+ let h=`<div class="seg jtab">${[['book','📖 日記本'],['rep','📜 戰報'],['ana','📊 分析']].map(([k,n])=>`<button class="${sub===k?'on':''}" data-jt="${k}">${n}</button>`).join('')}</div>`;
+ if(sub==='rep')return h+repTab();
  if(sub==='ana'){h+=weekCmp()+lifetime()+insightPanel();const mood=[];for(let i=13;i>=0;i--){const d=addDays(t,-i),p=S.diary&&S.diary[d];mood.push([d,p&&p.mood!=null?p.mood:null])}
   if(mood.some(x=>x[1]!=null))h+=`<div class="panel"><div class="ptitle">[心情軌跡]<span>近 14 天</span></div><div class="mtrack">${mood.map(([d,m])=>`<div><span>${m!=null?MOODS[m]:'·'}</span><small>${parse(d).getDate()}</small></div>`).join('')}</div></div>`;
   return h}
@@ -977,13 +979,18 @@ async function aiPull(force){if(!S.aiOn||!S.aiKey)return;if(!force&&S.repT&&Date
   S.reports.unshift(r);if(S.reports.length>40)S.reports.length=40;jlog('📜',`收到系統戰報：${r.title||r.id}`);save();fxSound('win');haptic(2);qModal(()=>repHtml(r),[['收到','btn pri']])}
  catch(e){S.repT=0;if(force)toast('讀取失敗：'+e.message)}}
 const repList=(ic,h,a)=>a&&a.length?`<div class="rps"><div class="rph">${ic} ${h}</div>${a.map(x=>`<div class="rpi">${esc(typeof x==='string'?x:(x.t||''))}${x.why?`<small>${esc(x.why)}</small>`:''}</div>`).join('')}</div>`:'';
-function repHtml(r){return`<h2>[系統公告] ${esc(r.title||'戰報')}</h2>${r.range?`<div class="muted" style="font-size:12px;margin:-4px 0 8px">${esc(r.range)}</div>`:''}
+function repHtml(r){return`<h2>[系統公告] ${esc(r.title||'戰報')}</h2>`+repBody(r)}
+function repBody(r){return`${r.range?`<div class="muted" style="font-size:12px;margin:-4px 0 8px">${esc(r.range)}</div>`:''}
  ${r.grade?`<div class="rpg"><b>${esc(r.grade)}</b><span>${esc(r.gradeNote||'')}</span></div>`:''}<p style="line-height:1.7;margin:6px 0 10px">${esc(r.summary||'')}</p><div class="rpw">
  ${repList('✅','有在進步',r.good)}${repList('⚠️','卡關的地方',r.stuck)}${repList('🔍','數據發現',r.insight)}${repList('🎯','下週指令',r.next)}</div>${r.quote?`<p class="muted" style="text-align:center;margin-top:10px;font-style:italic">「${esc(r.quote)}」</p>`:''}`}
+function repTab(){const R=S.reports||[],on=S.aiOn&&S.ghTok;
+ if(!R.length)return`<div class="panel sys"><div class="ptitle">[系統戰報]<span>${on?'等待中':'未開啟'}</span></div><p class="muted" style="margin:0 0 10px;line-height:1.7;font-size:13px">${on?'每週一 10:17 送週戰報、每月 1 號送月戰報。送到時會跳系統公告，也會收在這裡。':'開啟後，Claude 每週分析你的紀錄，寫一份戰報給你。'}</p>${on?'<button class="btn sm" id="aiGet" style="width:100%">檢查有沒有新戰報</button>':'<button class="btn cy" id="goAi" style="width:100%">去開啟</button>'}</div>`;
+ const r=R[0];return`<div class="panel sys"><div class="ptitle">[${r.kind==='month'?'月戰報':'週戰報'}]<span>最新</span></div><div class="bigt" style="font-size:20px;margin-bottom:6px">${esc(r.title||r.id)}</div>${repBody(r)}</div>
+ ${R.length>1?`<div class="panel"><div class="ptitle">[過去的戰報]<span>${R.length-1} 份</span></div>${R.slice(1).map((x,i)=>`<button class="srow" data-rep="${i+1}"><span class="si">${x.kind==='month'?'🗓️':'📜'}</span><span class="st">${esc(x.title||x.id)}<small>${esc(x.range||'')}</small></span><span class="sv">${esc(x.grade||'')}</span><span class="sc">›</span></button>`).join('')}</div>`:''}
+ ${on?'<button class="btn sm" id="aiGet" style="width:100%">檢查有沒有新戰報</button>':''}`}
 function aiPanel(){const on=S.aiOn&&S.ghTok;return`<div class="panel"><div class="ptitle">[系統戰報]<span>${on?(S.syncErr?'<b style="color:var(--red)">上傳失敗</b>':S.syncOk?'上次上傳 '+new Date(S.syncOk).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'已開啟'):'未開啟'}</span></div>
- <p class="muted" style="margin:0 0 8px;font-size:12px;line-height:1.6">紀錄加密後自動上傳（只有 Claude 解得開），每週一、每月 1 號分析，戰報用系統公告送回來。</p>
- ${on?`<div class="row"><button class="btn sm grow" id="aiUp">立即上傳</button><button class="btn sm grow" id="aiGet">檢查戰報</button><button class="btn sm grow" id="aiSet">隱私</button></div>`:`<button class="btn cy" id="aiSet" style="width:100%">🧠 開啟每週分析</button>`}
- ${(S.reports||[]).length?`<div style="margin-top:10px">${S.reports.slice(0,8).map((r,i)=>`<button class="btn sm" data-rep="${i}" style="width:100%;margin-top:6px;text-align:left">📜 ${esc(r.title||r.id)}</button>`).join('')}</div>`:''}</div>`}
+ <p class="muted" style="margin:0 0 8px;font-size:12px;line-height:1.6">紀錄加密後自動上傳（只有 Claude 解得開），每週一、每月 1 號分析。戰報會跳系統公告，並收在 日誌 → 📜 戰報。</p>
+ ${on?`<div class="row"><button class="btn sm grow" id="aiUp">立即上傳</button><button class="btn sm grow" id="aiSet">隱私</button></div>`:`<button class="btn cy" id="aiSet" style="width:100%">🧠 開啟每週分析</button>`}</div>`}
 function aiSetup(){const ok=!!S.ghTok;modal(`<h2>[系統戰報] 設定</h2><p class="muted" style="line-height:1.75;margin:6px 0">紀錄會<b>加密</b>後用計時通知那把鑰匙上傳，只有 Claude 解得開，戰報也是加密送回來。不用再設定別的東西。</p>
  ${ok?'':'<p style="color:var(--red)">要先設定好「⏰ 計時通知」的鑰匙。</p>'}
  <div class="sw" style="margin-top:8px"><div><b>包含日記內容</b><div class="muted">關掉只傳數字和打勾紀錄</div></div><button class="btn sm ${S.aiDiary!==false?'cy':''}" id="aiDia">${S.aiDiary!==false?'包含':'不含'}</button></div>`,
@@ -1342,11 +1349,14 @@ function petModal(){const P=S.pet,c=petCalc();if(!P)return;const p=P.sp&&PETS[P.
  ${p&&c.stage>=1?`<div class="petrow"><span>✨ 加成</span><b>${c.mood>0?`${STATS[p.stat].n}系 XP +${c.stage*5}%`:'虛弱中，加成消失'}</b></div>`:''}
  <p class="muted" style="font-size:12px;line-height:1.6;margin:8px 0 0">通關一天羈絆 +1，沒通關（過了補登期限）−2。羈絆夠了就進化，進化過的不會退回去。</p>`,[['摸摸牠','btn',()=>{fxSound('pet');haptic(1);toast(`<b>${petName()}</b>　${['蹭了蹭你的手','開心地轉圈','打了個哈欠','用頭頂你','（呼嚕呼嚕）'][Math.floor(Math.random()*5)]}`)}],['關閉','btn pri']])}
 
-function bagPanel(){const ids=bagIds().sort((a,b)=>{const x=S.loot[a],y=S.loot[b];return x.slot.localeCompare(y.slot)||y.rar-x.rar||y.v-x.v});
- if(!ids.length)return`<div class="panel"><div class="ptitle">[背包]<span>0/${BAG_MAX}</span></div><p class="muted" style="margin:0;font-size:13px">做任務、打小怪、打 Boss、走主線都有機會掉裝備。</p></div>`;
- const eq=Object.values(S.gear.eq);
- return`<div class="panel"><div class="ptitle">[背包]<span>${ids.length}/${BAG_MAX}</span></div>${ids.map(id=>{const x=S.loot[id],on=eq.includes(id);
-  return`<button class="item gi bagi r${x.rar}" data-item="${id}"><span class="gic">${gearIcon(x.slot,x.tier)}</span><span class="nm"><b style="color:${RAR[x.rar][1]}">${esc(x.n)}</b> <small class="muted">${RAR[x.rar][0]}・T${x.tier}</small><div class="muted" style="font-size:12px">${effTxt(x.slot,x.v,x.afx)}</div></span>${on?'<span class="chip" style="color:var(--cyan);border-color:var(--cyan)">使用中</span>':'<span class="muted" style="font-size:18px">›</span>'}</button>`}).join('')}</div>`}
+function bagPanel(){const eq=Object.values(S.gear.eq),SL=['weapon','armor','acc'],loot=bagIds(),shop=S.gear.own.filter(id=>id[0]!=='L'&&gearById(id));
+ const sorted=shop.map(id=>gearById(id)).sort((a,b)=>SL.indexOf(a.slot)-SL.indexOf(b.slot)||(eq.includes(b.it[0])-eq.includes(a.it[0]))||b.tier-a.tier);
+ const lsort=loot.sort((a,b)=>{const x=S.loot[a],y=S.loot[b];return SL.indexOf(x.slot)-SL.indexOf(y.slot)||y.rar-x.rar||y.v-x.v});
+ const n=sorted.length+lsort.length;
+ if(!n)return`<div class="panel"><div class="ptitle">[背包]<span>空的</span></div><p class="muted" style="margin:0;font-size:13px">商店買的、任務和 Boss 掉的裝備都會放這裡。</p></div>`;
+ const row=(g,id,isLoot)=>{const on=eq.includes(id),x=isLoot?S.loot[id]:null,col=isLoot?RAR[x.rar][1]:'inherit',tag=isLoot?`${RAR[x.rar][0]}・T${x.tier}`:`${GEAR[g.slot].n}・T${g.tier}`;
+  return`<button class="item gi bagi ${isLoot?'r'+x.rar:''}" ${isLoot?`data-item="${id}"`:on?'':`data-eq="${id}"`}><span class="gic">${gearIcon(g.slot,g.tier)}</span><span class="nm"><b style="color:${col}">${esc(g.it[1])}</b> <small class="muted">${tag}</small><div class="muted" style="font-size:12px">${effTxt(g.slot,g.it[4],g.afx)}</div></span>${on?'<span class="chip" style="color:var(--cyan);border-color:var(--cyan)">使用中</span>':isLoot?'<span class="muted" style="font-size:18px">›</span>':'<span class="chip">裝備</span>'}</button>`};
+ return`<div class="panel"><div class="ptitle">[背包]<span>${n} 件</span></div>${sorted.length?`<div class="tierh">商店買的</div>`+sorted.map(g=>row(g,g.it[0],0)).join(''):''}${lsort.length?`<div class="tierh">掉落<span>${lsort.length}/${BAG_MAX}</span></div>`+lsort.map(id=>row(gearById(id),id,1)).join(''):''}</div>`}
 function itemModal(id){const x=S.loot&&S.loot[id];if(!x)return;const on=Object.values(S.gear.eq).includes(id),cur=eqItem(x.slot);
  modal(`<h2>[${GEAR[x.slot].n}]</h2><div class="lootc r${x.rar}"><div class="lootrar">${RAR[x.rar][0]}</div><div class="lootic">${gearIcon(x.slot,x.tier)}</div><div class="lootn" style="color:${RAR[x.rar][1]}">${esc(x.n)}</div><div class="muted">T${x.tier}</div><div class="lootfx">${effTxt(x.slot,x.v,x.afx)}</div>${on?'<div class="lootok">使用中</div>':cur?`<div class="muted" style="font-size:12px;margin-top:6px">目前：${esc(cur.it[1])}（${effTxt(x.slot,cur.it[4],cur.afx)}）</div>`:''}</div>`,
   on?[['關閉','btn pri']]:[['分解 +'+salvageVal(x)+'G','btn red',()=>{if(x.rar>=2)return modal(`<h2>[分解]</h2><div class="bigt" style="font-size:20px;color:${RAR[x.rar][1]}">${esc(x.n)}</div><p class="muted">確定分解？裝備會消失。</p>`,[['取消','btn'],['分解','btn red',()=>{salvage(id);after()}]]);salvage(id);after()}],['裝備','btn pri',()=>{S.gear.eq[x.slot]=id;sfx('tap');toast(`裝上 <b style="color:${RAR[x.rar][1]}">${esc(x.n)}</b>`);after()}]])}
@@ -1726,7 +1736,7 @@ const SPELLS2=[
  {id:'sand',ic:'⏳',n:'時之沙',d:'這場決戰回合上限 +1',g:200,m:{stone:2,fang:2,soul:2}},
  {id:'meteor',ic:'☄️',n:'隕石卷軸',d:'1.9 倍攻擊傷害（每場限 1 張）',g:260,m:{stone:4,fang:2}}];
 SPELLS.push(...SPELLS2);
-const SHOP_TABS=[['bag','🎒 背包'],['weapon','⚔️ 武器'],['armor','🛡️ 防具'],['acc','💍 飾品'],['magic','🔮 魔法'],['skill','📘 技能']];
+const SHOP_TABS=[['weapon','⚔️ 武器'],['armor','🛡️ 防具'],['acc','💍 飾品'],['magic','🔮 魔法'],['skill','📘 技能']];
 function gearList(k){const G=GEAR[k],L=lvInfo(S.xp).lv,pp=pendingPen().length,maxT=G.items.filter(it=>it[2]<=L).length,showT=Math.min(5,maxT+2);let h='';
  for(let t=Math.max(1,maxT-1);t<=showT;t++){const base=G.items[t-1],rows=[[base[0],base[1],base[2],base[3],base[4],null,t,'基本']].concat(GEAR_ALT[k].filter(x=>x[6]===t)),lock=L<base[2];
   h+=`<div class="tierh ${lock?'lock':''}">T${t}${lock?`<span>Lv.${base[2]} 解鎖</span>`:''}</div>`+rows.map(it=>{const own=S.gear.own.includes(it[0]),on=S.gear.eq[k]===it[0];
@@ -1824,10 +1834,9 @@ function vBattle0(){const b=bossInfo(),D=dun(),m=minionOf(D.floor),fd=isFightDay
  return h+'</div>'}
 
 /* ---------- 商店頁 ---------- */
-function vShop(){const pp=pendingPen().length,L=lvInfo(S.xp).lv;
+function vShop(){if(S.stab==='bag')S.stab='weapon';const pp=pendingPen().length,L=lvInfo(S.xp).lv;
  let h=`<div class="panel sys"><div class="ptitle">[商店]<span>金幣 = 你流過的汗</span></div><div style="font:800 30px var(--mono)"><span class="gold">${S.gold}</span> <small class="muted">G</small></div>${pp?'<p style="color:var(--red)">⛔ 還有懲罰任務沒完成，商店鎖定中。</p>':''}</div>`+`<div class="stabs">${SHOP_TABS.map(([k,n])=>`<button class="${(S.stab||'weapon')===k?'on':''}" data-stab="${k}">${n}</button>`).join('')}</div>`;
  const tb=S.stab||'weapon';
- if(tb==='bag')h+=bagPanel();
  if(GEAR[tb])h+=gearList(tb);
  if(tb==='magic'){ h+=`<div class="panel sys"><div class="ptitle">[魔法]<span>決戰時用・每場最多 ${SPELL_MAX} 次</span></div><div class="mats" style="margin:0 0 6px">${Object.entries(MATS).map(([k,v])=>`<div><span>${v[0]}</span><b>${S.mats[k]||0}</b><small>${v[1]}</small></div>`).join('')}</div>`+SPELLS.map(sp=>{const can=!pp&&S.gold>=sp.g&&Object.entries(sp.m).every(([k,n])=>(S.mats[k]||0)>=n);
   return`<div class="item"><span class="gic">${sp.ic}</span><span class="nm">${sp.n} <small class="muted">持有 ${S.items[sp.id]||0}</small><div class="muted" style="font-size:12px">${sp.d}</div><div style="font-size:12px;margin-top:2px">${sp.g}G ${Object.entries(sp.m).map(([k,n])=>MATS[k][0]+'×'+n).join(' ')}</div></span><button class="btn sm cy" data-spell="${sp.id}" ${can?'':'disabled'}>製作</button></div>`}).join('')+'</div>';
@@ -1879,7 +1888,7 @@ function vMe(){const L=lvInfo(S.xp),r=rankOf(L.lv),nx=RANKS.find(x=>x[0]>L.lv);
  <div class="pw">戰力 <b>${power()}</b></div><p class="muted" style="margin:4px 0 10px">${nx?`Lv.${nx[0]} 晉升 ${nx[1]} 級`:'已達最高階級'}</p>
  <div class="eqrow">${['weapon','armor','acc'].map(k=>{const g=eqItem(k);return`<div><span>${g?gearIcon(k,g.tier):'—'}</span><small>${GEAR[k].n}</small>${gearName(g)}</div>`}).join('')}</div>
  ${radar()}<div class="stats">${Object.keys(STATS).map(k=>`<div><b style="color:${STATS[k].c}">${S.stats[k]||0}</b><span class="muted">${STATS[k].n}</span></div>`).join('')}</div></div>`;
- h+=petPanel()+clsPanel()+realData()+focusStats()+scrChart()+rates();
+ h+=bagPanel()+petPanel()+clsPanel()+realData()+focusStats()+scrChart()+rates();
  h+=`<div class="panel"><div class="ptitle">[戰績]</div><div class="stats" style="grid-template-columns:repeat(4,1fr)"><div><b>${S.questCount}</b><span class="muted">任務</span></div><div><b>${S.best||0}</b><span class="muted">最佳連續</span></div><div><b>${S.bossKills}</b><span class="muted">Boss</span></div><div><b>${S.crits}</b><span class="muted">暴擊</span></div></div></div>`;
  const an=ACH.filter(a=>S.ach[a[0]]).length,sn=SECRET.filter(a=>S.ach[a[0]]).length;
  h+=`<div class="panel"><div class="ptitle">[成就・稱號]<span>${an}/${ACH.length}</span></div><p class="muted" style="margin:-4px 0 8px;font-size:12px">點已解鎖的成就，裝上稱號${S.title&&S.ach[S.title]?`・目前：<b style="color:var(--gold)">${TITLES[S.title]}</b>`:''}</p><div class="ach">${ACH.map(a=>`<button data-title="${a[0]}" class="${S.ach[a[0]]?'':'off'} ${S.title===a[0]?'eqt':''}"><b>${a[1]}</b>${a[2]}<div class="muted" style="font-size:10px;margin-top:2px">${a[3]}</div></button>`).join('')}</div>
@@ -1978,6 +1987,7 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-sp],[da
   case'pPrev':return pushPreview();
   case'tSet':return timerSetup();
   case'aiSet':return aiSetup();
+  case'goAi':tab='set';setPg='ai';document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x.dataset.t==='set'));window.scrollTo(0,0);return render();
   case'aiUp':return aiSync(true).catch(()=>{}).then(render);
   case'aiGet':return aiPull(true).then(render);
   case'clsPick':return clsPick();
