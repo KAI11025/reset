@@ -1,5 +1,5 @@
 // 離線快取：每次都先拿網路最新版（不吃瀏覽器快取），沒網路才用快取
-const C='reset-v37';
+const C='reset-v38';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./','index.html','manifest.json','icon.png'])));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET')return;
@@ -11,7 +11,7 @@ function dayKey(ds,off){const d=new Date(Date.now()-(ds||0)*3600e3);d.setDate(d.
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const FCN={study:'讀書',esp:'西文',med:'冥想',body:'體能',tidy:'整理'};
 function compose(type,st,d){d=d||{};
- if(type==='test')return['🔔 通知測試成功','接通了。之後我會盯著你的進度。'];
+ if(type==='test'||!type){const h=new Date().getHours();return compose(h>=4&&h<12?'morning':h<22&&h>=12?'evening':'night',st,d)}
  if(type==='tick')return['⏰ 計時通知接通了','之後專注、休息時間到，鎖著螢幕也會叫你。'];
  if(type==='focus'){const M2=st&&st.minion||'魔物',c=FCN[d.cat]||'專注';return pick([[`⏰ ${c} ${d.min} 分鐘完成`,`斬擊命中「${M2}」！回來領獎勵，然後休息 5 分鐘。`],['⚔️ 專注討伐成功',`${d.min} 分鐘的${c}撐完了。站起來動一動、喝口水。`],[`🔔 時間到，可以休息了`,`${c} ${d.min} 分鐘完成。打開 RESET 收下戰利品。`]])}
  if(type==='break')return pick([['☕ 休息結束','回來再戰一場？'],['⚔️ 休息時間到',`${st&&st.minion||'魔物'}還在地城等你。`]]);
