@@ -439,7 +439,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v36・11/21 05:00';
+const VER='v37・11/21 09:10';
 const PROG=100;
 'use strict';
 /* =====================================================================
@@ -598,7 +598,7 @@ const QUOTES=['今天比昨天強一點就好。','不想做的那一項，通�
 
 /* ---------- 音效 ---------- */
 let AC=null;
-function sfx(type){if(!S||!S.sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const seq={tap:[[660,.06]],done:[[660,.07],[990,.1]],crit:[[880,.06],[1320,.06],[1760,.14]],lv:[[523,.1],[659,.1],[784,.1],[1047,.25]],bad:[[220,.2],[160,.3]],chest:[[392,.08],[523,.08],[659,.08],[784,.08],[1047,.2]]}[type]||[[660,.06]];let t=AC.currentTime;
+function sfx(type){if(!S||!S.sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const seq={tap:[[660,.06]],done:[[660,.07],[990,.1]],crit:[[880,.06],[1320,.06],[1760,.14]],lv:[[523,.1],[659,.1],[784,.1],[1047,.25]],bad:[[220,.2],[160,.3]],chest:[[392,.08],[523,.08],[659,.08],[784,.08],[1047,.2]]}[type]||[[660,.06]];let t=AC.currentTime;
  for(const[f,d]of seq){const o=AC.createOscillator(),g=AC.createGain();o.type='square';o.frequency.value=f;g.gain.setValueAtTime(.06,t);g.gain.exponentialRampToValueAtTime(.001,t+d);o.connect(g).connect(AC.destination);o.start(t);o.stop(t+d);t+=d*.9}}catch(e){}}
 
 /* ---------- 存檔 ---------- */
@@ -1080,6 +1080,7 @@ const PDB={db:null,
 function compressImg(file){return new Promise((res,rej)=>{const u=URL.createObjectURL(file),img=new Image();
  img.onload=()=>{const M=1000,sc=Math.min(1,M/Math.max(img.width,img.height)),c=document.createElement('canvas');c.width=Math.round(img.width*sc);c.height=Math.round(img.height*sc);c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.75))};
  img.onerror=()=>{URL.revokeObjectURL(u);rej(new Error('img'))};img.src=u})}
+const jdayOf=()=>{const t=today();if(S.jdayAt!==t){S.jday=null;S.jdayAt=t}return S.jday&&S.jday<=t?S.jday:t};
 const dpage=d=>{S.diary=S.diary||{};return S.diary[d]||(S.diary[d]={text:'',mood:null,photos:[]})};
 const hasPage=d=>{const p=S.diary&&S.diary[d];return!!(p&&((p.text||'').trim()||(p.photos||[]).length||p.mood!=null))};
 let dTimer=null;
@@ -1095,7 +1096,7 @@ function dayAdventure(d){const L=S.log[d],act=actives(d),done=L&&L.done?act.filt
  const ev=(S.journal||[]).filter(e=>e.d===d&&e.type!=='user').reverse();
  if(!bits.length&&!ev.length)return'';
  return`<div class="dadv"><div class="dah">— 今日冒險 —</div>${bits.length?`<div class="dab">${bits.join('・')}</div>`:''}${ev.map(e=>e.type==='report'?`<div class="preport">${esc(e.text)}</div>`:`<div class="stamp"><span>${e.icon}</span>${esc(e.text)}<em>${hm(e.t)}</em></div>`).join('')}</div>`}
-function vBook(){const t=today(),d=S.jday&&S.jday<=t?S.jday:t,p=(S.diary&&S.diary[d])||{text:'',mood:null,photos:[]},c=chapOf(d),wk=addDays(weekKey(S.start),(c-1)*7),bi=S.chap&&S.chap[wk],dn=diff(S.start,d)+1;
+function vBook(){const t=today(),d=jdayOf(),p=(S.diary&&S.diary[d])||{text:'',mood:null,photos:[]},c=chapOf(d),wk=addDays(weekKey(S.start),(c-1)*7),bi=S.chap&&S.chap[wk],dn=diff(S.start,d)+1;
  const prevOk=d>earliestDay(),nextOk=d<t;
  let h=`<div class="book" id="book"><div class="bnav"><button data-dnav="-1" ${prevOk?'':'disabled'}>‹</button><button class="bdate" id="dcal"><b>${dateCN(d)}</b><small>${c>0?`第${cnNum(c)}章${bi!=null&&BOSS[bi]?'・'+BOSS[bi].n:''}`:'序章'}${dn>=1?`・DAY ${dn}`:''}</small></button><button data-dnav="1" ${nextOk?'':'disabled'}>›</button></div>
  <div class="paper dpage" id="dpage">
@@ -1107,23 +1108,23 @@ function vBook(){const t=today(),d=S.jday&&S.jday<=t?S.jday:t,p=(S.diary&&S.diar
  const old=Object.keys(S.diary||{}).filter(x=>diff(x,t)>=7&&(S.diary[x].text||'').trim());
  if(d===t&&old.length){const od=old[Math.floor(srand(t+'fb')*old.length)],op=S.diary[od];h+=`<div class="paper note" data-dgo="${od}"><div class="pnh">✦ ${diff(od,t)} 天前的你寫道　›</div><p class="hand">${op.mood!=null?MOODS[op.mood]+' ':''}${esc(op.text.slice(0,120))}${op.text.length>120?'…':''}</p></div>`}
  return h}
-function bindBook(){const ta=$('#dtxt');if(!ta)return;const d=S.jday&&S.jday<=today()?S.jday:today();growTA(ta);
- ta.oninput=()=>{growTA(ta);diaryInput(d,ta.value)};
+function bindBook(){const ta=$('#dtxt');if(!ta)return;const d=jdayOf();growTA(ta);
+ ta.oninput=()=>{growTA(ta);diaryInput(d,ta.value)};ta.onblur=()=>{clearTimeout(dTimer);diaryWords(d,ta.value);save();const s2=$('#dsave');if(s2&&dpage(d).upd)s2.textContent='✓ 已自動儲存 '+hm(dpage(d).upd)};
  document.querySelectorAll('img[data-pid]').forEach(im=>PDB.get(im.dataset.pid).then(v=>{if(v)im.src=v}).catch(()=>{}));
  const pic=$('#dpic');if(pic)pic.onchange=async()=>{const fs=[...pic.files];pic.value='';if(!fs.length)return;toast('照片處理中…');
   for(const f of fs){try{const url=await compressImg(f),id='ph'+Date.now()+Math.random().toString(36).slice(2,6);await PDB.put(id,url);dpage(d).photos.push(id);dpage(d).upd=Date.now()}catch(e){toast('有一張照片讀不了')}}
   save();render();toast('<b>照片已加進日記</b>')};
  const bk=$('#book');if(bk){let x0=null,y0=null;bk.addEventListener('touchstart',e=>{if(e.target.closest('textarea'))return;x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
   bk.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.5)flipDay(dx<0?1:-1)},{passive:true})}}
-function flipDay(dir){const t=today(),d=S.jday&&S.jday<=t?S.jday:t,nd=addDays(d,dir);if(nd>t||nd<earliestDay())return;
- const pg=$('#dpage');if(pg){pg.classList.add(dir>0?'flipL':'flipR');setTimeout(()=>{S.jday=nd;render();const p2=$('#dpage');if(p2){p2.classList.add(dir>0?'inR':'inL')}},180)}else{S.jday=nd;render()}}
+function flipDay(dir){const t=today(),d=jdayOf(),nd=addDays(d,dir);if(nd>t||nd<earliestDay())return;
+ const pg=$('#dpage');if(pg){pg.classList.add(dir>0?'flipL':'flipR');setTimeout(()=>{S.jday=nd;S.jdayAt=today();render();const p2=$('#dpage');if(p2){p2.classList.add(dir>0?'inR':'inL')}},180)}else{S.jday=nd;S.jdayAt=today();render()}}
 function openCal(month){const t=today(),cur=month||(S.jday||t).slice(0,7),[y,m]=cur.split('-').map(Number),first=new Date(y,m-1,1),days=new Date(y,m,0).getDate(),off=first.getDay();
  let g='';for(let i=0;i<off;i++)g+='<i></i>';
  for(let k=1;k<=days;k++){const d=`${y}-${pad(m)}-${pad(k)}`,fut=d>t,has=hasPage(d),pm=S.diary&&S.diary[d]&&S.diary[d].mood;
   g+=`<button class="cd2 ${d===t?'today':''} ${has?'has':''}" ${fut?'disabled':''} data-cal="${d}">${k}${has?`<span>${pm!=null?MOODS[pm]:'•'}</span>`:''}</button>`}
  const pm2=new Date(y,m-2,1),nm2=new Date(y,m,1),pk=fmt(pm2).slice(0,7),nk=fmt(nm2).slice(0,7);
  modal(`<h2>[翻到哪一天]</h2><div class="calh"><button data-calm="${pk}">‹</button><b>${y} 年 ${m} 月</b><button data-calm="${nk}" ${nk>t.slice(0,7)?'disabled':''}>›</button></div><div class="calg">${'日一二三四五六'.split('').map(x=>`<em>${x}</em>`).join('')}${g}</div>`,[['回到今天','btn',()=>{S.jday=t;render()}],['關閉','btn']]);
- $('#mcard').onclick=e=>{const b=e.target.closest('[data-cal],[data-calm]');if(!b||b.disabled)return;if(b.dataset.calm)return openCal(b.dataset.calm);$('#modal').classList.remove('on');$('#mcard').onclick=null;S.jday=b.dataset.cal;render()}}
+ $('#mcard').onclick=e=>{const b=e.target.closest('[data-cal],[data-calm]');if(!b||b.disabled)return;if(b.dataset.calm)return openCal(b.dataset.calm);$('#modal').classList.remove('on');$('#mcard').onclick=null;S.jday=b.dataset.cal;S.jdayAt=today();render()}}
 function viewPhoto(id,d){PDB.get(id).then(v=>{modal(`<div style="text-align:center"><img src="${v||''}" style="max-width:100%;max-height:70vh;border-radius:8px"></div>`,[['刪除照片','btn red',()=>{const p=dpage(d);p.photos=p.photos.filter(x=>x!==id);PDB.del(id).catch(()=>{});save();render()}],['關閉','btn pri']])})}
 function migrateDiary(){if(S.diaryMig)return;S.diary=S.diary||{};const U=(S.journal||[]).filter(e=>e.type==='user').sort((a,b)=>a.t-b.t);
  U.forEach(e=>{const p=dpage(e.d);p.text=(p.text?p.text+'\n\n':'')+e.text;if(e.mood!=null)p.mood=e.mood;p.upd=Math.max(p.upd||0,e.t)});
@@ -1638,6 +1639,10 @@ function fightTurn(a){if(!F||F.busy||F.done)return;haptic(1);const roll=()=>.85+
  F.turn++;F.menu='main';if(F.php<=0)return endFight(false);if(F.turn>=F.maxT)return endFight(false,true);drawFight()}
 
 /* ---------- v33：音效・震動・通知卡 ---------- */
+// iPhone：聲音要在「第一次點螢幕」時解鎖；靜音模式下預設跟著靜音，設定可改成照樣播
+function audioMode(){try{if(navigator.audioSession)navigator.audioSession.type=S&&S.loud?'playback':'ambient'}catch(e){}}
+function audioUnlock(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();audioMode();if(AC.state!=='running')AC.resume();const b=AC.createBuffer(1,1,22050),src=AC.createBufferSource();src.buffer=b;src.connect(AC.destination);src.start(0)}catch(e){}}
+['pointerdown','touchend','keydown'].forEach(ev=>document.addEventListener(ev,audioUnlock,{passive:true}));
 // 合成音效（不用下載檔案）：揮砍、打擊、火、雷、治癒、Boss 咆哮、夥伴、勝利、失敗
 function fxSound(type){if(!S||!S.sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const t0=AC.currentTime,out=AC.createGain();out.gain.value=.5;out.connect(AC.destination);
  const noise=(dur,f0,f1,q,vol,type2,delay)=>{const t=t0+(delay||0),n=AC.createBufferSource(),b=AC.createBuffer(1,Math.max(1,AC.sampleRate*dur),AC.sampleRate),d=b.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;n.buffer=b;
@@ -1656,10 +1661,9 @@ function fxSound(type){if(!S||!S.sound)return;try{AC=AC||new(window.AudioContext
   lose:()=>{[392,330,262,196].forEach((f,i)=>tone(f,f*.97,.3,'triangle',.12,i*.18))},
   alarm:()=>{[0,.25,.5].forEach(d=>tone(880,880,.15,'square',.08,d))}})[type]()}catch(e){}}
 // 震動：Android 用 vibrate；iPhone 不支援 vibrate，用 iOS 18 開關元件的觸覺回饋
-let hapEl=null;
-function haptic(n){if(!S||S.haptic===false)return;n=n||1;try{if(navigator.vibrate){navigator.vibrate(n===1?20:Array.from({length:n*2-1},(_,i)=>i%2?40:30));return}
- if(!hapEl){hapEl=document.createElement('label');hapEl.style.cssText='position:fixed;left:-99px;top:-99px;opacity:0;pointer-events:none';hapEl.innerHTML='<input type="checkbox" switch>';document.body.appendChild(hapEl)}
- for(let i=0;i<n;i++)setTimeout(()=>{try{hapEl.click()}catch(e){}},i*90)}catch(e){}}
+function haptic(n){if(!S||S.haptic===false)return;n=n||1;try{if(navigator.vibrate&&!/iPhone|iPad|iPod/.test(navigator.userAgent)){navigator.vibrate(n===1?20:Array.from({length:n*2-1},(_,i)=>i%2?40:30));return}
+ const tap=()=>{const l=document.createElement('label');l.ariaHidden='true';l.style.display='none';const i=document.createElement('input');i.type='checkbox';i.setAttribute('switch','');l.appendChild(i);document.head.appendChild(l);l.click();document.head.removeChild(l)};
+ tap();for(let k=1;k<n;k++)setTimeout(tap,k*110)}catch(e){}}
 // 重要訊息：彈出卡片，按 × 或「繼續」關掉
 function notice(icon,title,body,cls){qModal(`<button class="mx" data-m="0">×</button><div class="ntc ${cls||''}"><div class="ntci">${icon}</div><div class="ntct">${title}</div>${body?`<div class="ntcb">${body}</div>`:''}</div>`,[['繼續','btn pri']])}
 
@@ -1840,7 +1844,9 @@ function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務・獎�
  h+=`<div class="panel"><div class="ptitle">[模式]</div>
  <div class="sw"><div><b>😈 硬核模式</b><div class="muted">沒通關扣 50G＋懲罰任務</div></div><button class="tog ${S.hard?'on':''}" id="tHard"></button></div>
  <div class="sw"><div><b>🔊 音效</b></div><button class="tog c ${S.sound?'on':''}" id="tSnd"></button></div>
+ <div class="sw"><div><b>🔔 靜音模式也播音效</b><div class="muted">關掉的話，手機切靜音就沒聲音</div></div><button class="tog c ${S.loud?'on':''}" id="tLoud"></button></div>
  <div class="sw"><div><b>📳 震動</b><div class="muted">iPhone 要 iOS 18 以上</div></div><button class="tog c ${S.haptic!==false?'on':''}" id="tHap"></button></div>
+ <button class="btn sm" id="fxTest" style="width:100%;margin-top:6px">🔊 測試音效和震動</button>
  <div class="sw"><div><b>🌙 一天從幾點開始</b><div class="muted">凌晨勾的任務算前一天</div></div><select id="dayStart" style="width:90px">${[0,2,3,4,5,6].map(x=>`<option value="${x}" ${S.dayStart===x?'selected':''}>${pad(x)}:00</option>`).join('')}</select></div>
  <div class="sw"><div><b>🔴 圖示顯示剩幾項</b></div><button class="tog c ${S.badge?'on':''}" id="tBadge"></button></div></div>
  <div class="panel ${bkDays()>=7?'pen':''}"><div class="ptitle">[備份]<span>${S.lastBackup?'上次備份：'+(bkDays()===0?'今天':bkDays()+' 天前'):'還沒備份過'}</span></div>
@@ -1879,13 +1885,13 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-stab],[
  if(d.enc!==undefined)return doEnc(+d.enc);
  if(d.title){if(!S.ach[d.title])return;S.title=S.title===d.title?null:d.title;sfx('tap');toast(S.title?`稱號：<b>${TITLES[S.title]}</b>`:'已卸下稱號');save();header();return render()}
  if(d.dnav)return flipDay(+d.dnav);
- if(d.ph)return viewPhoto(d.ph,S.jday&&S.jday<=today()?S.jday:today());
- if(d.dgo){S.jday=d.dgo;window.scrollTo(0,0);return render()}
+ if(d.ph)return viewPhoto(d.ph,jdayOf());
+ if(d.dgo){S.jday=d.dgo;S.jdayAt=today();window.scrollTo(0,0);return render()}
  if(d.gotab){tab=d.gotab;document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x.dataset.t===tab));window.scrollTo(0,0);return render()}
  if(d.jt){S.jtab=d.jt;save();return render()}
  if(d.jedit){const t0=+d.jedit,en=(S.journal||[]).find(x=>x.t===t0&&x.type==='user');if(!en)return;
   modal(`<h2>[${dateCN(en.d)}]</h2><textarea id="jedt" class="ptext" style="min-height:140px;background-color:#f4ecd8;color:#3b2f22;padding:8px">${esc(en.text)}</textarea>`,[['刪除','btn red',()=>modal('<h2>[勇者日誌]</h2><div class="bigt">刪除這篇？</div>',[['取消','btn'],['刪除','btn red',()=>{S.journal=S.journal.filter(x=>x!==en);save();render()}]])],['取消','btn'],['儲存','btn pri',()=>{const v=($('#jedt').value||'').trim();if(v){en.text=v.slice(0,2000);save();render();toast('<b>已修改</b>')}}]]);return}
- if(d.mood!==undefined&&tab==='log'){const dd=S.jday&&S.jday<=today()?S.jday:today(),p=dpage(dd),m=+d.mood;p.mood=p.mood===m?null:m;p.upd=Date.now();save();document.querySelectorAll('[data-mood]').forEach(b=>b.classList.toggle('on',+b.dataset.mood===p.mood));return}
+ if(d.mood!==undefined&&tab==='log'){const dd=jdayOf(),p=dpage(dd),m=+d.mood;p.mood=p.mood===m?null:m;p.upd=Date.now();save();document.querySelectorAll('[data-mood]').forEach(b=>b.classList.toggle('on',+b.dataset.mood===p.mood));return}
  if(d.mood!==undefined){const m=+d.mood;S.jm=S.jm===m?null:m;document.querySelectorAll('[data-mood]').forEach(b=>b.classList.toggle('on',+b.dataset.mood===S.jm));return}
  if(d.jf){S.jf=d.jf;save();return render()}
  if(d.jdel){const t0=+d.jdel;return modal('<h2>[勇者日誌]</h2><div class="bigt">刪除這篇？</div>',[['取消','btn'],['刪除','btn red',()=>{S.journal=S.journal.filter(e=>!(e.t===t0&&e.type==='user'));save();render()}]])}
@@ -1914,6 +1920,8 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-stab],[
   case'pPrev':return pushPreview();
   case'tSet':return timerSetup();
   case'clsPick':return clsPick();
+  case'tLoud':S.loud=!S.loud;save();audioMode();fxSound('slash');return render();
+  case'fxTest':audioUnlock();fxSound('crit');haptic(3);return toast('有聽到「唰」一聲、手機震三下嗎？');
   case'tHap':S.haptic=S.haptic===false;save();if(S.haptic)haptic(2);return render();
   case'brkEnd':S.brk=null;timerCancel();save();return render();
   case'pCfg':return showPushCfg();
