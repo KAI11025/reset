@@ -445,7 +445,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v51・11/21 18:30';
+const VER='v52・11/21 18:40';
 function TS(){return S.warm0&&S.warm0<S.start?S.warm0:S.start}
 const PROG=100;
 'use strict';
@@ -1685,7 +1685,7 @@ function fightTurn(a){if(!F||F.busy||F.done)return;haptic(1);const roll=()=>.85+
 /* ---------- v33：音效・震動・通知卡 ---------- */
 // iPhone：聲音要在「第一次點螢幕」時解鎖；靜音模式下預設跟著靜音，設定可改成照樣播
 function audioMode(){try{if(navigator.audioSession)navigator.audioSession.type=S&&S.loud?'playback':'ambient'}catch(e){}}
-function audioUnlock(){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();audioMode();if(AC.state!=='running')AC.resume();const b=AC.createBuffer(1,1,22050),src=AC.createBufferSource();src.buffer=b;src.connect(AC.destination);src.start(0)}catch(e){}}
+function audioUnlock(){try{audioMode();if(AC&&(AC.state==='interrupted'||AC.state==='closed')){try{AC.close()}catch(_){}AC=null}AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state!=='running')AC.resume();const b=AC.createBuffer(1,1,22050),src=AC.createBufferSource();src.buffer=b;src.connect(AC.destination);src.start(0)}catch(e){}}
 ['pointerdown','touchend','keydown'].forEach(ev=>document.addEventListener(ev,audioUnlock,{passive:true}));
 // 合成音效（不用下載檔案）：揮砍、打擊、火、雷、治癒、Boss 咆哮、夥伴、勝利、失敗
 function fxSound(type){if(!S||!S.sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();const t0=AC.currentTime,out=AC.createGain();out.gain.value=.5;out.connect(AC.destination);
@@ -1979,7 +1979,8 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-sp],[da
   case'aiGet':return aiPull(true).then(render);
   case'clsPick':return clsPick();
   case'tLoud':S.loud=!S.loud;save();audioMode();fxSound('slash');return render();
-  case'fxTest':audioUnlock();fxSound('crit');haptic(3);return toast('有聽到「唰」一聲、手機震三下嗎？');
+  case'fxTest':{audioUnlock();fxSound('crit');haptic(3);let el2='';try{const sr=8000,n=sr*.25,b=new ArrayBuffer(44+n),v=new DataView(b),w=(o,t)=>[...t].forEach((c,i)=>v.setUint8(o+i,c.charCodeAt(0)));w(0,'RIFF');v.setUint32(4,36+n,true);w(8,'WAVEfmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,sr,true);v.setUint32(28,sr,true);v.setUint16(32,1,true);v.setUint16(34,8,true);w(36,'data');v.setUint32(40,n,true);for(let i=0;i<n;i++)v.setUint8(44+i,128+Math.round(60*Math.sin(i/sr*2*Math.PI*880)*(1-i/n)));const a=new Audio(URL.createObjectURL(new Blob([b],{type:'audio/wav'})));a.play().then(()=>{},e=>{el2=e.name})}catch(e){el2=e.name}
+   setTimeout(()=>toast(`有聽到聲音、手機震三下嗎？<br><small class="muted">診斷：音訊 ${AC?AC.state:'無'}・模式 ${navigator.audioSession?navigator.audioSession.type:'—'}・${(navigator.userAgent.match(/OS (\d+)_/)||[])[1]?'iOS '+navigator.userAgent.match(/OS (\d+)_/)[1]:'非 iOS'}${el2?'・備用音 '+el2:''}</small>`),400);return}
   case'tHap':S.haptic=S.haptic===false;save();if(S.haptic)haptic(2);return render();
   case'brkEnd':S.brk=null;timerCancel();save();return render();
   case'pCfg':return showPushCfg();
