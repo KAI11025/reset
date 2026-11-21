@@ -2,7 +2,8 @@
 """RESET data envelope tool (ECDH P-256 + AES-256-GCM, gzip inside).
   RESET_KEY=<b64 private key> python3 .github/rdata.py decrypt data/latest.enc out.json
   RESET_KEY=<b64 private key> python3 .github/rdata.py encrypt report.json reports/latest.enc data/latest.enc
-(encrypt reads the app public key from the data envelope given as 3rd arg)"""
+  RESET_KEY=... python3 .github/rdata.py decrypt reports/<id>.enc out.json data/latest.enc   (old reports)
+(encrypt / report-decrypt read the app public key from the data envelope given as last arg)"""
 import sys, os, json, gzip, base64
 from cryptography.hazmat.primitives.asymmetric import ec
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
@@ -14,7 +15,8 @@ def main():
     op, a, b = sys.argv[1], sys.argv[2], sys.argv[3]
     if op == 'decrypt':
         env = json.load(open(a))
-        raw = key(env['apub']).decrypt(base64.b64decode(env['iv']), base64.b64decode(env['ct']), None)
+        apub = env.get('apub') or json.load(open(sys.argv[4]))['apub']
+        raw = key(apub).decrypt(base64.b64decode(env['iv']), base64.b64decode(env['ct']), None)
         open(b, 'w', encoding='utf-8').write(gzip.decompress(raw).decode('utf-8'))
     elif op == 'encrypt':
         apub = json.load(open(sys.argv[4]))['apub']
