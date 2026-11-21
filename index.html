@@ -440,7 +440,8 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v40・11/21 10:50';
+const VER='v41・11/21 11:10';
+function TS(){return S.warm0&&S.warm0<S.start?S.warm0:S.start}
 const PROG=100;
 'use strict';
 /* =====================================================================
@@ -631,9 +632,9 @@ const doneCount=d=>{const L=S.log[d];return L&&L.done?actives(d).filter(q=>L.don
 const cleared=d=>doneCount(d)>=need(d);
 const sidesOf=d=>{const n=dayNum(d),C=Math.floor(SIDE.length/3),perm=shuffleSeed(SIDE.length,'side'+Math.floor(n/C)),k=((n%C)+C)%C;return[0,1,2].map(j=>perm[k*3+j])};
 // 原子習慣「不要連續錯過兩次」：錯過一天不斷連勝，連續兩天才斷
-function streak(){if(diff(S.start,today())<0)return 0;let n=0,miss=0,d=today();if(cleared(d))n++;d=addDays(d,-1);
- while(diff(S.start,d)>=0){if(cleared(d)){n++;miss=0}else if(++miss>=2)break;d=addDays(d,-1)}return n}
-const yMissed=()=>{const y=addDays(today(),-1);return diff(S.start,y)>=0&&!cleared(y)};
+function streak(){if(diff(TS(),today())<0)return 0;let n=0,miss=0,d=today();if(cleared(d))n++;d=addDays(d,-1);
+ while(diff(TS(),d)>=0){if(cleared(d)){n++;miss=0}else if(++miss>=2)break;d=addDays(d,-1)}return n}
+const yMissed=()=>{const y=addDays(today(),-1);return diff(TS(),y)>=0&&!cleared(y)};
 function lvInfo(xp){let lv=1,nd=115;xp=Math.max(0,xp);while(xp>=nd){xp-=nd;lv++;nd=80+lv*35}return{lv,cur:xp,need:nd}}
 const rankOf=lv=>{let r=RANKS[0];for(const x of RANKS)if(lv>=x[0])r=x;return r};
 const pendingPen=()=>S.penalties.filter(p=>!p.done);
@@ -691,7 +692,7 @@ function reward(t,key,base,stat,kind){let m=1+(t===today()?buffOn('x'):0)+affix(
  if(loot)toast(`<b>寶箱掉落！</b> +${loot} G`,'crit');maybeDrop(t,key,kind);return r}
 function undo(r){S.xp-=r.xp;S.gold-=r.gold;const st=STATS[r.stat]?r.stat:'SPI';S.stats[st]=Math.max(0,(S.stats[st]||0)-1-(r.ups||0));
  if(r.kind==='side')S.sideCount--;else if(r.kind==='quest')S.questCount--;if(r.crit)S.crits--;dun();S.dun.dmg=Math.max(0,S.dun.dmg-(r.dmg||r.xp))}
-function settle(t,was){if(!was&&cleared(t)){if(diff(S.start,t)>=2&&!cleared(addDays(t,-1))&&!cleared(addDays(t,-2))&&setEgg('comeback'))jlog('🔥','斷掉之後，重新站起來');if(t===today())setTimeout(()=>toast(`<b>[系統]</b> 今日任務達成，連續 ${streak()} 天 🔥`),500);
+function settle(t,was){if(!was&&cleared(t)){if(diff(TS(),t)>=2&&!cleared(addDays(t,-1))&&!cleared(addDays(t,-2))&&setEgg('comeback'))jlog('🔥','斷掉之後，重新站起來');if(t===today())setTimeout(()=>toast(`<b>[系統]</b> 今日任務達成，連續 ${streak()} 天 🔥`),500);
  else setTimeout(()=>toast(`<b>[系統]</b> ${t.slice(5).replace('-','/')} 補登通關`),500)}}
 function doLevel(q,t,i){const was=cleared(t),L=dayLog(t);const r=reward(t,q.id+'L'+i,Math.round(q.xp*ELV[i][1]),q.stat,'quest');r.lv=i;r.amt=q.amt?q.amt[i]:1;L.done[q.id]=r;settle(t,was);after()}
 const lvButtons=q=>`<div class="lvpick">${q.lv.map((l,i)=>`<button data-pick="${i}" style="border-color:${ELV[i][2]}66"><b style="color:${ELV[i][2]}">${ELV[i][0]}</b><span>${esc(l)}</span><small>+${Math.round(q.xp*ELV[i][1])} XP</small></button>`).join('')}</div>`;
@@ -743,7 +744,7 @@ function setScreen(id,t,m){const q=QUESTS.find(x=>x.id===id),L=dayLog(t),was=cle
  if(m<=g){L.done[id]=reward(t,id,Math.round(q.xp*(1+Math.min(1,(g-m)/g))),q.stat,'quest');if(m<=g/2)setTimeout(()=>toast('<b>[系統]</b> 比目標少一半以上，XP 加成拉滿'),400)}
  else{sfx('bad');toast(`超標 ${m-g} 分鐘，明天再拚`)}
  settle(t,was);after()}
-function askScreen(){const t=today(),y=addDays(t,-1);if(S.asked===t||diff(S.start,y)<0)return;const q=QUESTS.find(q=>q.type==='screen'&&activeOn(q,y));
+function askScreen(){const t=today(),y=addDays(t,-1);if(S.asked===t||diff(TS(),y)<0)return;const q=QUESTS.find(q=>q.type==='screen'&&activeOn(q,y));
  if(!q||(S.log[y]&&S.log[y].scr!=null))return;S.asked=t;save();setTimeout(()=>openScreen(q.id,y,true),400)}
 
 /* ---------- 每日簽到 ---------- */
@@ -890,7 +891,7 @@ const MOODS=['😫','😕','😐','🙂','😄'];
 function jlog(icon,text,type){S.journal=S.journal||[];S.journal.unshift({t:Date.now(),d:today(),icon,text,type:type||'sys'});if(S.journal.length>800)S.journal.length=800}
 const chapOf=d=>{const n=Math.floor(diff(weekKey(S.start),weekKey(d))/7)+1;return n<1?0:n};
 function weekReport(p){const wk=p.week;let q=0,side=0,xp=0,days=0,clr=0;
- for(let i=0;i<7;i++){const d=addDays(wk,i),L=S.log[d];if(diff(S.start,d)<0||!L)continue;days++;if(cleared(d))clr++;
+ for(let i=0;i<7;i++){const d=addDays(wk,i),L=S.log[d];if(diff(TS(),d)<0||!L)continue;days++;if(cleared(d))clr++;
   for(const k in L.done||{}){q++;xp+=L.done[k].xp||0}for(const k in L.side||{}){side++;xp+=L.side[k].xp||0}(L.focus||[]).forEach(f=>xp+=f.xp||0)}
  const B=BOSS[p.idx];if(!days)return;
  jlog('📜',`第 ${chapOf(wk)} 章戰報｜通關 ${clr}/${days} 天・完成任務 ${q} 個・隨機任務 ${side} 個・獲得 ${xp} XP・Boss ${B.n}：${p.dead?'擊破':'敗北'}`,'report')}
@@ -916,7 +917,7 @@ function insights(){const t=today(),M={};
  const cmp=(title,a,b,la,lb,good,meh)=>{if(a.length<2||b.length<2)return;const x=avg(a),y=avg(b),dv=x-y;
   out.push({title,txt:`${la}：${mEmo(x)} ${(x+1).toFixed(1)}　${lb}：${mEmo(y)} ${(y+1).toFixed(1)}`,note:Math.abs(dv)>=.5?(dv>0?good:meh):'差不多，看起來影響不大。'})};
  const g=f=>{const a=[],b=[];days.forEach(d=>{const r=f(d);if(r===true)a.push(md(d));else if(r===false)b.push(md(d))});return[a,b]};
- let[a,b]=g(d=>diff(S.start,d)>=0?cleared(d):null);cmp('通關的日子心情比較好嗎？',a,b,'通關','沒通關','做完任務的日子，你明顯比較開心。完成本身就是獎勵。','沒通關的日子反而心情比較好，可能任務太滿，壓力大。');
+ let[a,b]=g(d=>diff(TS(),d)>=0?cleared(d):null);cmp('通關的日子心情比較好嗎？',a,b,'通關','沒通關','做完任務的日子，你明顯比較開心。完成本身就是獎勵。','沒通關的日子反而心情比較好，可能任務太滿，壓力大。');
  [a,b]=g(d=>{const L=S.log[addDays(d,-1)];if(!L||!L.done)return null;return!!(L.done.sleep_off||L.done.sleep_on)});cmp('前一晚準時上床，隔天心情？',a,b,'有準時','沒準時','睡眠對你的影響很大，準時上床是你最值得守住的任務。','準時睡的隔天心情反而比較差，可以觀察是不是睡太早睡不著。');
  [a,b]=g(d=>{const L=S.log[d];if(!L||!L.done)return null;return!!L.done.train});cmp('有訓練的日子？',a,b,'有練','沒練','練完心情明顯比較好，訓練對你來說也是充電。','有練的日子心情比較差，注意是不是太累、恢復不夠。');
  const sc=days.map(d=>S.log[d]&&S.log[d].scr).filter(v=>v!=null).sort((x,y)=>x-y);
@@ -924,7 +925,7 @@ function insights(){const t=today(),M={};
  [a,b]=g(d=>isShift(d));cmp('有班 vs 沒班？',a,b,'有班','沒班','上班的日子心情比較好，工作讓你有充實感。','上班的日子比較累，那幾天任務做迷你就好，別給自己太大壓力。');
  const r7=days.filter(d=>diff(d,t)<7).map(md),p7=days.filter(d=>diff(d,t)>=7&&diff(d,t)<14).map(md);
  if(r7.length>=2&&p7.length>=2){const x=avg(r7),y=avg(p7);out.unshift({title:'最近心情趨勢',txt:`這週 ${mEmo(x)} ${(x+1).toFixed(1)}　上週 ${mEmo(y)} ${(y+1).toFixed(1)}`,note:x-y>=.4?'這週狀態在往上 📈':y-x>=.4?'這週比較低落。可以回頭看日誌，找找是什麼在影響你。':'跟上週差不多，很穩。'})}
- const wd=[0,0,0,0,0,0,0].map(()=>[0,0]);for(let i=1;i<=28;i++){const d=addDays(t,-i);if(diff(S.start,d)<0)break;const w=parse(d).getDay();wd[w][1]++;if(cleared(d))wd[w][0]++}
+ const wd=[0,0,0,0,0,0,0].map(()=>[0,0]);for(let i=1;i<=28;i++){const d=addDays(t,-i);if(diff(TS(),d)<0)break;const w=parse(d).getDay();wd[w][1]++;if(cleared(d))wd[w][0]++}
  const ws=wd.map((x,i)=>[i,x[1]>=2?x[0]/x[1]:null]).filter(x=>x[1]!=null);
  if(ws.length>=4){ws.sort((x,y)=>y[1]-x[1]);const best=ws[0],worst=ws[ws.length-1];if(best[1]-worst[1]>=.3)out.push({title:'一週裡的節奏',txt:`最穩：週${WD[best[0]]}（${Math.round(best[1]*100)}%）　最容易失守：週${WD[worst[0]]}（${Math.round(worst[1]*100)}%）`,note:`週${WD[worst[0]]}可以提前做 WOOP，先想好那天會卡在哪。`})}
  return{list:out,n:days.length}}
@@ -936,7 +937,7 @@ function insightPanel(){const r=insights();let h=`<div class="panel sys"><div cl
 function exportForClaude(){const t=today(),lines=[];
  lines.push('以下是我「RESET 系統」最近 30 天的紀錄。請用教練的角度分析我的狀況：哪些習慣有在進步、哪裡卡住、心情跟作息／訓練／螢幕時間有什麼關聯、日誌裡有沒有反覆出現的情緒或想法。最後給我下週 1～2 個具體的調整建議。');
  lines.push(`我的目標：作息、心態、西文、少滑手機、讀書。目前 Lv.${lvInfo(S.xp).lv}、連續通關 ${streak()} 天、最佳 ${S.best||0} 天。`);lines.push('');
- for(let i=29;i>=0;i--){const d=addDays(t,-i);if(diff(S.start,d)<-1)continue;const L=S.log[d]||{},act=actives(d),done=act.filter(q=>L.done&&L.done[q.id]),miss=act.filter(q=>!(L.done&&L.done[q.id]));
+ for(let i=29;i>=0;i--){const d=addDays(t,-i);if(diff(TS(),d)<-1)continue;const L=S.log[d]||{},act=actives(d),done=act.filter(q=>L.done&&L.done[q.id]),miss=act.filter(q=>!(L.done&&L.done[q.id]));
   const dp=S.diary&&S.diary[d],js=dp&&(dp.text||'').trim()?[{text:dp.text,mood:dp.mood}]:[];if(!done.length&&!js.length&&L.scr==null)continue;
   const nm=q=>q.name+(L.done[q.id]&&L.done[q.id].lv!=null&&q.lv?`(${ELV[L.done[q.id].lv][0]})`:'');
   lines.push(`${d.slice(5).replace('-','/')} 週${WD[parse(d).getDay()]}｜${isShift(d)?'有班':'沒班'}｜通關 ${done.length}/${act.length}${cleared(d)?' ✓':''}${L.scr!=null?'｜螢幕 '+fmtMin(L.scr):''}`);
@@ -1094,7 +1095,7 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeo
 function growTA(ta){ta.style.height='auto';ta.style.height=Math.max(180,ta.scrollHeight+2)+'px'}
 function earliestDay(){let e=S.start;for(const d in S.diary||{})if(d<e)e=d;(S.journal||[]).forEach(x=>{if(x.d<e)e=x.d});return addDays(e,-1)<e?e:e}
 function dayAdventure(d){const L=S.log[d],act=actives(d),done=L&&L.done?act.filter(q=>L.done[q.id]).length:0,fm=(L&&L.focus||[]).reduce((a,f)=>a+(f.min||0),0);
- const bits=[];if(diff(S.start,d)>=0)bits.push(`任務 ${done}/${act.length}${cleared(d)?' ✓':''}`);if(fm)bits.push(`專注 ${fmtHM(fm)}`);if(L&&L.scr!=null)bits.push(`螢幕 ${fmtMin(L.scr)}`);
+ const bits=[];if(diff(TS(),d)>=0)bits.push(`任務 ${done}/${act.length}${cleared(d)?' ✓':''}`);if(fm)bits.push(`專注 ${fmtHM(fm)}`);if(L&&L.scr!=null)bits.push(`螢幕 ${fmtMin(L.scr)}`);
  const ev=(S.journal||[]).filter(e=>e.d===d&&e.type!=='user').reverse();
  if(!bits.length&&!ev.length)return'';
  return`<div class="dadv"><div class="dah">— 今日冒險 —</div>${bits.length?`<div class="dab">${bits.join('・')}</div>`:''}${ev.map(e=>e.type==='report'?`<div class="preport">${esc(e.text)}</div>`:`<div class="stamp"><span>${e.icon}</span>${esc(e.text)}<em>${hm(e.t)}</em></div>`).join('')}</div>`}
@@ -1172,7 +1173,7 @@ const ENC=[
  {id:'chest',ic:'🎁',n:'路邊的寶箱',d:'看起來沒有陷阱……吧？',a:[['不開',()=>'謹慎也是一種美德。'],['打開',()=>{if(Math.random()<.2){const g=Math.min(S.gold,20);S.gold-=g;return`是寶箱怪！被咬走 ${g}G`}const r=openChest(false);return r.txt.replace(/<[^>]+>/g,'')}]]},
  {id:'sage',ic:'📜',n:'隱居賢者',d:'',a:[['接受',()=>{const q=sageQuest();if(!q)return'賢者睡著了。';S.chal={d:today(),q:q.id,lv:2,g:80};return`委託成立：今天把「${q.name}」做到精英 → 80G`}]]}];
 function sageQuest(){const t=today(),L=dayLog(t);return actives(t).filter(q=>q.lv&&!(L.done[q.id]&&L.done[q.id].lv>=2))[Math.floor(hrand(t+'sq')*9)%Math.max(1,actives(t).filter(q=>q.lv&&!(L.done[q.id]&&L.done[q.id].lv>=2)).length)]}
-function encToday(){const t=today();if(diff(S.start,t)<0)return null;if(S.enc&&S.enc.d===t)return S.enc.done?null:ENC.find(e=>e.id===S.enc.id);
+function encToday(){const t=today();if(diff(TS(),t)<0)return null;if(S.enc&&S.enc.d===t)return S.enc.done?null:ENC.find(e=>e.id===S.enc.id);
  if(hrand(t+'enc')>.45)return null;let e=ENC[Math.floor(hrand(t+'encw')*ENC.length)];if(e.id==='sage'&&!sageQuest())e=ENC[0];S.enc={d:t,id:e.id,done:0};save();return e}
 function encCard(){const e=encToday();if(!e)return'';const d=e.id==='sage'?(q=>q?`「今天把『${esc(q.name)}』做到精英，我送你 80G。」`:'')(sageQuest()):e.d;
  return`<div class="panel enc"><div class="ptitle">[奇遇]<span>今天限定</span></div><div class="encb"><div class="enci">${e.ic}</div><div><b>${e.n}</b><div class="muted">${d}</div></div></div><div class="row" style="margin-top:10px">${e.a.map((a,i)=>`<button class="btn sm grow ${i===e.a.length-1?'pri':''}" data-enc="${i}">${a[0]}</button>`).join('')}</div></div>`}
@@ -1210,7 +1211,7 @@ const WORDS=[[/放棄/,'word','[系統] 偵測到「放棄」。已自動抵銷�
 function diaryWords(d,v){if(d!==today())return;S.eggSeen=S.eggSeen||{};for(const[re,k,msg]of WORDS){const key=d+re.source;if(re.test(v)&&!S.eggSeen[key]){S.eggSeen[key]=1;if(/心靈 \+1/.test(msg))S.stats.SPI++;if(k)setEgg(k);setTimeout(()=>toast(`<b>${msg}</b>`,'crit'),900);save();if(k)checkAch()}}}
 
 /* 本週 vs 上週 */
-function weekCmp(){const t=today(),wk=weekKey(t),agg=(st,n)=>{let c=0,q=0,f=0,x=0;for(let i=0;i<n;i++){const d=addDays(st,i);if(d>t||diff(S.start,d)<0)continue;const L=S.log[d];if(!L)continue;if(cleared(d))c++;q+=actives(d).filter(z=>L.done&&L.done[z.id]).length;f+=(L.focus||[]).reduce((a,z)=>a+(z.min||0),0);
+function weekCmp(){const t=today(),wk=weekKey(t),agg=(st,n)=>{let c=0,q=0,f=0,x=0;for(let i=0;i<n;i++){const d=addDays(st,i);if(d>t||diff(TS(),d)<0)continue;const L=S.log[d];if(!L)continue;if(cleared(d))c++;q+=actives(d).filter(z=>L.done&&L.done[z.id]).length;f+=(L.focus||[]).reduce((a,z)=>a+(z.min||0),0);
   for(const k in L.done||{})x+=L.done[k].xp||0;(L.extra||[]).forEach(e=>{if(e.r)x+=e.r.xp})}return{c,q,f,x}};
  const n=diff(wk,t)+1,a=agg(wk,n),b=agg(addDays(wk,-7),n),ar=(x,y)=>x>y?'<i style="color:var(--green,#3ee08f)">▲</i>':x<y?'<i style="color:var(--red)">▼</i>':'';
  const rows=[['通關天數',a.c,b.c,v=>v],['完成任務',a.q,b.q,v=>v],['專注',a.f,b.f,v=>v?fmtHM(v):'—'],['獲得 XP',a.x,b.x,v=>v]];
@@ -1404,21 +1405,21 @@ function todoToggle(id){const x=(S.todos||[]).find(z=>z.id===id);if(!x)return;co
  if(n<TODO_CAP){x.r=reward(t,'todo'+x.id,TODO_XP,'DIS','todo')}else{sfx('done');toast('<b>委託完成</b>　今天的委託獎勵已滿 5 個')}
  jlog('📌',`完成委託：${x.t}`);after()}
 function todoDel(id){const x=(S.todos||[]).find(z=>z.id===id);if(!x)return;if(x.r)undo(x.r);S.todos=S.todos.filter(z=>z.id!==id);after()}
-function todoRow(x,t){const late=!x.done&&x.d&&x.d<t;return`<div class="q ${x.done?'done':''}"><button class="box" data-todo="${x.id}">${x.done?'✓':''}</button><span class="nm"><span class="qn">${esc(x.t)}</span>${x.d?`<span class="lvb" style="${late?'color:var(--red);border-color:#552030':''}">${late?'逾期・':''}週${WD[parse(x.d).getDay()]}</span>`:''}</span><button class="tdel" data-tdel="${x.id}">×</button></div>`}
+function todoRow(x,t){const late=!x.done&&x.d&&x.d<t;return`<div class="q ${x.done?'done':''}"><button class="box" data-todo="${x.id}">${x.done?'✓':''}</button><span class="nm"><span class="qn">${esc(x.t)}</span>${x.d?`<span class="lvb" style="${late?'color:var(--red);border-color:#552030':''}">${late?'逾期・':''}週${WD[parse(x.d).getDay()]}${weekKey(x.d)!==weekKey(t)?' '+(+x.d.slice(5,7))+'/'+(+x.d.slice(8)):''}</span>`:''}</span><button class="tdel" data-tdel="${x.id}">×</button></div>`}
 function todayTodos(t){const L=(S.todos||[]).filter(x=>(!x.done&&(!x.d||x.d<=t)&&x.wk<=weekKey(t))||x.done===t);if(!L.length)return'';
  return`<div class="panel"><div class="ptitle">[委託]<span>${L.filter(x=>x.done).length}/${L.length}・完成 +${TODO_XP} XP</span></div>${L.map(x=>todoRow(x,t)).join('')}</div>`}
 
 /* 本週 */
 function vWeek(){const t=today(),wk=weekKey(t);let tot=0,dn=0;const days=[];
- for(let i=0;i<7;i++){const d=addDays(wk,i),a=actives(d).length,c=d<=t&&diff(S.start,d)>=0?doneCount(d):0;if(d<=t&&diff(S.start,d)>=0){tot+=a;dn+=c}days.push({d,a,c,fut:d>t,pre:diff(S.start,d)<0})}
+ for(let i=0;i<7;i++){const d=addDays(wk,i),a=actives(d).length,c=d<=t&&diff(TS(),d)>=0?doneCount(d):0;if(d<=t&&diff(TS(),d)>=0){tot+=a;dn+=c}days.push({d,a,c,fut:d>t,pre:diff(TS(),d)<0})}
  const p=tot?dn/tot:0,cl=days.filter(x=>!x.fut&&!x.pre&&cleared(x.d)).length;
  let h=`<div class="panel sys"><div class="ptitle">[本週]<span>${wk.slice(5).replace('-','/')} – ${addDays(wk,6).slice(5).replace('-','/')}</span></div>
  <div class="wtop">${ring(p,112,Math.round(p*100)+'%','完成率',pctCol(p))}<div class="wst"><div><b>${cl}</b><span class="muted">通關天數</span></div><div><b>${dn}<small>/${tot}</small></b><span class="muted">完成任務</span></div><div><b>${bodyWeek(t).p}<small>/${BODY_WK}</small></b><span class="muted">修練點數</span></div></div></div>
  <div class="wdays">${days.map(x=>{const q=x.a?x.c/x.a:0;return`<div class="${x.d===t?'now':''}">${x.fut||x.pre?ring(0,44,'—','',''):ring(q,44,Math.round(q*100),'',pctCol(q))}<small>週${WD[parse(x.d).getDay()]}</small></div>`}).join('')}</div></div>`;
  const td=todosOf(wk).sort((a,b)=>((!!a.done)-(!!b.done))||((a.d||'9')<(b.d||'9')?-1:(a.d||'9')>(b.d||'9')?1:0));
  h+=`<div class="panel"><div class="ptitle">[委託板]<span>這週要搞定的事・${td.filter(x=>x.done).length}/${td.length}</span></div>
- <div class="row"><input id="todotx" placeholder="例：交電路學作業、寄履歷" style="flex:1" maxlength="60"><select id="todod" style="width:74px">${['<option value="">不限</option>'].concat(days.filter(x=>x.d>=t).map(x=>`<option value="${x.d}">週${WD[parse(x.d).getDay()]}</option>`)).join('')}</select><button class="btn sm cy" id="todoAdd">＋</button></div>
- ${td.length?td.map(x=>todoRow(x,t)).join(''):'<p class="muted" style="margin:10px 0 0;font-size:13px">週日回顧的時候，把下週最重要的 3 件事放進來。</p>'}</div>`;
+ <div class="row"><input id="todotx" placeholder="例：交電路學作業、寄履歷" style="flex:1" maxlength="60"><select id="todod" style="width:96px">${['<option value="">不限日期</option>'].concat([...Array(14).keys()].map(i=>{const d=addDays(t,i);return`<option value="${d}">${i===0?'今天':i===1?'明天':`週${WD[parse(d).getDay()]} ${+d.slice(5,7)}/${+d.slice(8)}`}</option>`})).join('')}</select><button class="btn sm cy" id="todoAdd">＋</button></div>
+ ${td.length?td.map(x=>todoRow(x,t)).join(''):'<p class="muted" style="margin:10px 0 0;font-size:13px">把這週、下週要搞定的事放進來，可以指定哪一天。</p>'}${(()=>{const nw=addDays(wk,7),nx=(S.todos||[]).filter(x=>x.wk>=nw&&!x.done).sort((a,b)=>(a.d||'9')<(b.d||'9')?-1:1);return nx.length?`<div class="tierh" style="margin-top:14px">之後<span>${nx.length} 件</span></div>`+nx.map(x=>todoRow(x,t)).join(''):''})()}</div>`;
  return h}
 
 /* 本月 */
@@ -1427,13 +1428,13 @@ function vMonth(){const t=today(),mk=S.mon&&S.mon<=t.slice(0,7)?S.mon:t.slice(0,
  for(let k=1;k<=N;k++){const x=lw+(k-1)*(cs+gap);if(k===1||k%5===0)g+=`<text x="${x+cs/2}" y="9" text-anchor="middle" font-size="8" fill="${dd(k)===t?'#4fd1ff':'#4b5a78'}" font-family="ui-monospace,Menlo,monospace">${k}</text>`}
  rows.forEach((r,ri)=>{const yy=14+ri*rh;let a=0,c=0;g+=`<text x="0" y="${yy+cs/2+3.5}" font-size="10" fill="#a9b6cf" font-family="-apple-system,PingFang TC,sans-serif">${esc(r.n.length>5?r.n.slice(0,5)+'…':r.n)}</text>`;
   for(let k=1;k<=N;k++){const d=dd(k),x=lw+(k-1)*(cs+gap);let fill='#0f1a2e',op=1;
-   if(d>t||diff(S.start,d)<0){fill='#0a1222'}else{const v=cellOf(r,d);if(v==='off'){fill='#0a1222';op=.6}else{a++;if(v!=='no'){c++;fill=v==='ok'?'#4fd1ff':ELV[+v[1]][2]}else fill='#1c2740'}}
+   if(d>t||diff(TS(),d)<0){fill='#0a1222'}else{const v=cellOf(r,d);if(v==='off'){fill='#0a1222';op=.6}else{a++;if(v!=='no'){c++;fill=v==='ok'?'#4fd1ff':ELV[+v[1]][2]}else fill='#1c2740'}}
    g+=`<rect x="${x}" y="${yy}" width="${cs}" height="${cs}" rx="2" fill="${fill}" opacity="${op}"${d===t?' stroke="#fff" stroke-width=".8"':''}/>`}
   tot+=a;dn+=c;const p=a?c/a:0;g+=`<text x="${W-2}" y="${yy+cs-1.5}" text-anchor="end" font-size="9.5" fill="${a?pctCol(p).replace('var(--cyan)','#4fd1ff'):'#4b5a78'}" font-family="ui-monospace,Menlo,monospace" font-weight="700">${a?Math.round(p*100)+'%':'—'}</text>`.replace(`y="${yy+cs-1.5}"`,`y="${yy+cs/2+3.5}"`)});
  const by=14+rows.length*rh+3;
- for(let k=1;k<=N;k++){const d=dd(k),x=lw+(k-1)*(cs+gap);if(d>t||diff(S.start,d)<0)continue;const p=dayPct(d),hh=Math.max(1,p*22);g+=`<rect x="${x}" y="${by+22-hh}" width="${cs}" height="${hh}" rx="1.5" fill="${cleared(d)?'#4fd1ff':'#3a4a6a'}"/>`}
+ for(let k=1;k<=N;k++){const d=dd(k),x=lw+(k-1)*(cs+gap);if(d>t||diff(TS(),d)<0)continue;const p=dayPct(d),hh=Math.max(1,p*22);g+=`<rect x="${x}" y="${by+22-hh}" width="${cs}" height="${hh}" rx="1.5" fill="${cleared(d)?'#4fd1ff':'#3a4a6a'}"/>`}
  g+=`<text x="0" y="${by+18}" font-size="9.5" fill="#7d8aa6" font-family="-apple-system,PingFang TC,sans-serif">每日完成</text>`;
- const H=by+28,P=tot?dn/tot:0,clr=[...Array(N).keys()].map(i=>dd(i+1)).filter(d=>d<=t&&diff(S.start,d)>=0&&cleared(d)).length;
+ const H=by+28,P=tot?dn/tot:0,clr=[...Array(N).keys()].map(i=>dd(i+1)).filter(d=>d<=t&&diff(TS(),d)>=0&&cleared(d)).length;
  const prev=fmt(new Date(y,m-2,1)).slice(0,7),next=fmt(new Date(y,m,1)).slice(0,7);
  let h=`<div class="panel sys"><div class="ptitle">[本月]<span class="mnav"><button data-mon="${prev}">‹</button>${y}/${pad(m)}<button data-mon="${next}" ${next>t.slice(0,7)?'disabled':''}>›</button></span></div>
  <div class="wtop">${ring(P,112,Math.round(P*100)+'%','一致性',pctCol(P))}<div class="wst"><div><b>${clr}</b><span class="muted">通關天數</span></div><div><b>${dn}<small>/${tot}</small></b><span class="muted">完成任務</span></div><div><b>${S.best||0}</b><span class="muted">最佳連續</span></div></div></div>
@@ -1441,7 +1442,7 @@ function vMonth(){const t=today(),mk=S.mon&&S.mon<=t.slice(0,7)?S.mon:t.slice(0,
  return h+mindChart(y,m,N)}
 /* 心情 × 完成率 */
 function mindChart(y,m,N){const t=today(),dd=k=>`${y}-${pad(m)}-${pad(k)}`,W=340,H=130,x0=24,x1=W-8,y0=12,y1=H-22,X=k=>x0+(k-1)*(x1-x0)/Math.max(1,N-1);
- const md=[],cp=[];for(let k=1;k<=N;k++){const d=dd(k);if(d>t||diff(S.start,d)<0)continue;const p=S.diary&&S.diary[d];if(p&&p.mood!=null)md.push([k,p.mood/4]);if(d<t||dayPct(d)>0)cp.push([k,dayPct(d)])}
+ const md=[],cp=[];for(let k=1;k<=N;k++){const d=dd(k);if(d>t||diff(TS(),d)<0)continue;const p=S.diary&&S.diary[d];if(p&&p.mood!=null)md.push([k,p.mood/4]);if(d<t||dayPct(d)>0)cp.push([k,dayPct(d)])}
  if(md.length<2&&cp.length<2)return'';const Y=v=>y1-v*(y1-y0),path=a=>a.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
  let g='';[0,.5,1].forEach(v=>{g+=`<line x1="${x0}" x2="${x1}" y1="${Y(v)}" y2="${Y(v)}" stroke="#16223a"/>`});
  g+=`<text x="2" y="${Y(1)+3}" font-size="9" fill="#4b5a78">😄</text><text x="2" y="${Y(0)+3}" font-size="9" fill="#4b5a78">😫</text>`;
@@ -1710,7 +1711,7 @@ function vToday0(){const t=today(),y=addDays(t,-1),D=viewY?y:t,dn=diff(S.start,t
  let h=`<div class="panel sys"><div class="ptitle">[RESET PROGRAM]<span>${dn>PROG?'第 '+Math.ceil(dn/PROG)+' 輪':dn<=0?'新手村・暖身週':PROG+' 天計畫'}</span></div>
  <div class="day"><div class="big">${dn<=0?`暖身<small> 還有 ${1-dn} 天</small>`:`DAY ${dn>PROG?((dn-1)%PROG)+1:dn}<small> / ${PROG}</small>`}</div><div class="grow"></div><div style="text-align:right"><div style="font:800 24px var(--mono);color:${dc>=nd?'var(--cyan)':'var(--text)'}">${dc}/${act.length}</div><div class="muted">達標需 ${nd}</div></div></div>
  <div class="bar" style="margin-top:10px"><i style="width:${nd?Math.min(100,dc/nd*100):100}%"></i></div>
- <div class="chips">${dn<=0?`<span class="chip hot">🏕️ 暖身通關 ${(()=>{let n=0,d=S.warm0||t;while(d<=t&&d<S.start){if(cleared(d))n++;d=addDays(d,1)}return n})()} 天</span>`:`<span class="chip hot">🔥 連續 ${st} 天</span>`}<span class="chip">📅 簽到 ${S.login.streak||0} 天</span>${(m=>`<button class="chip" data-gomap="1" style="color:${REGIONS[m.r].c};border-color:${REGIONS[m.r].c}55">🗺️ ${REGIONS[m.r].n} ${m.step}/${MAP_N}</button>`)(mapInfo())}${season()?`<span class="chip" style="color:var(--gold);border-color:#5a4a18">${season()[2]} ${season()[3]}</span>`:''}${buffOn('x')||buffOn('crit')?`<span class="chip" style="color:var(--cyan)">${esc(S.buff.n)}</span>`:''}${S.chal&&S.chal.d===t&&!S.chal.paid?`<span class="chip" style="color:#e6d5b0;border-color:#5a4a30">📜 委託：${esc((QUESTS.find(x=>x.id===S.chal.q)||{}).name||'')}精英</span>`:''}${!(S.diary&&S.diary[t]&&(S.diary[t].text||'').trim())&&new Date().getHours()>=18&&!viewY?'<button class="chip" data-gotab="log" onclick="S.jday=null" style="color:#e6d5b0;border-color:#5a4a30">✎ 今天還沒寫日誌</button>':''}${yMissed()&&!cleared(t)?'<span class="chip" style="color:var(--gold);border-color:#5a4a18">⚠️ 昨天沒過，今天別再錯過</span>':''}${S.hard?'<span class="chip" style="color:var(--red);border-color:#552030">😈 硬核</span>':''}</div>
+ <div class="chips"><span class="chip hot">🔥 連續 ${st} 天${dn<=0?'・暖身':''}</span><span class="chip">📅 簽到 ${S.login.streak||0} 天</span>${(m=>`<button class="chip" data-gomap="1" style="color:${REGIONS[m.r].c};border-color:${REGIONS[m.r].c}55">🗺️ ${REGIONS[m.r].n} ${m.step}/${MAP_N}</button>`)(mapInfo())}${season()?`<span class="chip" style="color:var(--gold);border-color:#5a4a18">${season()[2]} ${season()[3]}</span>`:''}${buffOn('x')||buffOn('crit')?`<span class="chip" style="color:var(--cyan)">${esc(S.buff.n)}</span>`:''}${S.chal&&S.chal.d===t&&!S.chal.paid?`<span class="chip" style="color:#e6d5b0;border-color:#5a4a30">📜 委託：${esc((QUESTS.find(x=>x.id===S.chal.q)||{}).name||'')}精英</span>`:''}${!(S.diary&&S.diary[t]&&(S.diary[t].text||'').trim())&&new Date().getHours()>=18&&!viewY?'<button class="chip" data-gotab="log" onclick="S.jday=null" style="color:#e6d5b0;border-color:#5a4a30">✎ 今天還沒寫日誌</button>':''}${yMissed()&&!cleared(t)?'<span class="chip" style="color:var(--gold);border-color:#5a4a18">⚠️ 昨天沒過，今天別再錯過</span>':''}${S.hard?'<span class="chip" style="color:var(--red);border-color:#552030">😈 硬核</span>':''}</div>
  ${dn<=0?`<p class="quote" style="color:var(--gold)">新手村暖身週：任務照做、XP 照拿，不算連續和主線。週一正式 DAY 1</p>`:`<button class="petline" data-pet="1"><span class="petmini">${petSvg(52)}</span><span class="bubble">${esc((h=>h>=1&&h<4)(new Date().getHours())?npcLine():petLine()||npcLine())}</span></button>`}</div>`+(viewY?'':encCard());
  const pp=pendingPen();
  if(pp.length)h+=`<div class="panel pen"><div class="ptitle">[懲罰任務]<span>完成前商店鎖定</span></div>${pp.map(p=>`<button class="q" data-pen="${p.id}"><span class="box"></span><span class="nm">${esc(p.text)}<div class="muted">${p.date.slice(5)} 失敗的代價</div></span></button>`).join('')}</div>`;
@@ -1818,7 +1819,7 @@ function scrChart(){const g=180,t=today(),days=[];for(let i=6;i>=0;i--){const d=
  if(!days.some(x=>x[1]!=null))return'';const mx=Math.max(g*1.3,...days.map(x=>x[1]||0)),H=110,W=300,bw=30;
  let svg=`<svg viewBox="0 0 ${W} ${H+22}" style="width:100%">`;days.forEach(([d,v],i)=>{const x=12+i*41;if(v!=null){const hh=v/mx*H;svg+=`<rect x="${x}" y="${H-hh}" width="${bw}" height="${hh}" rx="5" fill="${v<=g?'#4fd1ff':'#ff5d6c'}" opacity=".85"/><text x="${x+bw/2}" y="${H-hh-4}" fill="#e6eefc" font-size="10" text-anchor="middle">${(v/60).toFixed(1)}</text>`}svg+=`<text x="${x+bw/2}" y="${H+16}" fill="#7d8aa6" font-size="11" text-anchor="middle">${WD[parse(d).getDay()]}</text>`});
  const gy=H-g/mx*H;return`<div class="panel"><div class="ptitle">[螢幕時間]<span>近 7 天（小時）</span></div>${svg}<line x1="4" x2="${W-4}" y1="${gy}" y2="${gy}" stroke="#f5c451" stroke-dasharray="4 4"/></svg></div>`.replace('</svg><line','<line')}
-function rates(){const t=today();const rows=QUESTS.map(q=>{let a=0,d=0;for(let i=0;i<14;i++){const x=addDays(t,-i);if(diff(S.start,x)<0)break;if(!activeOn(q,x))continue;const ok=S.log[x]&&S.log[x].done&&S.log[x].done[q.id];if(i===0&&!ok)continue;a++;if(ok)d++}return[q,a?d/a:null]}).filter(r=>r[1]!==null);
+function rates(){const t=today();const rows=QUESTS.map(q=>{let a=0,d=0;for(let i=0;i<14;i++){const x=addDays(t,-i);if(diff(TS(),x)<0)break;if(!activeOn(q,x))continue;const ok=S.log[x]&&S.log[x].done&&S.log[x].done[q.id];if(i===0&&!ok)continue;a++;if(ok)d++}return[q,a?d/a:null]}).filter(r=>r[1]!==null);
  if(!rows.length)return'';rows.sort((x,y)=>x[1]-y[1]);
  return`<div class="panel"><div class="ptitle">[任務完成率]<span>近 14 天・弱點在上面</span></div>${rows.map(([q,p])=>`<div class="rate"><span class="nm">${esc(q.name)}</span><div class="bar ${p<.5?'red':''}"><i style="width:${p*100}%"></i></div><span class="muted" style="width:40px;text-align:right">${Math.round(p*100)}%</span></div>`).join('')}</div>`}
 function focusStats(){const t=today(),all=[];let quit=0,longest=0;const cat={};
