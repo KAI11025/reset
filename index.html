@@ -418,6 +418,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 .warmb{display:flex;gap:14px;align-items:center}.warmsil{flex:0 0 110px;opacity:.55;filter:blur(.5px)}.fstat small+small{display:block;font-size:10px;color:var(--mute)}
 .achlist{display:flex;flex-direction:column;gap:6px;max-height:46vh;overflow:auto;margin-top:6px}.achlist>div{display:grid;grid-template-columns:34px 1fr;column-gap:8px;background:#070c18;border:1px solid var(--line);border-radius:10px;padding:7px 9px}.achlist span{grid-row:1/3;font-size:24px;align-self:center}.achlist small{font-size:11px;color:var(--mute)}
 .rpg{display:flex;align-items:center;gap:10px;background:#070c18;border:1px solid var(--line);border-radius:12px;padding:8px 12px}.rpg b{font-size:30px;color:var(--gold);font-family:inherit}.rpg span{font-size:13px;color:var(--mute)}.rpw{max-height:48vh;overflow:auto}.rps{margin-top:10px}.rph{font-weight:700;font-size:14px;margin-bottom:4px}.rpi{background:#070c18;border:1px solid var(--line);border-radius:10px;padding:7px 10px;margin-top:5px;font-size:13px;line-height:1.6}.rpi small{display:block;color:var(--mute);font-size:11px}
+.slist{padding:4px 14px}.sg{font-size:11px;color:var(--mute);letter-spacing:.12em;padding:8px 0 2px}.srow{display:flex;align-items:center;gap:12px;width:100%;min-height:50px;padding:8px 0;background:none;border:0;border-top:1px solid var(--line);color:inherit;font:inherit;text-align:left}.sg+.srow{border-top:0}.srow .si{font-size:19px;width:24px;text-align:center}.srow .st{flex:1;font-size:15px;font-weight:600}.srow .st small{display:block;font-size:11px;font-weight:400;color:var(--mute);margin-top:2px}.srow .sv{font-size:12px;color:var(--mute)}.srow .sv.warn{color:var(--gold)}.srow .sc{color:var(--mute);font-size:20px;line-height:1}.sback{background:none;border:0;color:var(--cyan);font:inherit;font-size:15px;padding:4px 0 2px}.sh{font-size:20px;font-weight:800;margin:4px 0 12px}
 </style>
 </head>
 <body>
@@ -442,7 +443,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v46・11/21 13:20';
+const VER='v47・11/21 13:50';
 function TS(){return S.warm0&&S.warm0<S.start?S.warm0:S.start}
 const PROG=100;
 'use strict';
@@ -577,12 +578,7 @@ const SIDE_GUIDE={
 const STAT_WHEN={STR:'今天任何時候都可以，有練習的日子可以接在練完後面。',VIT:'今天任何時候都可以，越早做越不會忘。',INT:'空檔、通勤或睡前都可以。',SPI:'早上或睡前，找個安靜的時候。',DIS:'今天任何時候都可以，越早做完越輕鬆。'};
 
 /* ---------- 現實獎勵（後台，只在這裡改） ---------- */
-const REWARDS=[
- {id:'r_drama',name:'追劇一集',cost:120},
- {id:'r_drink',name:'手搖飲一杯',cost:150},
- {id:'r_sleep',name:'睡到自然醒',cost:250},
- {id:'r_feast',name:'放縱餐',cost:400},
- {id:'r_buy',name:'買一個想要的小東西',cost:1000}];
+
 /* ---------- RPG 資料 ---------- */
 const RANKS=[[1,'E','見習者'],[5,'D','覺醒者'],[10,'C','獵人'],[20,'B','精英獵人'],[35,'A','王牌'],[50,'S','君主']];
 const AURA={E:'#7d8aa6',D:'#3ee08f',C:'#4fd1ff',B:'#b48cff',A:'#f5c451',S:'#ff5d6c'};
@@ -607,16 +603,16 @@ function sfx(type){if(!S||!S.sound)return;try{AC=AC||new(window.AudioContext||wi
 
 /* ---------- 存檔 ---------- */
 function defaults(){return{v:4,start:nextMon(today()),hard:false,sound:true,badge:false,dayStart:4,gold:0,xp:0,best:0,seen:0,
- rewards:[{id:uid(),name:'追劇一集',cost:120},{id:uid(),name:'手搖飲一杯',cost:150},{id:uid(),name:'睡到自然醒',cost:250},{id:uid(),name:'放縱餐',cost:400},{id:uid(),name:'買一個想要的小東西',cost:1000}],
+ 
  log:{},lastClosed:null,penalties:[],stats:{STR:0,VIT:0,INT:0,SPI:0,DIS:0},
  boss:{week:null,dmg:0,dead:false,tier:0},bossKills:0,crits:0,focusCount:0,questCount:0,sideCount:0,
- ach:{},buys:[],timer:null,shift:{},gear:{own:[],eq:{}},skills:{},login:{last:null,streak:0,best:0},stolen:null,pendingMsg:null}}
+ ach:{},timer:null,shift:{},gear:{own:[],eq:{}},skills:{},login:{last:null,streak:0,best:0},stolen:null,pendingMsg:null}}
 function load(){let d=defaults(),r=null;try{r=JSON.parse(localStorage.getItem(KEY))}catch(e){}
  S=r&&typeof r==='object'&&r.log?Object.assign(d,r):d;
  if(r&&r.log&&r.seen===undefined)S.seen=1;
  delete S.quests;delete S.safari;delete S.igUntil;
  S.stats=Object.assign({STR:0,VIT:0,INT:0,SPI:0,DIS:0},S.stats);if(S.stats.CHA){S.stats.SPI+=S.stats.CHA;delete S.stats.CHA}
- S.rewards=(S.rewards||[]).filter(x=>!(x.ig>0));const RP={'追劇一集':[50,120],'手搖飲一杯':[80,150],'睡到自然醒':[120,250],'放縱餐':[200,400],'買一個想要的小東西':[400,1000]};S.rewards.forEach(r=>{const p=RP[r.name];if(p&&r.cost===p[0])r.cost=p[1]});S.shift=S.shift||{};S.gear=S.gear||{own:[],eq:{}};S.skills=S.skills||{};S.login=S.login||{last:null,streak:0,best:0};
+ delete S.rewards;delete S.buys;S.shift=S.shift||{};S.gear=S.gear||{own:[],eq:{}};S.skills=S.skills||{};S.login=S.login||{last:null,streak:0,best:0};
  if(!S.rar2){S.rar2=1;const k=[1,1.12/1.25,1.25/1.6,1.4/2.2];for(const id in S.loot||{}){const x=S.loot[id];x.v=Math.round(x.v*k[x.rar]*1000)/1000}}
  if(!S.afx2){S.afx2=1;for(const id in S.loot||{}){const x=S.loot[id];if(x.afx&&x.afx.k==='xp')x.afx={k:'mag',v:Math.round(x.afx.v*1.6*1000)/1000};if(x.afx&&x.afx.k==='gold')x.afx={k:'hp',v:x.afx.v};if(x.slot==='armor')x.v=Math.round(x.v*.75*1000)/1000}}
  if(!S.d0fix){if(S.start==='2026-11-19')S.start='2026-11-20';S.d0fix=1}
@@ -677,7 +673,6 @@ function bossInfo(){const wk=weekKey(today());
   save()}
  const B=BOSS[S.boss.idx],t=S.boss.tier,hp=Math.round(720*(1+.28*t)),pre=BOSS_PRE[Math.min(t,6)];
  return{i:S.boss.idx,t,name:(pre?pre+'・':'')+B.n,title:B.t,hp,dmg:Math.min(S.boss.dmg,hp),dead:S.boss.dead,rematch:S.boss.rematch,gold:200+60*t,xp:100+30*t}}
-function hitBoss(){}
 
 /* ---------- 獎勵 ---------- */
 function gain(xp,gold){const before=lvInfo(S.xp).lv;S.xp+=xp;S.gold+=gold;const after=lvInfo(S.xp).lv;
@@ -724,7 +719,6 @@ function openInfo(k,D){const[kind,key]=k.split(':'),L=dayLog(D);
 function pickLevel(q,t){const was=cleared(t);
  modal(`<h2>[${esc(q.name)}]</h2><div class="bigt" style="font-size:22px">今天做到哪個程度？</div><div class="lvpick">${q.lv.map((l,i)=>`<button data-pick="${i}" style="border-color:${ELV[i][2]}66"><b style="color:${ELV[i][2]}">${ELV[i][0]}</b><span>${esc(l)}</span><small>+${Math.round(q.xp*ELV[i][1])} XP</small></button>`).join('')}</div>`,[['取消','btn']]);
  $('#mcard').onclick=e=>{const b=e.target.closest('[data-pick]');if(!b)return;$('#modal').classList.remove('on');$('#mcard').onclick=null;doLevel(q,t,+b.dataset.pick)}}
-const hintHtml=h=>h?`<p class="muted" style="line-height:1.7;white-space:pre-line;margin:0 0 4px">${esc(h)}</p>`:'';
 function toggleQuest(id,t,ok){const q=QUESTS.find(x=>x.id===id);if(!q)return;if(q.type==='screen')return openScreen(id,t);
  if(id==='train'){const L=dayLog(t);if(!L.done.train)return openBody(t);const was=cleared(t);undo(L.done.train);delete L.done.train;L.body=[];settle(t,was);return after()}
  if(q.lv&&!dayLog(t).done[id])return pickLevel(q,t);
@@ -988,7 +982,7 @@ function repHtml(r){return`<h2>[系統公告] ${esc(r.title||'戰報')}</h2>${r.
  ${repList('✅','有在進步',r.good)}${repList('⚠️','卡關的地方',r.stuck)}${repList('🔍','數據發現',r.insight)}${repList('🎯','下週指令',r.next)}</div>${r.quote?`<p class="muted" style="text-align:center;margin-top:10px;font-style:italic">「${esc(r.quote)}」</p>`:''}`}
 function aiPanel(){const on=S.aiOn&&S.ghTok;return`<div class="panel"><div class="ptitle">[系統戰報]<span>${on?(S.syncErr?'<b style="color:var(--red)">上傳失敗</b>':S.syncOk?'上次上傳 '+new Date(S.syncOk).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'已開啟'):'未開啟'}</span></div>
  <p class="muted" style="margin:0 0 8px;font-size:12px;line-height:1.6">紀錄加密後自動上傳（只有 Claude 解得開），每週一、每月 1 號分析，戰報用系統公告送回來。</p>
- ${on?`<div class="row"><button class="btn sm grow" id="aiUp">立即上傳</button><button class="btn sm grow" id="aiGet">檢查戰報</button><button class="btn sm grow" id="aiSet">設定</button></div>`:`<button class="btn cy" id="aiSet" style="width:100%">🧠 開啟每週分析</button>`}
+ ${on?`<div class="row"><button class="btn sm grow" id="aiUp">立即上傳</button><button class="btn sm grow" id="aiGet">檢查戰報</button><button class="btn sm grow" id="aiSet">隱私</button></div>`:`<button class="btn cy" id="aiSet" style="width:100%">🧠 開啟每週分析</button>`}
  ${(S.reports||[]).length?`<div style="margin-top:10px">${S.reports.slice(0,8).map((r,i)=>`<button class="btn sm" data-rep="${i}" style="width:100%;margin-top:6px;text-align:left">📜 ${esc(r.title||r.id)}</button>`).join('')}</div>`:''}</div>`}
 function aiSetup(){const ok=!!S.ghTok;modal(`<h2>[系統戰報] 設定</h2><p class="muted" style="line-height:1.75;margin:6px 0">紀錄會<b>加密</b>後用計時通知那把鑰匙上傳，只有 Claude 解得開，戰報也是加密送回來。不用再設定別的東西。</p>
  ${ok?'':'<p style="color:var(--red)">要先設定好「⏰ 計時通知」的鑰匙。</p>'}
@@ -1537,8 +1531,7 @@ async function pushLocalTest(){try{const reg=await navigator.serviceWorker.ready
 function pushPanel(){const st=pushState();
  return`<div class="panel"><div class="ptitle">[通知]<span>${st==='on'?'<b style="color:var(--green,#3ee08f)">已開啟</b>':st==='denied'?'被拒絕':'未開啟'}</span></div>
  <p class="muted" style="margin:0 0 8px;font-size:12px;line-height:1.6">早上、下午（時間隨機）、睡前各一則。看你差什麼、連續是不是快斷、夥伴餓不餓，說法每次都不一樣。</p>
- ${st==='on'?`<div class="row"><button class="btn sm grow" id="pPrev">預覽通知</button><button class="btn sm grow" id="pCfg">設定碼</button></div>`:`<button class="btn cy" id="pOn" style="width:100%">🔔 開啟通知</button>`}
- <div class="sw" style="margin-top:10px"><div><b>⏰ 計時通知</b><div class="muted">專注、休息時間到就叫你，鎖屏也收得到</div></div><button class="btn sm ${S.ghTok?'':'cy'}" id="tSet">${S.ghTok?'已設定':'設定'}</button></div></div>`}
+ ${st==='on'?`<div class="row"><button class="btn sm grow" id="pPrev">預覽通知</button><button class="btn sm grow" id="pCfg">設定碼</button></div>`:`<button class="btn cy" id="pOn" style="width:100%">🔔 開啟通知</button>`}</div>`}
 
 /* ---------- 戰鬥與專注動畫 ---------- */
 const fxEv=e=>{if(F){F.fx=F.fx||[];F.fx.push(e)}};
@@ -1747,7 +1740,7 @@ function modal(html,acts){mActs=acts||[['OK','btn pri']];$('#mcard').onclick=nul
  $('#mcard').innerHTML=html+'<div class="acts">'+mActs.map((a,i)=>`<button class="${a[1]}" data-m="${i}">${a[0]}</button>`).join('')+'</div>';$('#modal').classList.add('on')}
 $('#modal').addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b){const a=mActs[+b.dataset.m];$('#modal').classList.remove('on');if(a&&a[2])a[2]()}});
 let tab='today',viewY=false;
-$('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.t;document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));window.scrollTo(0,0);render()});
+$('#nav').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;tab=b.dataset.t;setPg='';document.querySelectorAll('#nav button').forEach(x=>x.classList.toggle('on',x===b));window.scrollTo(0,0);render()});
 function header(){const L=lvInfo(S.xp),r=rankOf(L.lv);$('#hRank').textContent=r[1];$('#hRank').style.color=AURA[r[1]];$('#hRank').style.borderColor=AURA[r[1]];$('#hLv').textContent='Lv.'+L.lv;$('#hTitle').textContent=S.title&&S.ach[S.title]?TITLES[S.title]:r[2];$('#hGold').textContent=S.gold+' G';$('#hBar').style.width=(L.cur/L.need*100)+'%'}
 const tag=s=>`<span class="tag" style="color:${(STATS[s]||STATS.SPI).c};border-color:${(STATS[s]||STATS.SPI).c}55">${(STATS[s]||STATS.SPI).n}</span>`;
 
@@ -1894,33 +1887,44 @@ function vMe(){const L=lvInfo(S.xp),r=rankOf(L.lv),nx=RANKS.find(x=>x[0]>L.lv);
  return h}
 
 /* ---------- 設定頁 ---------- */
-function vSet(){let h=`<div class="panel sys"><div class="ptitle">[任務・獎勵]<span>後台管理</span></div><p class="muted" style="margin:0">要改跟 Claude 說。</p></div>`;
- h+=pushPanel()+aiPanel();
- h+=`<div class="panel"><div class="ptitle">[模式]</div>
- <div class="sw"><div><b>😈 硬核模式</b><div class="muted">沒通關扣 50G＋懲罰任務</div></div><button class="tog ${S.hard?'on':''}" id="tHard"></button></div>
- <div class="sw"><div><b>🔊 音效</b></div><button class="tog c ${S.sound?'on':''}" id="tSnd"></button></div>
- <div class="sw"><div><b>🔔 靜音模式也播音效</b><div class="muted">關掉的話，手機切靜音就沒聲音</div></div><button class="tog c ${S.loud?'on':''}" id="tLoud"></button></div>
- <div class="sw"><div><b>📳 震動</b><div class="muted">iPhone 要 iOS 18 以上</div></div><button class="tog c ${S.haptic!==false?'on':''}" id="tHap"></button></div>
- <button class="btn sm" id="fxTest" style="width:100%;margin-top:6px">🔊 測試音效和震動</button>
- <div class="sw"><div><b>🌙 一天從幾點開始</b><div class="muted">凌晨勾的任務算前一天</div></div><select id="dayStart" style="width:90px">${[0,2,3,4,5,6].map(x=>`<option value="${x}" ${S.dayStart===x?'selected':''}>${pad(x)}:00</option>`).join('')}</select></div>
- <div class="sw"><div><b>🔴 圖示顯示剩幾項</b></div><button class="tog c ${S.badge?'on':''}" id="tBadge"></button></div></div>
- <div class="panel ${bkDays()>=7?'pen':''}"><div class="ptitle">[備份]<span>${S.lastBackup?'上次備份：'+(bkDays()===0?'今天':bkDays()+' 天前'):'還沒備份過'}</span></div>
- <p style="margin:0 0 10px;font-size:13px;color:var(--red)">⚠️ 刪掉 app 資料會一起消失</p>
- <button class="btn pri" id="bkFile" style="width:100%">💾 備份到檔案（存到 iCloud 雲碟）</button>
- <div class="row" style="margin-top:8px"><button class="btn sm grow" id="rsFile">📂 從檔案還原</button><button class="btn sm grow" id="exp">📋 複製文字</button><button class="btn sm grow" id="imp">貼上還原</button></div>
+let setPg='';
+const srow=(ic,t,v,a,warn)=>`<button class="srow" ${a}><span class="si">${ic}</span><span class="st">${t}</span><span class="sv${warn?' warn':''}">${v||''}</span><span class="sc">›</span></button>`;
+const stog=(ic,t,on,id,sub)=>`<div class="srow"><span class="si">${ic}</span><span class="st">${t}${sub?`<small>${sub}</small>`:''}</span><button class="tog c ${on?'on':''}" id="${id}"></button></div>`;
+const sback=t=>`<button class="sback" data-sp="">‹ 設定</button><div class="sh">${t}</div>`;
+function vSet(){const ps=pushState(),bd=bkDays(),up=S.syncOk?new Date(S.syncOk).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}):'';
+ if(setPg==='push')return sback('🔔 通知')+pushPanel();
+ if(setPg==='ai')return sback('📜 系統戰報')+aiPanel();
+ if(setPg==='sound')return sback('🔊 音效與震動')+`<div class="panel slist">${stog('🔊','音效',S.sound,'tSnd')}${stog('🔔','靜音模式也播',S.loud,'tLoud','關掉的話，手機切靜音就沒聲音')}${stog('📳','震動',S.haptic!==false,'tHap','iPhone 要 iOS 18 以上')}</div><button class="btn" id="fxTest" style="width:100%">測試音效和震動</button>`;
+ if(setPg==='backup')return sback('💾 備份')+`<div class="panel ${bd>=7?'pen':''}"><div class="ptitle">[備份]<span>${S.lastBackup?'上次：'+(bd===0?'今天':bd+' 天前'):'還沒備份過'}</span></div>
+ <p class="muted" style="margin:0 0 10px;font-size:12px">資料只存在這支手機，刪掉 app 會一起消失。</p>
+ <button class="btn pri" id="bkFile" style="width:100%">💾 備份到檔案（存 iCloud 雲碟）</button>
+ <button class="btn sm" id="rsFile" style="width:100%;margin-top:8px">📂 從檔案還原</button>
+ <div class="row" style="margin-top:8px"><button class="btn sm grow" id="exp">複製成文字</button><button class="btn sm grow" id="imp">貼上文字還原</button></div>
  <input type="file" id="rsInput" accept=".json,application/json,text/plain" class="hide">
- <textarea id="bk" class="hide" style="margin-top:8px"></textarea><button class="btn sm pri hide" id="impGo" style="margin-top:6px;width:100%">確認匯入</button></div>
- <p class="muted" data-ver="1" style="text-align:center;font:12px var(--mono);margin:6px 0 4px;user-select:none">目前版本 ${VER}</p><p class="muted" style="text-align:center;font-size:11px;margin:0 0 12px">圖示：game-icons.net（Lorc、Delapouite、Cathelineau、Caro Asercion），CC BY 3.0</p>
- <div class="panel"><div class="ptitle" style="color:var(--red)">[危險區]</div><div class="row"><button class="btn sm grow" id="restart">重開 100 天（保留等級）</button><button class="btn sm red grow" id="wipe">全部清空</button></div></div>`;
- return h}
+ <textarea id="bk" class="hide" style="margin-top:8px"></textarea><button class="btn sm pri hide" id="impGo" style="margin-top:6px;width:100%">確認匯入</button></div>`;
+ if(setPg==='danger')return sback('⚠️ 重開・清空')+`<div class="panel"><p class="muted" style="margin:0 0 10px;font-size:12px;line-height:1.6">重開：等級、金幣、裝備保留，100 天進度歸零。<br>清空：所有資料刪除，無法復原。</p><div class="row"><button class="btn sm grow" id="restart">重開 100 天</button><button class="btn sm red grow" id="wipe">全部清空</button></div></div>`;
+ return`<div class="panel slist"><div class="sg">連線</div>
+ ${srow('🔔','通知',ps==='on'?'已開啟':ps==='denied'?'被拒絕':'未開啟','data-sp="push"',ps!=='on')}
+ ${srow('⏰','計時通知',S.ghTok?'已設定':'未設定','id="tSet"',!S.ghTok)}
+ ${srow('📜','系統戰報',S.aiOn&&S.ghTok?(S.syncErr?'上傳失敗':up?'已上傳 '+up:'已開啟'):'未開啟','data-sp="ai"',!(S.aiOn&&S.ghTok)||!!S.syncErr)}</div>
+ <div class="panel slist"><div class="sg">遊戲</div>
+ ${stog('😈','硬核模式',S.hard,'tHard','沒通關扣 50G＋懲罰任務')}
+ <div class="srow"><span class="si">🌙</span><span class="st">一天從幾點開始<small>凌晨勾的任務算前一天</small></span><select id="dayStart" style="width:84px">${[0,2,3,4,5,6].map(x=>`<option value="${x}" ${S.dayStart===x?'selected':''}>${pad(x)}:00</option>`).join('')}</select></div>
+ ${srow('🔊','音效與震動',S.sound?(S.haptic!==false?'開':'只有音效'):'關','data-sp="sound"')}
+ ${stog('🔴','圖示顯示剩幾項',S.badge,'tBadge')}</div>
+ <div class="panel slist"><div class="sg">資料</div>
+ ${srow('💾','備份',S.lastBackup?(bd===0?'今天':bd+' 天前'):'還沒備份','data-sp="backup"',bd>=7)}
+ ${srow('⚠️','重開・清空','','data-sp="danger"')}</div>
+ <p class="muted" data-ver="1" style="text-align:center;font:12px var(--mono);margin:10px 0 2px;user-select:none">${VER}</p><p class="muted" style="text-align:center;font-size:10px;margin:0 0 12px">圖示：game-icons.net（Lorc、Delapouite、Cathelineau、Caro Asercion），CC BY 3.0</p>`}
 
 const VIEWS={today:vToday,battle:vBattle,shop:vShop,me:vMe,log:vLog,set:vSet};
 let jDraft='',xDraft='';
 function render(){const se=season();document.body.classList.toggle('snow',!!(se&&se[5]==='snow'));header();$('#view').innerHTML=VIEWS[tab]();if(tab==='log')bindBook();if(tab==='set')photoBundle().then(b=>{window.__pb=b}).catch(()=>{});brkTick();const ta=$('#jtxt');if(ta){ta.value=jDraft;ta.oninput=()=>{jDraft=ta.value}}const xt=$('#xtxt');if(xt){xt.value=xDraft;xt.oninput=()=>{xDraft=xt.value}}tick()}
 
 /* ---------- 事件 ---------- */
-$('#view').addEventListener('click',e=>{const el=e.target.closest('[data-rep],[data-stab],[data-tt],[data-todo],[data-tdel],[data-mon],[data-item],[data-pet],[data-gomap],[data-bt],[data-region],[data-salv],[data-poke],[data-ver],[data-enc],[data-title],[data-dnav],[data-ph],[data-dgo],[data-gotab],[data-jt],[data-jedit],[data-fstep],[data-fcat],[data-spell],[data-xdel],[data-mood],[data-jf],[data-jdel],[data-info],[data-q],[data-side],[data-day],[data-shift],[data-pen],[data-focus],[data-buy],[data-gear],[data-eq],[data-skill],[data-delr],button[id]');if(!el||el.disabled)return;const d=el.dataset;
+$('#view').addEventListener('click',e=>{const el=e.target.closest('[data-sp],[data-rep],[data-stab],[data-tt],[data-todo],[data-tdel],[data-mon],[data-item],[data-pet],[data-gomap],[data-bt],[data-region],[data-salv],[data-poke],[data-ver],[data-enc],[data-title],[data-dnav],[data-ph],[data-dgo],[data-gotab],[data-jt],[data-jedit],[data-fstep],[data-fcat],[data-spell],[data-xdel],[data-mood],[data-jf],[data-jdel],[data-info],[data-q],[data-side],[data-day],[data-shift],[data-pen],[data-focus],[data-gear],[data-eq],[data-skill],button[id]');if(!el||el.disabled)return;const d=el.dataset;
  const D=viewY?addDays(today(),-1):today();
+ if(d.sp!=null){setPg=d.sp;window.scrollTo(0,0);return render()}
  if(d.rep!=null){const r=(S.reports||[])[+d.rep];return r&&modal(repHtml(r),[['關閉','btn pri']])}
  if(d.spell){const sp=SPELLS.find(x=>x.id===d.spell);if(S.gold<sp.g||!Object.entries(sp.m).every(([k,n])=>(S.mats[k]||0)>=n))return toast('金幣或素材不夠');
   S.gold-=sp.g;Object.entries(sp.m).forEach(([k,n])=>S.mats[k]-=n);S.items[sp.id]=(S.items[sp.id]||0)+1;jlog('🛒',`花 ${sp.g} G 做了魔法「${sp.n}」`);sfx('chest');toast(`<b>${sp.ic} ${sp.n}</b> 製作完成`);return after()}
@@ -1963,8 +1967,6 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-rep],[d
  if(d.fcat){S.fcat=d.fcat;save();document.querySelectorAll('[data-fcat]').forEach(b=>b.classList.toggle('on',b.dataset.fcat===S.fcat));return fUpd()}
  if(d.fstep){S.fmin=Math.max(5,Math.min(180,(S.fmin||25)+(+d.fstep)));save();return fUpd()}
  if(d.focus){const fc=S.fcat||'study',mn=d.focus==='go'?(S.fmin||25):+d.focus;if(S.brk){S.brk=null;timerCancel()}S.timer={end:Date.now()+mn*6e4,min:mn,cat:fc};save();timerPush('focus',S.timer.end,mn,fc);toast(`<b>[專注討伐]</b> 開始 ${fmtF(S.timer.min)}`);return render()}
- if(d.buy){const r=REWARDS.find(x=>x.id===d.buy);if(!r)return;if(pendingPen().length)return toast('先完成懲罰任務');if(S.gold<r.cost)return toast('金幣不夠');
-  return modal(`<h2>[確認購買]</h2><div class="bigt">${esc(r.name)}</div><p>花費 <span class="gold">${r.cost} G</span>，剩 <span class="gold">${S.gold-r.cost} G</span></p>`,[['算了','btn'],['買','btn pri',()=>{S.gold-=r.cost;S.buys.unshift({t:Date.now(),name:r.name,cost:r.cost});jlog('🎉',`花 ${r.cost} G 兌換了「${r.name}」`);S.buys=S.buys.slice(0,50);after();sfx('lv');toast(`<b>已購買</b>　${esc(r.name)}，去享受吧`)}]])}
  switch(el.id){
   case'toClaude':{const tx=exportForClaude();const done=()=>modal('<h2>[已複製]</h2><div class="bigt" style="font-size:22px">貼給 Claude 吧</div><p class="muted" style="line-height:1.7">打開 Claude，貼上剛剛複製的內容送出，就會幫你分析最近的狀況。<br>紀錄只會在你貼上時傳出去，app 本身不會上傳任何資料。</p>',[['好','btn pri']]);
    const fb=()=>modal(`<h2>[手動複製]</h2><p class="muted">長按下面的文字 → 全選 → 拷貝</p><textarea style="min-height:220px;font-size:12px">${esc(tx)}</textarea>`,[['關閉','btn']]);
