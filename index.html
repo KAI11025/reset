@@ -416,6 +416,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 .stabs button{flex:0 0 auto;padding:8px 12px;border-radius:12px;border:1px solid var(--line);background:#070c18;color:var(--mute);font-size:13px;white-space:nowrap}.stabs button.on{color:var(--cyan);border-color:var(--cyan);background:#0b2233}
 .tierh{display:flex;justify-content:space-between;font:800 12px var(--mono);color:var(--cyan);margin:12px 0 2px;letter-spacing:.1em}.tierh.lock{color:var(--mute)}.tierh span{font-weight:400}
 .warmb{display:flex;gap:14px;align-items:center}.warmsil{flex:0 0 110px;opacity:.55;filter:blur(.5px)}.fstat small+small{display:block;font-size:10px;color:var(--mute)}
+.achlist{display:flex;flex-direction:column;gap:6px;max-height:46vh;overflow:auto;margin-top:6px}.achlist>div{display:grid;grid-template-columns:34px 1fr;column-gap:8px;background:#070c18;border:1px solid var(--line);border-radius:10px;padding:7px 9px}.achlist span{grid-row:1/3;font-size:24px;align-self:center}.achlist small{font-size:11px;color:var(--mute)}
 </style>
 </head>
 <body>
@@ -440,7 +441,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v41・11/21 11:10';
+const VER='v42・11/21 11:40';
 function TS(){return S.warm0&&S.warm0<S.start?S.warm0:S.start}
 const PROG=100;
 'use strict';
@@ -615,6 +616,7 @@ function load(){let d=defaults(),r=null;try{r=JSON.parse(localStorage.getItem(KE
  delete S.quests;delete S.safari;delete S.igUntil;
  S.stats=Object.assign({STR:0,VIT:0,INT:0,SPI:0,DIS:0},S.stats);if(S.stats.CHA){S.stats.SPI+=S.stats.CHA;delete S.stats.CHA}
  S.rewards=(S.rewards||[]).filter(x=>!(x.ig>0));const RP={'追劇一集':[50,120],'手搖飲一杯':[80,150],'睡到自然醒':[120,250],'放縱餐':[200,400],'買一個想要的小東西':[400,1000]};S.rewards.forEach(r=>{const p=RP[r.name];if(p&&r.cost===p[0])r.cost=p[1]});S.shift=S.shift||{};S.gear=S.gear||{own:[],eq:{}};S.skills=S.skills||{};S.login=S.login||{last:null,streak:0,best:0};
+ if(!S.rar2){S.rar2=1;const k=[1,1.12/1.25,1.25/1.6,1.4/2.2];for(const id in S.loot||{}){const x=S.loot[id];x.v=Math.round(x.v*k[x.rar]*1000)/1000}}
  if(!S.afx2){S.afx2=1;for(const id in S.loot||{}){const x=S.loot[id];if(x.afx&&x.afx.k==='xp')x.afx={k:'mag',v:Math.round(x.afx.v*1.6*1000)/1000};if(x.afx&&x.afx.k==='gold')x.afx={k:'hp',v:x.afx.v};if(x.slot==='armor')x.v=Math.round(x.v*.75*1000)/1000}}
  if(!S.d0fix){if(S.start==='2026-11-19')S.start='2026-11-20';S.d0fix=1}
  if(!S.wk1fix){S.wk1fix=1;if(S.pet&&!S.pet.born)S.pet.born=S.start;S.pet=S.pet||{born:S.start,max:0,sp:null};if(parse(S.start).getDay()!==1&&diff(S.start,today())<7){const o=S.start;S.start=nextMon(o);S.warm0=o}}
@@ -680,7 +682,8 @@ function hitBoss(){}
 function gain(xp,gold){const before=lvInfo(S.xp).lv;S.xp+=xp;S.gold+=gold;const after=lvInfo(S.xp).lv;
  if(after>=CLS_LV&&before<CLS_LV&&!S.cls)setTimeout(()=>qModal(`<h2>[系統] 轉職的時刻</h2><div class="bigt" style="text-align:center">你到 Lv.${CLS_LV} 了</div><p class="muted" style="text-align:center;line-height:1.7">選一個職業，會決定你在 Boss 戰的招式。<br>系統依你最強的屬性推薦：<b style="color:${CLASSES[recCls()].c}">${CLASSES[recCls()].ic} ${CLASSES[recCls()].n}</b></p>`,[['之後再說','btn'],['選職業','btn pri',()=>clsPick()]]),400);
  if(after>before){sfx('lv');haptic(3);const r0=rankOf(before),r1=rankOf(after);jlog('⬆️',`升到 Lv.${after}`);if(r1[1]!==r0[1])jlog('👑',`晉升 ${r1[1]} 級・${r1[2]}`);
-  setTimeout(()=>qModal(`<h2>[系統] LEVEL UP</h2><div style="text-align:center">${avatarSvg(120)}</div><div class="bigt" style="text-align:center">Lv.${before} → <span style="color:var(--cyan)">Lv.${after}</span></div>${r1[1]!==r0[1]?`<p style="text-align:center">階級提升：<b style="color:var(--gold)">${r1[1]} 級・${r1[2]}</b></p>`:''}<p class="muted" style="text-align:center">${newUnlocks(before,after)}</p>`,[['繼續','btn pri']]),250)}}
+  if(window.__lv){window.__lv.to=after}else{window.__lv={from:before,to:after};setTimeout(()=>qModal(()=>{const v=window.__lv;window.__lv=null;const a0=v.from,a1=v.to,ra=rankOf(a0),rb=rankOf(a1);
+   return`<h2>[系統] LEVEL UP</h2><div style="text-align:center">${avatarSvg(120)}</div><div class="bigt" style="text-align:center">Lv.${a0} → <span style="color:var(--cyan)">Lv.${a1}</span></div>${rb[1]!==ra[1]?`<p style="text-align:center">階級提升：<b style="color:var(--gold)">${rb[1]} 級・${rb[2]}</b></p>`:''}<p class="muted" style="text-align:center">${newUnlocks(a0,a1)}</p>`},[['繼續','btn pri']]),250)}}}
 function newUnlocks(a,b){const u=[];for(const k in GEAR)for(const it of GEAR[k].items)if(it[2]>a&&it[2]<=b)u.push(it[1]);return u.length?'商店解鎖：'+u.join('、'):'繼續變強。'}
 function reward(t,key,base,stat,kind){let m=1+(t===today()?buffOn('x'):0)+affix('xp')+(S.pet&&S.pet.sp&&PETS[S.pet.sp].stat===stat?petBuff():0)+(S.cls&&CLASSES[S.cls]&&CLASSES[S.cls].stat===stat&&kind!=='up'?.1:0);if(kind==='quest'&&t===today()){const n=new Date(),hh=n.getHours()+n.getMinutes()/60;if(hh>=4&&hh<6.5)setEgg('dawn')}if(kind==='quest'&&skl('grit')&&streak()>=7)m+=.05*skl('grit');if(kind==='side')m+=.2*skl('curio');if(kind==='focus')m+=.25*skl('focus');
  const crit=srand(t+key+'c')<critRate()+(t===today()?buffOn('crit'):0),xp=Math.round(base*m*(crit?2:1));
@@ -800,7 +803,9 @@ const ACH=[
  ['mapdone','🏰','踏破終焉','走完 100 天主線',()=>!!egg('mapdone')],
  ['hard','😈','自找苦吃','開啟硬核模式',()=>S.hard],
  ['detox','🧘','數位排毒','螢幕時間連續 7 天達標',()=>{let n=0;for(let i=0;i<60;i++){const L=S.log[addDays(today(),-i)];if(L&&L.scr!=null&&L.scr<=180){if(++n>=7)return true}else if(i>0)return false}return false}]];
-function checkAch(){for(const a of ACH.concat(SECRET))if(!S.ach[a[0]]&&a[4]()){S.ach[a[0]]=Date.now();const sec=SECRET.includes(a);jlog('🏆',`${sec?'隱藏':''}成就解鎖：${a[1]} ${a[2]}`);setTimeout(()=>{fxSound('win');haptic(2);notice(a[1],`${sec?'隱藏成就':'成就解鎖'}：${a[2]}`,`${sec?'':esc(a[3])+'<br>'}獲得稱號「${TITLES[a[0]]||a[2]}」，可以到角色頁裝上。`,sec?'purple':'gold')},700)}}
+function checkAch(){const nw=[];for(const a of ACH.concat(SECRET))if(!S.ach[a[0]]&&a[4]()){S.ach[a[0]]=Date.now();const sec=SECRET.includes(a);jlog('🏆',`${sec?'隱藏':''}成就解鎖：${a[1]} ${a[2]}`);if(a[0]!=='owl')nw.push([a,sec])}
+ if(!nw.length)return;setTimeout(()=>{fxSound('win');haptic(2);if(nw.length===1){const[a,sec]=nw[0];notice(a[1],`${sec?'隱藏成就':'成就解鎖'}：${a[2]}`,`${sec?'':esc(a[3])+'<br>'}獲得稱號「${TITLES[a[0]]||a[2]}」，可以到角色頁裝上。`,sec?'purple':'gold')}
+  else qModal(`<button class="mx" data-m="0">×</button><div class="ntc gold"><div class="ntci">🏆</div><div class="ntct">解鎖 ${nw.length} 個成就</div></div><div class="achlist">${nw.map(([a,sec])=>`<div><span>${a[1]}</span><b>${a[2]}</b><small>${sec?'隱藏成就':esc(a[3])}・稱號「${TITLES[a[0]]||a[2]}」</small></div>`).join('')}</div>`,[['繼續','btn pri']])},700)}
 function after(){S.best=Math.max(S.best||0,streak());{const t=today(),Lt=S.log[t],a=actives(t);if(a.length&&Lt&&Lt.done&&a.every(q=>Lt.done[q.id]))setEgg('perfect')}if(S.gold===777)setEgg('lucky');checkChal();petCheck();mapCheck();streakMs();checkAch();save();render();updBadge()}
 function updBadge(){if(!S.badge||!('setAppBadge'in navigator))return;try{const t=today(),L=S.log[t],n=actives(t).filter(q=>!(L&&L.done&&L.done[q.id])).length;(n?navigator.setAppBadge(n):navigator.clearAppBadge()).catch(()=>{})}catch(e){}}
 
@@ -1226,12 +1231,12 @@ Object.assign(ICONS,{"wolf-head":["M179.3 38.94C154.7 77.7 142.7 139.7 168.4 185
 /* ---------- 共用：彈窗排隊（避免蓋掉別的彈窗） ---------- */
 let mQ=[];
 function qModal(html,acts){mQ.push([html,acts]);pumpQ()}
-function pumpQ(){if(!mQ.length)return;if($('#modal').classList.contains('on'))return setTimeout(pumpQ,700);const[h,a]=mQ.shift();modal(h,a);if(mQ.length)setTimeout(pumpQ,700)}
+function pumpQ(){if(!mQ.length)return;if($('#modal').classList.contains('on'))return setTimeout(pumpQ,700);let[h,a]=mQ.shift();if(typeof h==='function')h=h();modal(h,a);if(mQ.length)setTimeout(pumpQ,700)}
 function hrand(str){let h=2166136261;for(let i=0;i<str.length;i++)h=Math.imul(h^str.charCodeAt(i),16777619);h^=h>>>16;h=Math.imul(h,2246822507);h^=h>>>13;h=Math.imul(h,3266489909);h^=h>>>16;return(h>>>0)/4294967296}
 const mkRng=seed=>{let i=0;return()=>hrand(seed+'#'+(i++))};
 
 /* ---------- 隨機裝備 ---------- */
-const RAR=[['普通','#a3adc2',1,62],['稀有','#4fd1ff',1.25,28],['史詩','#b48cff',1.6,8.5],['傳說','#f5c451',2.2,1.5]];
+const RAR=[['普通','#a3adc2',1,62],['稀有','#4fd1ff',1.12,28],['史詩','#b48cff',1.25,8.5],['傳說','#f5c451',1.4,1.5]];
 const PREF=[[],['精鍛','銳利','堅固','迅捷'],['暗紋','龍骨','星鐵','血契'],['神諭','終焉','天命','君王']];
 const AFX={crit:['暴擊率',.02,.04],hp:['HP',.05,.12],dodge:['閃避',.03,.06],mag:['法術傷害',.06,.14],xp:['經驗',0,0],gold:['金幣',0,0]};
 const BAG_MAX=30;
@@ -1991,7 +1996,7 @@ if(S.bossKills===undefined)S.bossKills=0;S.chap=S.chap||{};if(S.boss.week&&S.cha
 dun();migrateDiary();petInit();pruneLootKeys();closeDays();bossInfo();checkAch();save();render();updBadge();
 try{if('serviceWorker'in navigator&&location.protocol==='https:'&&!/claude/.test(location.hostname))navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
 function boot(){try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
- {const h=new Date().getHours();if(h>=1&&h<4&&S.seen){const f=setEgg('owl');setTimeout(()=>{fxSound('alarm');haptic(3);notice('🦉','[系統] 偵測到熬夜',`現在 ${new Date().getHours()} 點了。睡覺也是任務。<br>${S.pet&&S.pet.sp?esc(petName())+'已經睡著了，':''}放下手機，明天再戰。`,'red')},2500);checkAch()}
+ {const h=new Date().getHours();if(h>=1&&h<4&&S.seen){const f=setEgg('owl');setTimeout(()=>{fxSound('alarm');haptic(3);notice('🦉','[系統] 偵測到熬夜',`現在 ${new Date().getHours()} 點了。睡覺也是任務。<br>${f?'（隱藏成就「夜貓子」解鎖……但這不是好事）<br>':''}${S.pet&&S.pet.sp?esc(petName())+'已經睡著了，':''}放下手機，明天再戰。`,'red')},2500);checkAch()}
   const se=season();if(se&&S.seen&&S.seasonSeen!==today()){S.seasonSeen=today();if(setEgg('season'))checkAch();jlog(se[2],`${se[3]}開始！${se[4]}`);setTimeout(()=>notice(se[2],`${se[3]}開始了`,se[4],'gold'),3000);save()}}
 if(S.pendingMsg){const h=S.pendingMsg;S.pendingMsg=null;save();sfx('bad');modal(h,[['可惡','btn red',()=>{if(!checkLogin(askScreen))askScreen()}]]);return}
  if(!checkLogin(()=>{askScreen()}))askScreen();setTimeout(()=>{if(!$('#modal').classList.contains('on'))askBackup()},1500);setTimeout(()=>{petCheck();mapCheck();save();render()},1000)}
