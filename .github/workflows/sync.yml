@@ -1,0 +1,37 @@
+name: RESET 資料同步
+run-name: sync
+on:
+  workflow_dispatch:
+    inputs:
+      blob:
+        description: encrypted data
+        required: true
+permissions:
+  contents: write
+concurrency:
+  group: sync
+  cancel-in-progress: false
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: write data branch
+        env:
+          BLOB: ${{ inputs.blob }}
+          TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          git config --global user.name reset-bot
+          git config --global user.email reset-bot@users.noreply.github.com
+          URL="https://x-access-token:${TOKEN}@github.com/${REPO}.git"
+          if git clone -q --depth 5 -b data "$URL" d 2>/dev/null; then cd d; else mkdir d; cd d; git init -q -b data; git remote add origin "$URL"; fi
+          mkdir -p data
+          printf '%s' "$BLOB" > data/latest.enc
+          python3 -c "import json;e=json.load(open('data/latest.enc'));assert e['apub'] and e['ct']"
+          git add data/latest.enc
+          git diff --cached --quiet && exit 0
+          git commit -qm "sync $(date -u +%F)"
+          for i in 1 2 3; do git push -q origin data && exit 0; git pull -q --rebase origin data || true; sleep 3; done
+          exit 1

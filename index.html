@@ -442,7 +442,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v45・11/21 12:50';
+const VER='v46・11/21 13:20';
 function TS(){return S.warm0&&S.warm0<S.start?S.warm0:S.start}
 const PROG=100;
 'use strict';
@@ -956,26 +956,30 @@ function exportForClaude(N,noDiary){N=N||30;const t=today(),lines=[];
 
 /* ---------- 備份 ---------- */
 /* ---------- 每週分析（Claude 戰報） ---------- */
-const DATA_REPO='KAI11025/reset-data';
-const b64e=s=>{const b=new TextEncoder().encode(s);let r='';for(let i=0;i<b.length;i+=32768)r+=String.fromCharCode.apply(null,b.subarray(i,i+32768));return btoa(r)};
-const b64d=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\s/g,'')),c=>c.charCodeAt(0)));
-async function ghd(path,opt){opt=opt||{};const r=await fetch(GH_API+'/repos/'+DATA_REPO+path,{method:opt.method||'GET',cache:'no-store',body:opt.body,headers:Object.assign({'Authorization':'Bearer '+S.ghTok,'Accept':'application/vnd.github+json','X-GitHub-Api-Version':'2022-11-28'},opt.body?{'Content-Type':'application/json'}:{})});
- if(r.status===404&&opt.ok404)return null;
- if(!r.ok)throw new Error(r.status===401?'鑰匙無效或過期':r.status===404?'找不到 reset-data，或鑰匙沒加這個 repo':r.status===403?'鑰匙沒有 reset-data 的 Contents 權限':'GitHub 回應 '+r.status);return r.json().catch(()=>null)}
-function aiData(){const t=today(),n=Math.max(1,diff(TS(),t)+1),li=lvInfo(S.xp),days=[];
+const CK_PUB='BI0gQgZjpN79m84FiovOciKAPYaWKuvG0vJMQ0NRxZD+PwgqP4cBkjOrGGLBqE6E4uJc4kfuX8zLJ8BjEMZSFGg=',RAW_REP='https://raw.githubusercontent.com/KAI11025/reset/data/reports/latest.enc';
+const u8b64=b=>{let r='';for(let i=0;i<b.length;i+=32768)r+=String.fromCharCode.apply(null,b.subarray(i,i+32768));return btoa(r)},b64u8=s=>Uint8Array.from(atob(s),c=>c.charCodeAt(0));
+async function zip(str,un){const cs=un?new DecompressionStream('gzip'):new CompressionStream('gzip'),w=new Blob([un?str:new TextEncoder().encode(str)]).stream().pipeThrough(cs);const b=new Uint8Array(await new Response(w).arrayBuffer());return un?new TextDecoder().decode(b):b}
+async function aiKey(){if(window.__ak)return window.__ak;const C=crypto.subtle;let priv;
+ if(!S.aiKey){const kp=await C.generateKey({name:'ECDH',namedCurve:'P-256'},true,['deriveKey']);S.aiKey={jwk:await C.exportKey('jwk',kp.privateKey),pub:u8b64(new Uint8Array(await C.exportKey('raw',kp.publicKey)))};save();priv=kp.privateKey}
+ else priv=await C.importKey('jwk',S.aiKey.jwk,{name:'ECDH',namedCurve:'P-256'},false,['deriveKey']);
+ const ck=await C.importKey('raw',b64u8(CK_PUB),{name:'ECDH',namedCurve:'P-256'},false,[]);
+ return window.__ak=await C.deriveKey({name:'ECDH',public:ck},priv,{name:'AES-GCM',length:256},false,['encrypt','decrypt'])}
+async function seal(obj){const k=await aiKey(),iv=crypto.getRandomValues(new Uint8Array(12)),ct=new Uint8Array(await crypto.subtle.encrypt({name:'AES-GCM',iv},k,await zip(JSON.stringify(obj))));return JSON.stringify({v:1,apub:S.aiKey.pub,iv:u8b64(iv),ct:u8b64(ct)})}
+async function unseal(env){const k=await aiKey(),pt=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64u8(env.iv)},k,b64u8(env.ct));return JSON.parse(await zip(new Uint8Array(pt),1))}
+function aiData(N){const t=today(),n=Math.max(1,Math.min(N||45,diff(TS(),t)+1)),li=lvInfo(S.xp),days=[];
  for(let i=n-1;i>=0;i--){const d=addDays(t,-i),L=S.log[d]||{},act=actives(d),dp=S.diary&&S.diary[d];
   days.push({d,wd:WD[parse(d).getDay()],warm:d<S.start,shift:isShift(d),done:act.filter(q=>L.done&&L.done[q.id]).map(q=>q.id),miss:act.filter(q=>!(L.done&&L.done[q.id])).map(q=>q.id),need:need(d),cleared:cleared(d),
    side:Object.keys(L.side||{}).map(k=>SIDE[+k]&&SIDE[+k][0]).filter(Boolean),focus:(L.focus||[]).reduce((a,f)=>a+(f.min||0),0),body:bodyTotal(d),scr:L.scr!=null?L.scr:null,mood:dp&&dp.mood!=null?dp.mood+1:null,diary:S.aiDiary!==false&&dp&&(dp.text||'').trim()?dp.text.trim():null})}
  return{v:1,at:new Date().toISOString(),today:t,start:S.start,warm0:S.warm0||null,dayNo:diff(S.start,t)+1,lv:li.lv,xp:S.xp,gold:S.gold,streak:streak(),best:S.best||0,cls:S.cls||null,stats:S.stats,bossKills:S.bossKills||0,
   quests:QUESTS.map(q=>({id:q.id,name:q.name,stat:q.stat})),todos:(S.todos||[]).map(x=>({tx:x.tx||x.t||x.text,wk:x.wk,d:x.d||null,done:!!x.done})),
-  events:(S.journal||[]).filter(e=>e.type!=='user'&&diff(e.d,t)<35).slice(0,60).map(e=>e.d+' '+e.text),days,text:exportForClaude(n,S.aiDiary===false)}}
+  events:(S.journal||[]).filter(e=>e.type!=='user'&&diff(e.d,t)<35).slice(0,40).map(e=>e.d+' '+e.text),days}}
 async function aiSync(force){if(!S.ghTok||!S.aiOn)return;if(!force&&S.syncT&&Date.now()-S.syncT<3*36e5)return;S.syncT=Date.now();
- try{const p='/contents/data/latest.json',cur=await ghd(p,{ok404:1}),body=JSON.stringify(aiData(),null,1);
-  await ghd(p,{method:'PUT',body:JSON.stringify({message:'sync '+today(),content:b64e(body),sha:cur&&cur.sha||undefined})});S.syncOk=Date.now();S.syncErr=null;save();if(force)toast('已上傳最新紀錄')}
- catch(e){S.syncT=0;S.syncErr=e.message;save();if(force)toast('上傳失敗：'+e.message)}}
-async function aiPull(force){if(!S.ghTok||!S.aiOn)return;if(!force&&S.repT&&Date.now()-S.repT<2*36e5)return;S.repT=Date.now();
- try{const f=await ghd('/contents/reports/latest.json',{ok404:1});if(!f){if(force)toast('還沒有戰報，週一會送來');return}const r=JSON.parse(b64d(f.content));
-  if(!r||!r.id)return;S.reports=S.reports||[];if(S.reports.some(x=>x.id===r.id)){if(force)toast('已經是最新戰報');return}
+ try{let blob='';for(const n of[45,30,21,14]){blob=await seal(aiData(n));if(blob.length<60000)break}
+  await gh('/actions/workflows/sync.yml/dispatches',{method:'POST',body:JSON.stringify({ref:'main',inputs:{blob}})});S.syncOk=Date.now();S.syncErr=null;save();if(force)toast('已上傳最新紀錄')}
+ catch(e){S.syncT=0;S.syncErr=e.message;save();if(force)toast('上傳失敗：'+e.message);throw e}}
+async function aiPull(force){if(!S.aiOn||!S.aiKey)return;if(!force&&S.repT&&Date.now()-S.repT<2*36e5)return;S.repT=Date.now();
+ try{const res=await fetch(RAW_REP+'?t='+Date.now(),{cache:'no-store'});if(res.status===404){if(force)toast('還沒有戰報，週一會送來');return}if(!res.ok)throw new Error('GitHub 回應 '+res.status);
+  const r=await unseal(await res.json());if(!r||!r.id)return;S.reports=S.reports||[];if(S.reports.some(x=>x.id===r.id)){if(force)toast('已經是最新戰報');return}
   S.reports.unshift(r);if(S.reports.length>40)S.reports.length=40;jlog('📜',`收到系統戰報：${r.title||r.id}`);save();fxSound('win');haptic(2);qModal(()=>repHtml(r),[['收到','btn pri']])}
  catch(e){S.repT=0;if(force)toast('讀取失敗：'+e.message)}}
 const repList=(ic,h,a)=>a&&a.length?`<div class="rps"><div class="rph">${ic} ${h}</div>${a.map(x=>`<div class="rpi">${esc(typeof x==='string'?x:(x.t||''))}${x.why?`<small>${esc(x.why)}</small>`:''}</div>`).join('')}</div>`:'';
@@ -983,16 +987,13 @@ function repHtml(r){return`<h2>[系統公告] ${esc(r.title||'戰報')}</h2>${r.
  ${r.grade?`<div class="rpg"><b>${esc(r.grade)}</b><span>${esc(r.gradeNote||'')}</span></div>`:''}<p style="line-height:1.7;margin:6px 0 10px">${esc(r.summary||'')}</p><div class="rpw">
  ${repList('✅','有在進步',r.good)}${repList('⚠️','卡關的地方',r.stuck)}${repList('🔍','數據發現',r.insight)}${repList('🎯','下週指令',r.next)}</div>${r.quote?`<p class="muted" style="text-align:center;margin-top:10px;font-style:italic">「${esc(r.quote)}」</p>`:''}`}
 function aiPanel(){const on=S.aiOn&&S.ghTok;return`<div class="panel"><div class="ptitle">[系統戰報]<span>${on?(S.syncErr?'<b style="color:var(--red)">上傳失敗</b>':S.syncOk?'上次上傳 '+new Date(S.syncOk).toLocaleString('zh-TW',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'已開啟'):'未開啟'}</span></div>
- <p class="muted" style="margin:0 0 8px;font-size:12px;line-height:1.6">紀錄自動傳到你的私人 repo，Claude 每週一、每月 1 號分析，戰報會用系統公告送回來。</p>
+ <p class="muted" style="margin:0 0 8px;font-size:12px;line-height:1.6">紀錄加密後自動上傳（只有 Claude 解得開），每週一、每月 1 號分析，戰報用系統公告送回來。</p>
  ${on?`<div class="row"><button class="btn sm grow" id="aiUp">立即上傳</button><button class="btn sm grow" id="aiGet">檢查戰報</button><button class="btn sm grow" id="aiSet">設定</button></div>`:`<button class="btn cy" id="aiSet" style="width:100%">🧠 開啟每週分析</button>`}
  ${(S.reports||[]).length?`<div style="margin-top:10px">${S.reports.slice(0,8).map((r,i)=>`<button class="btn sm" data-rep="${i}" style="width:100%;margin-top:6px;text-align:left">📜 ${esc(r.title||r.id)}</button>`).join('')}</div>`:''}</div>`}
-function aiSetup(){const ok=!!S.ghTok;modal(`<h2>[系統戰報] 設定</h2><ol class="muted" style="line-height:1.75;padding-left:20px;margin:6px 0">
- <li>GitHub 右上 ＋ → New repository，名字打 <b>reset-data</b>，選 <b>Private</b>，建立。</li>
- <li>到 <a href="https://github.com/settings/personal-access-tokens" target="_blank">Fine-grained tokens</a>，點你計時通知用的那把 → Edit：Repository access 加選 <b>reset-data</b>；Permissions 的 <b>Contents</b> 改 <b>Read and write</b> → Update。<br>（鑰匙不用重貼，app 裡已經有了）</li>
- <li>回來按「測試連線」。</li></ol>
+function aiSetup(){const ok=!!S.ghTok;modal(`<h2>[系統戰報] 設定</h2><p class="muted" style="line-height:1.75;margin:6px 0">紀錄會<b>加密</b>後用計時通知那把鑰匙上傳，只有 Claude 解得開，戰報也是加密送回來。不用再設定別的東西。</p>
  ${ok?'':'<p style="color:var(--red)">要先設定好「⏰ 計時通知」的鑰匙。</p>'}
  <div class="sw" style="margin-top:8px"><div><b>包含日記內容</b><div class="muted">關掉只傳數字和打勾紀錄</div></div><button class="btn sm ${S.aiDiary!==false?'cy':''}" id="aiDia">${S.aiDiary!==false?'包含':'不含'}</button></div>`,
- [['關閉','btn'],...(S.aiOn?[['停用','btn red',()=>{S.aiOn=false;save();render();toast('已停用')}]]:[]),...(ok?[['測試連線','btn pri',async()=>{toast('連線中…');try{await ghd('',{});S.aiOn=true;save();await aiSync(true);render();if(S.syncOk&&!S.syncErr)modal('<h2>[系統戰報]</h2><p style="line-height:1.7">連線成功，資料已上傳。<br>第一份戰報會在週一送到。</p>',[['好','btn pri']])}catch(e){let see='';try{const r=await fetch(GH_API+'/user/repos?per_page=100',{cache:'no-store',headers:{'Authorization':'Bearer '+S.ghTok,'Accept':'application/vnd.github+json'}});if(r.ok){const L=await r.json();see=`<br><br>app 裡這把鑰匙看得到：<b>${L.map(x=>esc(x.name)).join('、')||'（沒有）'}</b><br>鑰匙尾碼：<b>…${esc(String(S.ghTok).slice(-4))}</b>`}else see=`<br><br>鑰匙本身有問題（${r.status}）`}catch(_){}modal(`<h2>[系統戰報]</h2><p class="muted" style="line-height:1.7">連線失敗：${esc(e.message)}${see}</p>`,[['再試一次','btn pri',aiSetup]])}}]]:[])])
+ [['關閉','btn'],...(S.aiOn?[['停用','btn red',()=>{S.aiOn=false;save();render();toast('已停用')}]]:[]),...(ok?[['開啟並上傳','btn pri',async()=>{toast('上傳中…');S.aiOn=true;save();try{await aiSync(true);render();modal('<h2>[系統戰報]</h2><p style="line-height:1.7">上傳成功。<br>第一份戰報會在週一送到。</p>',[['好','btn pri']])}catch(e){render();modal(`<h2>[系統戰報]</h2><p class="muted" style="line-height:1.7">上傳失敗：${esc(e.message)}</p>`,[['再試一次','btn pri',aiSetup]])}}]]:[])])
  const dz=$('#aiDia');if(dz)dz.onclick=()=>{S.aiDiary=S.aiDiary===false;save();dz.textContent=S.aiDiary!==false?'包含':'不含';dz.classList.toggle('cy',S.aiDiary!==false)}}
 
 const bkDays=()=>S.lastBackup?Math.floor((Date.now()-S.lastBackup)/864e5):999;
@@ -1137,7 +1138,7 @@ function diaryInput(d,v){const p=dpage(d);p.text=v;p.upd=Date.now();clearTimeout
  const st=$('#dsave');if(st)st.textContent='儲存中…';
  dTimer=setTimeout(()=>{diaryWords(d,v);save();const s2=$('#dsave');if(s2)s2.textContent='✓ 已自動儲存 '+hm(Date.now());
   if(d===today()&&S.jxp!==d&&v.trim().length>=10){S.jxp=d;S.stats.SPI=(S.stats.SPI||0)+1;gain(10,0);save();header();toast('<b>[日記]</b> 今天第一頁 +10 XP　心靈 +1')}},700)}
-document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(dTimer);save();if(S.aiOn&&S.ghTok&&(!S.syncOk||Date.now()-S.syncOk>36e5)){S.syncT=0;aiSync()}}else if(S.seen)setTimeout(aiPull,2500)});window.addEventListener('pagehide',()=>save());
+document.addEventListener('visibilitychange',()=>{if(document.hidden){clearTimeout(dTimer);save();if(S.aiOn&&S.ghTok&&(!S.syncOk||Date.now()-S.syncOk>36e5)){S.syncT=0;aiSync().catch(()=>{})}}else if(S.seen)setTimeout(aiPull,2500)});window.addEventListener('pagehide',()=>save());
 function growTA(ta){ta.style.height='auto';ta.style.height=Math.max(180,ta.scrollHeight+2)+'px'}
 function earliestDay(){let e=S.start;for(const d in S.diary||{})if(d<e)e=d;(S.journal||[]).forEach(x=>{if(x.d<e)e=x.d});return addDays(e,-1)<e?e:e}
 function dayAdventure(d){const L=S.log[d],act=actives(d),done=L&&L.done?act.filter(q=>L.done[q.id]).length:0,fm=(L&&L.focus||[]).reduce((a,f)=>a+(f.min||0),0);
@@ -1975,7 +1976,7 @@ $('#view').addEventListener('click',e=>{const el=e.target.closest('[data-rep],[d
   case'pPrev':return pushPreview();
   case'tSet':return timerSetup();
   case'aiSet':return aiSetup();
-  case'aiUp':return aiSync(true).then(render);
+  case'aiUp':return aiSync(true).catch(()=>{}).then(render);
   case'aiGet':return aiPull(true).then(render);
   case'clsPick':return clsPick();
   case'tLoud':S.loud=!S.loud;save();audioMode();fxSound('slash');return render();
@@ -2044,7 +2045,7 @@ function boot(){try{navigator.storage&&navigator.storage.persist&&navigator.stor
  {const h=new Date().getHours();if(h>=1&&h<4&&S.seen){const f=setEgg('owl');setTimeout(()=>{fxSound('alarm');haptic(3);notice('🦉','[系統] 偵測到熬夜',`現在 ${new Date().getHours()} 點了。睡覺也是任務。<br>${f?'（隱藏成就「夜貓子」解鎖……但這不是好事）<br>':''}${S.pet&&S.pet.sp?esc(petName())+'已經睡著了，':''}放下手機，明天再戰。`,'red')},2500);checkAch()}
   const se=season();if(se&&S.seen&&S.seasonSeen!==today()){S.seasonSeen=today();if(setEgg('season'))checkAch();jlog(se[2],`${se[3]}開始！${se[4]}`);setTimeout(()=>notice(se[2],`${se[3]}開始了`,se[4],'gold'),3000);save()}}
 if(S.pendingMsg){const h=S.pendingMsg;S.pendingMsg=null;save();sfx('bad');modal(h,[['可惡','btn red',()=>{if(!checkLogin(askScreen))askScreen()}]]);return}
- if(!checkLogin(()=>{askScreen()}))askScreen();setTimeout(()=>{if(!$('#modal').classList.contains('on'))askBackup()},1500);setTimeout(()=>{petCheck();mapCheck();save();render()},1000);setTimeout(()=>{aiSync();aiPull()},4000)}
+ if(!checkLogin(()=>{askScreen()}))askScreen();setTimeout(()=>{if(!$('#modal').classList.contains('on'))askBackup()},1500);setTimeout(()=>{petCheck();mapCheck();save();render()},1000);setTimeout(()=>{aiSync().catch(()=>{});aiPull()},4000)}
 if(!S.seen)modal(`<h2>[系統] 玩家覺醒</h2><div style="text-align:center">${avatarSvg(220)}</div><div class="bigt" style="text-align:center">歡迎來到 RESET</div><p class="muted" style="line-height:1.7">這是 100 天的冒險。第一週是新手村暖身週，下個週一正式開始。<br>每天完成 75% 任務＝通關。錯過一天不會斷，連續兩天才會。狀態差就做迷你版，也算。<br>任務給你 XP 和金幣；專注討伐打小怪；週末用整週累積的蓄力打 Boss。<br>通關 3 天會孵出夥伴，Lv.3 可以轉職。<br>有上班的日子記得切「有班」。</p>`,[['開始','btn pri',()=>{S.seen=1;save();boot()}]]);
 else boot();
 
