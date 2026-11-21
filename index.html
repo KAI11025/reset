@@ -442,7 +442,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v44・11/21 12:40';
+const VER='v45・11/21 12:50';
 function TS(){return S.warm0&&S.warm0<S.start?S.warm0:S.start}
 const PROG=100;
 'use strict';
@@ -992,7 +992,7 @@ function aiSetup(){const ok=!!S.ghTok;modal(`<h2>[系統戰報] 設定</h2><ol c
  <li>回來按「測試連線」。</li></ol>
  ${ok?'':'<p style="color:var(--red)">要先設定好「⏰ 計時通知」的鑰匙。</p>'}
  <div class="sw" style="margin-top:8px"><div><b>包含日記內容</b><div class="muted">關掉只傳數字和打勾紀錄</div></div><button class="btn sm ${S.aiDiary!==false?'cy':''}" id="aiDia">${S.aiDiary!==false?'包含':'不含'}</button></div>`,
- [['關閉','btn'],...(S.aiOn?[['停用','btn red',()=>{S.aiOn=false;save();render();toast('已停用')}]]:[]),...(ok?[['測試連線','btn pri',async()=>{toast('連線中…');try{await ghd('',{});S.aiOn=true;save();await aiSync(true);render();if(S.syncOk&&!S.syncErr)modal('<h2>[系統戰報]</h2><p style="line-height:1.7">連線成功，資料已上傳。<br>第一份戰報會在週一送到。</p>',[['好','btn pri']])}catch(e){modal(`<h2>[系統戰報]</h2><p class="muted" style="line-height:1.7">連線失敗：${esc(e.message)}</p>`,[['再試一次','btn pri',aiSetup]])}}]]:[])])
+ [['關閉','btn'],...(S.aiOn?[['停用','btn red',()=>{S.aiOn=false;save();render();toast('已停用')}]]:[]),...(ok?[['測試連線','btn pri',async()=>{toast('連線中…');try{await ghd('',{});S.aiOn=true;save();await aiSync(true);render();if(S.syncOk&&!S.syncErr)modal('<h2>[系統戰報]</h2><p style="line-height:1.7">連線成功，資料已上傳。<br>第一份戰報會在週一送到。</p>',[['好','btn pri']])}catch(e){let see='';try{const r=await fetch(GH_API+'/user/repos?per_page=100',{cache:'no-store',headers:{'Authorization':'Bearer '+S.ghTok,'Accept':'application/vnd.github+json'}});if(r.ok){const L=await r.json();see=`<br><br>app 裡這把鑰匙看得到：<b>${L.map(x=>esc(x.name)).join('、')||'（沒有）'}</b><br>鑰匙尾碼：<b>…${esc(String(S.ghTok).slice(-4))}</b>`}else see=`<br><br>鑰匙本身有問題（${r.status}）`}catch(_){}modal(`<h2>[系統戰報]</h2><p class="muted" style="line-height:1.7">連線失敗：${esc(e.message)}${see}</p>`,[['再試一次','btn pri',aiSetup]])}}]]:[])])
  const dz=$('#aiDia');if(dz)dz.onclick=()=>{S.aiDiary=S.aiDiary===false;save();dz.textContent=S.aiDiary!==false?'包含':'不含';dz.classList.toggle('cy',S.aiDiary!==false)}}
 
 const bkDays=()=>S.lastBackup?Math.floor((Date.now()-S.lastBackup)/864e5):999;
