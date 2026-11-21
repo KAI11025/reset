@@ -445,7 +445,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v50・11/21 15:10';
+const VER='v51・11/21 18:30';
 function TS(){return S.warm0&&S.warm0<S.start?S.warm0:S.start}
 const PROG=100;
 'use strict';
@@ -958,6 +958,8 @@ function aiData(N){const t=today(),n=Math.max(1,Math.min(N||45,diff(TS(),t)+1)),
  return{v:1,at:new Date().toISOString(),today:t,start:S.start,warm0:S.warm0||null,dayNo:diff(S.start,t)+1,lv:li.lv,xp:S.xp,gold:S.gold,streak:streak(),best:S.best||0,cls:S.cls||null,stats:S.stats,bossKills:S.bossKills||0,
   quests:QUESTS.map(q=>({id:q.id,name:q.name,stat:q.stat})),todos:(S.todos||[]).map(x=>({tx:x.tx||x.t||x.text,wk:x.wk,d:x.d||null,done:!!x.done})),
   events:(S.journal||[]).filter(e=>e.type!=='user'&&diff(e.d,t)<35).slice(0,40).map(e=>e.d+' '+e.text),days}}
+async function chainKick(){if(!S.ghTok||!S.pushCfg)return;if(S.chainT&&Date.now()-S.chainT<2*36e5)return;S.chainT=Date.now();save();
+ try{const j=await gh('/actions/workflows/chain.yml/runs?per_page=5');if((j.workflow_runs||[]).some(w=>w.status!=='completed'))return;await gh('/actions/workflows/chain.yml/dispatches',{method:'POST',body:JSON.stringify({ref:'main'})})}catch(e){S.chainT=0}}
 async function aiSync(force){if(!S.ghTok||!S.aiOn)return;if(!force&&S.syncT&&Date.now()-S.syncT<3*36e5)return;S.syncT=Date.now();
  try{let blob='';for(const n of[45,30,21,14]){blob=await seal(aiData(n));if(blob.length<60000)break}
   await gh('/actions/workflows/sync.yml/dispatches',{method:'POST',body:JSON.stringify({ref:'main',inputs:{blob}})});S.syncOk=Date.now();S.syncErr=null;save();if(force)toast('已上傳最新紀錄')}
@@ -2042,7 +2044,7 @@ function boot(){try{navigator.storage&&navigator.storage.persist&&navigator.stor
  {const h=new Date().getHours();if(h>=1&&h<4&&S.seen){const f=setEgg('owl');setTimeout(()=>{fxSound('alarm');haptic(3);notice('🦉','[系統] 偵測到熬夜',`現在 ${new Date().getHours()} 點了。睡覺也是任務。<br>${f?'（隱藏成就「夜貓子」解鎖……但這不是好事）<br>':''}${S.pet&&S.pet.sp?esc(petName())+'已經睡著了，':''}放下手機，明天再戰。`,'red')},2500);checkAch()}
   const se=season();if(se&&S.seen&&S.seasonSeen!==today()){S.seasonSeen=today();if(setEgg('season'))checkAch();jlog(se[2],`${se[3]}開始！${se[4]}`);setTimeout(()=>notice(se[2],`${se[3]}開始了`,se[4],'gold'),3000);save()}}
 if(S.pendingMsg){const h=S.pendingMsg;S.pendingMsg=null;save();sfx('bad');modal(h,[['可惡','btn red',()=>{if(!checkLogin(askScreen))askScreen()}]]);return}
- if(!checkLogin(()=>{askScreen()}))askScreen();setTimeout(()=>{if(!$('#modal').classList.contains('on'))askBackup()},1500);setTimeout(()=>{petCheck();mapCheck();save();render()},1000);setTimeout(()=>{aiSync().catch(()=>{});aiPull()},4000)}
+ if(!checkLogin(()=>{askScreen()}))askScreen();setTimeout(()=>{if(!$('#modal').classList.contains('on'))askBackup()},1500);setTimeout(()=>{petCheck();mapCheck();save();render()},1000);setTimeout(()=>{aiSync().catch(()=>{});aiPull();chainKick()},4000)}
 if(!S.seen)modal(`<h2>[系統] 玩家覺醒</h2><div style="text-align:center">${avatarSvg(220)}</div><div class="bigt" style="text-align:center">歡迎來到 RESET</div><p class="muted" style="line-height:1.7">這是 100 天的冒險。第一週是新手村暖身週，下個週一正式開始。<br>每天完成 75% 任務＝通關。錯過一天不會斷，連續兩天才會。狀態差就做迷你版，也算。<br>任務給你 XP 和金幣；專注討伐打小怪；週末用整週累積的蓄力打 Boss。<br>通關 3 天會孵出夥伴，Lv.3 可以轉職。<br>有上班的日子記得切「有班」。</p>`,[['開始','btn pri',()=>{S.seen=1;save();boot()}]]);
 else boot();
 
