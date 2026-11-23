@@ -448,7 +448,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v55・11/23 10:00';
+const VER='v56・11/23 10:35';
 function TS(){return S.warm0&&S.warm0<S.start?S.warm0:S.start}
 const PROG=100;
 'use strict';
@@ -623,6 +623,7 @@ function load(){let d=defaults(),r=null;try{r=JSON.parse(localStorage.getItem(KE
  if(!S.d0fix){if(S.start==='2026-11-19')S.start='2026-11-20';S.d0fix=1}
  if(!S.wk1fix){S.wk1fix=1;if(S.pet&&!S.pet.born)S.pet.born=S.start;S.pet=S.pet||{born:S.start,max:0,sp:null};if(parse(S.start).getDay()!==1&&diff(S.start,today())<7){const o=S.start;S.start=nextMon(o);S.warm0=o}}
  if(!S.int4){S.int4=1;for(const d in S.log||{})(S.log[d].body||[]).forEach(x=>{if(x.i===2)x.i=3})}
+ (S.journal||[]).forEach(e=>{if(e.text&&e.text.startsWith('第 0 章戰報'))e.text=e.text.replace('第 0 章戰報','新手村結算').replace(/・Boss [^：]+：敗北$/,'・暖身週沒有 Boss')});
  if(S.frz===undefined){S.frz=1;S.frzUsed=S.frzUsed||{}}
  if(S.dayStart===undefined)S.dayStart=4;if(S.sound===undefined)S.sound=true;if(S.boss.tier===undefined)S.boss.tier=S.bossKills}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}try{pushStatus()}catch(e){}}
@@ -913,7 +914,7 @@ function weekReport(p){const wk=p.week;let q=0,side=0,xp=0,days=0,clr=0;
  for(let i=0;i<7;i++){const d=addDays(wk,i),L=S.log[d];if(diff(TS(),d)<0||!L)continue;days++;if(cleared(d))clr++;
   for(const k in L.done||{}){q++;xp+=L.done[k].xp||0}for(const k in L.side||{}){side++;xp+=L.side[k].xp||0}(L.focus||[]).forEach(f=>xp+=f.xp||0)}
  const B=BOSS[p.idx];if(!days)return;
- jlog('📜',`第 ${chapOf(wk)} 章戰報｜通關 ${clr}/${days} 天・完成任務 ${q} 個・隨機任務 ${side} 個・獲得 ${xp} XP・Boss ${B.n}：${p.dead?'擊破':'敗北'}`,'report')}
+ const warm=diff(S.start,wk)<0;jlog('📜',`${warm?'新手村結算':`第 ${chapOf(wk)} 章戰報`}｜通關 ${clr}/${days} 天・完成任務 ${q} 個・隨機任務 ${side} 個・獲得 ${xp} XP・${warm?'暖身週沒有 Boss':`Boss ${B.n}：${p.dead?'擊破':p.fought?'敗北':'沒來挑戰'}`}`,'report')}
 const STREAK_MS=[3,7,14,21,30,45,66,100];
 function streakMs(){S.msDone=S.msDone||[];for(const m of STREAK_MS)if(S.best>=m&&!S.msDone.includes(m)){S.msDone.push(m);jlog('🔥',`連續通關 ${m} 天`)}}
 const CN='〇一二三四五六七八九';
