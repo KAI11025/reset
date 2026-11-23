@@ -424,6 +424,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 .sk{text-align:center;padding:8px 0 2px}.skf{font-size:84px;line-height:1;animation:skb 1s ease-out}.skn{position:relative;height:66px;overflow:hidden;font:900 60px var(--mono);color:#ffb347}.skn span{position:absolute;left:0;right:0}.sko{animation:sko .7s .35s forwards}.skc{transform:translateY(100%);animation:skc .7s .35s forwards}.skt{font-weight:800;font-size:18px;margin-top:2px}.skw{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-top:14px}.skw div{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:20px}.skw small{font-size:11px;color:var(--mute)}.skw .now{background:#ffb34722;border-radius:10px}
 @keyframes skb{0%{transform:scale(.3);opacity:0}60%{transform:scale(1.25);opacity:1}100%{transform:scale(1)}}@keyframes sko{to{transform:translateY(-100%);opacity:0}}@keyframes skc{to{transform:translateY(0)}}
 .lgb{display:flex;flex-direction:column;gap:4px}.lgb div{display:grid;grid-template-columns:22px 1fr auto;align-items:center;gap:8px;padding:7px 10px;border-radius:10px;background:#070c18;border:1px solid var(--line);font-size:14px}.lgb span{font:700 13px var(--mono);color:var(--mute)}.lgb em{font:600 12px var(--mono);font-style:normal;color:var(--mute)}.lgb .up span{color:var(--green,#3ee08f)}.lgb .dn span{color:var(--red)}.lgb .me{border-color:var(--cyan);background:#0b1a2a}.lgb .me b{color:var(--cyan)}
+.gm{margin:10px 0 6px;border:1px solid #3a2f18;background:linear-gradient(180deg,#151008,#0b0906);border-radius:14px;padding:12px 14px}.gmh{display:flex;align-items:center;gap:10px;margin-bottom:8px}.gma{font-size:30px;width:44px;height:44px;display:grid;place-items:center;border-radius:50%;background:#2a2112;border:1px solid #5a4a28}.gmh b{color:#e6c88a;font-size:15px}.gmh small{display:block;color:var(--mute);font-size:11px}.gms{white-space:pre-line;line-height:1.85;font-size:15px;color:#efe6d2}.mood-angry{border-color:#6b2333;background:linear-gradient(180deg,#1a0b10,#0c0709)}.mood-angry .gma{background:#3a1218;border-color:#6b2333}.mood-proud .gma,.mood-surprised .gma{box-shadow:0 0 14px #f5c45155}.rpd{margin-top:8px}.rpd summary{cursor:pointer;color:var(--cyan);font-size:13px;padding:4px 0}
 </style>
 </head>
 <body>
@@ -448,7 +449,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v56・11/23 10:35';
+const VER='v57・11/23 11:30';
 function TS(){return S.warm0&&S.warm0<S.start?S.warm0:S.start}
 const PROG=100;
 'use strict';
@@ -983,14 +984,15 @@ async function aiSync(force){if(!S.ghTok||!S.aiOn)return;if(!force&&S.syncT&&Dat
  catch(e){S.syncT=0;S.syncErr=e.message;save();if(force)toast('上傳失敗：'+e.message);throw e}}
 async function aiPull(force){if(!S.aiOn||!S.aiKey)return;if(!force&&S.repT&&Date.now()-S.repT<2*36e5)return;S.repT=Date.now();
  try{const res=await fetch(RAW_REP+'?t='+Date.now(),{cache:'no-store'});if(res.status===404){if(force)toast('還沒有戰報，週一會送來');return}if(!res.ok)throw new Error('GitHub 回應 '+res.status);
-  const r=await unseal(await res.json());if(!r||!r.id)return;S.reports=S.reports||[];if(S.reports.some(x=>x.id===r.id)){if(force)toast('已經是最新戰報');return}
-  S.reports.unshift(r);if(S.reports.length>40)S.reports.length=40;jlog('📜',`收到系統戰報：${r.title||r.id}`);save();fxSound('win');haptic(2);qModal(()=>repHtml(r),[['收到','btn pri']])}
+  const r=await unseal(await res.json());if(!r||!r.id)return;S.reports=S.reports||[];const old=S.reports.findIndex(x=>x.id===r.id);if(old>=0&&(S.reports[old].rev||'')===(r.rev||'')){if(force)toast('已經是最新戰報');return}
+  if(old>=0)S.reports.splice(old,1);S.reports.unshift(r);if(S.reports.length>40)S.reports.length=40;jlog('📜',`收到系統戰報：${r.title||r.id}`);save();fxSound('win');haptic(2);qModal(()=>repHtml(r),[['收到','btn pri']])}
  catch(e){S.repT=0;if(force)toast('讀取失敗：'+e.message)}}
 const repList=(ic,h,a)=>a&&a.length?`<div class="rps"><div class="rph">${ic} ${h}</div>${a.map(x=>`<div class="rpi">${esc(typeof x==='string'?x:(x.t||''))}${x.why?`<small>${esc(x.why)}</small>`:''}</div>`).join('')}</div>`:'';
 function repHtml(r){return`<h2>[系統公告] ${esc(r.title||'戰報')}</h2>`+repBody(r)}
-function repBody(r){return`${r.range?`<div class="muted" style="font-size:12px;margin:-4px 0 8px">${esc(r.range)}</div>`:''}
- ${r.grade?`<div class="rpg"><b>${esc(r.grade)}</b><span>${esc(r.gradeNote||'')}</span></div>`:''}<p style="line-height:1.7;margin:6px 0 10px">${esc(r.summary||'')}</p><div class="rpw">
- ${repList('✅','有在進步',r.good)}${repList('⚠️','卡關的地方',r.stuck)}${repList('🔍','數據發現',r.insight)}${repList('🎯','下週指令',r.next)}</div>${r.quote?`<p class="muted" style="text-align:center;margin-top:10px;font-style:italic">「${esc(r.quote)}」</p>`:''}`}
+const MOOD_IC={angry:['😠','生氣'],disappointed:['😮‍💨','失望'],worried:['😟','擔心'],calm:['🧊','冷靜'],encouraging:['💪','鼓勵'],surprised:['😲','驚訝'],proud:['😤','驕傲'],amused:['😏','有趣']};
+function repBody(r){const sp=r.speech,md=MOOD_IC[r.mood]||['🛡️',''];return`${r.range?`<div class="muted" style="font-size:12px;margin:-4px 0 8px">${esc(r.range)}</div>`:''}
+ ${r.grade?`<div class="rpg"><b>${esc(r.grade)}</b><span>${esc(r.gradeNote||'')}</span></div>`:''}${sp?`<div class="gm mood-${esc(r.mood||'')}"><div class="gmh"><span class="gma">${md[0]}</span><div><b>${esc(r.speaker||'公會長')}</b>${md[1]?`<small>${md[1]}</small>`:''}</div></div><div class="gms">${esc(sp)}</div></div>`:`<p style="line-height:1.7;margin:6px 0 10px">${esc(r.summary||'')}</p>`}${sp?'<details class="rpd"><summary>數據摘要</summary>':''}<div class="rpw">
+ ${repList('✅','有在進步',r.good)}${repList('⚠️','卡關的地方',r.stuck)}${repList('🔍','數據發現',r.insight)}${repList('🎯','下週指令',r.next)}</div>${sp?'</details>':''}${r.quote?`<p class="muted" style="text-align:center;margin-top:10px;font-style:italic">「${esc(r.quote)}」</p>`:''}`}
 function repTab(){const R=S.reports||[],on=S.aiOn&&S.ghTok;
  if(!R.length)return`<div class="panel sys"><div class="ptitle">[系統戰報]<span>${on?'等待中':'未開啟'}</span></div><p class="muted" style="margin:0 0 10px;line-height:1.7;font-size:13px">${on?'每週一 10:17 送週戰報、每月 1 號送月戰報。送到時會跳系統公告，也會收在這裡。':'開啟後，Claude 每週分析你的紀錄，寫一份戰報給你。'}</p>${on?'<button class="btn sm" id="aiGet" style="width:100%">檢查有沒有新戰報</button>':'<button class="btn cy" id="goAi" style="width:100%">去開啟</button>'}</div>`;
  const r=R[0];return`<div class="panel sys"><div class="ptitle">[${r.kind==='month'?'月戰報':'週戰報'}]<span>最新</span></div><div class="bigt" style="font-size:20px;margin-bottom:6px">${esc(r.title||r.id)}</div>${repBody(r)}</div>
