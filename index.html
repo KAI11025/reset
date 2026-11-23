@@ -449,7 +449,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v58・11/23 11:40';
+const VER='v59・11/23 12:10';
 function TS(){return S.warm0&&S.warm0<S.start?S.warm0:S.start}
 const PROG=100;
 'use strict';
@@ -981,6 +981,15 @@ function aiData(N){const t=today(),n=Math.max(1,Math.min(N||45,diff(TS(),t)+1)),
  return{v:1,at:new Date().toISOString(),today:t,start:S.start,warm0:S.warm0||null,dayNo:diff(S.start,t)+1,lv:li.lv,xp:S.xp,gold:S.gold,streak:streak(),best:S.best||0,cls:S.cls||null,stats:S.stats,bossKills:S.bossKills||0,
   quests:QUESTS.map(q=>({id:q.id,name:q.name,stat:q.stat})),todos:(S.todos||[]).map(x=>({tx:x.tx||x.t||x.text,wk:x.wk,d:x.d||null,done:!!x.done})),
   events:(S.journal||[]).filter(e=>e.type!=='user'&&diff(e.d,t)<35).slice(0,40).map(e=>e.d+' '+e.text),days}}
+// 委託提醒：越接近截止越常提醒（時間每件固定隨機）
+function remindTimes(){const now=Date.now(),out=[],at=(d,h0,h1,seed)=>{const[y,m,dd]=d.split('-').map(Number);const h=h0+hrand(seed)*(h1-h0);return new Date(y,m-1,dd,Math.floor(h),Math.floor((h%1)*60)).getTime()};
+ for(const x of S.todos||[]){if(x.done)continue;const D=x.d||addDays(x.wk,6),k='rm'+x.id;
+  const plan=[[-2,10,20],[-1,10,13],[-1,18,21.5],[0,9,11.5],[0,13,16],[0,18,20.5],[0,21.5,22.5]];
+  plan.forEach(([o,a,b],i)=>{const tm=at(addDays(D,o),a,b,k+i);if(tm>now+120e3&&tm<now+7*864e5)out.push(tm)})}
+ out.sort((a,b)=>a-b);const m=[];for(const t of out)if(!m.length||t-m[m.length-1]>40*6e4)m.push(t);return m.slice(0,60)}
+let remT=null;function remindSync(force){if(!S.ghTok||!S.pushCfg)return;clearTimeout(remT);remT=setTimeout(async()=>{const ts=remindTimes(),key=ts.join(',');
+ if(!force&&key===S.remKey&&S.remAt&&Date.now()-S.remAt<20*36e5)return;if(!ts.length&&!S.remKey)return;
+ try{await gh('/actions/workflows/remind.yml/dispatches',{method:'POST',body:JSON.stringify({ref:'main',inputs:{times:key}})});S.remKey=key;S.remAt=Date.now();save()}catch(e){}},1500)}
 async function chainKick(){if(!S.ghTok||!S.pushCfg)return;if(S.chainT&&Date.now()-S.chainT<2*36e5)return;S.chainT=Date.now();save();
  try{const j=await gh('/actions/workflows/chain.yml/runs?per_page=5');if((j.workflow_runs||[]).some(w=>w.status!=='completed'))return;await gh('/actions/workflows/chain.yml/dispatches',{method:'POST',body:JSON.stringify({ref:'main'})})}catch(e){S.chainT=0}}
 async function aiSync(force){if(!S.ghTok||!S.aiOn)return;if(!force&&S.syncT&&Date.now()-S.syncT<3*36e5)return;S.syncT=Date.now();
@@ -1468,13 +1477,13 @@ const pctCol=p=>p>=.75?'var(--cyan)':p>=.4?'#f5c451':p>0?'#ef7a5a':'#2a3a5c';
 
 /* 委託板：本週要完成的一次性任務 */
 const todosOf=wk=>(S.todos||[]).filter(x=>x.wk===wk||(!x.done&&x.wk<wk));
-function todoAdd(tx,d){tx=(tx||'').trim().slice(0,60);if(!tx)return toast('先寫要做什麼');S.todos=S.todos||[];const t=today();S.todos.push({id:uid(),t:tx,d:d||null,wk:weekKey(d||t),done:null});sfx('tap');after()}
+function todoAdd(tx,d){tx=(tx||'').trim().slice(0,60);if(!tx)return toast('先寫要做什麼');S.todos=S.todos||[];const t=today();S.todos.push({id:uid(),t:tx,d:d||null,wk:weekKey(d||t),done:null});sfx('tap');after();remindSync()}
 function todoToggle(id){const x=(S.todos||[]).find(z=>z.id===id);if(!x)return;const t=today();
- if(x.done){if(x.r)undo(x.r);x.done=null;x.r=null;return after()}
+ if(x.done){if(x.r)undo(x.r);x.done=null;x.r=null;after();return remindSync()}
  const n=(S.todos||[]).filter(z=>z.done===t&&z.r).length;x.done=t;x.wk=weekKey(t);
  if(n<TODO_CAP){x.r=reward(t,'todo'+x.id,TODO_XP,'DIS','todo')}else{sfx('done');toast('<b>委託完成</b>　今天的委託獎勵已滿 5 個')}
- jlog('📌',`完成委託：${x.t}`);after()}
-function todoDel(id){const x=(S.todos||[]).find(z=>z.id===id);if(!x)return;if(x.r)undo(x.r);S.todos=S.todos.filter(z=>z.id!==id);after()}
+ jlog('📌',`完成委託：${x.t}`);after();remindSync()}
+function todoDel(id){const x=(S.todos||[]).find(z=>z.id===id);if(!x)return;if(x.r)undo(x.r);S.todos=S.todos.filter(z=>z.id!==id);after();remindSync()}
 function todoRow(x,t){const late=!x.done&&x.d&&x.d<t;return`<div class="q ${x.done?'done':''}"><button class="box" data-todo="${x.id}">${x.done?'✓':''}</button><span class="nm"><span class="qn">${esc(x.t)}</span>${x.d?`<span class="lvb" style="${late?'color:var(--red);border-color:#552030':''}">${late?(x.pen?'逾期・已扣・':'逾期・'):''}週${WD[parse(x.d).getDay()]}${weekKey(x.d)!==weekKey(t)?' '+(+x.d.slice(5,7))+'/'+(+x.d.slice(8)):''}</span>`:''}</span><button class="tdel" data-tdel="${x.id}">×</button></div>`}
 function todayTodos(t){const L=(S.todos||[]).filter(x=>(!x.done&&(!x.d||x.d<=t)&&x.wk<=weekKey(t))||x.done===t);if(!L.length)return'';
  return`<div class="panel"><div class="ptitle">[委託]<span>${L.filter(x=>x.done).length}/${L.length}・完成 +${TODO_XP} XP・逾期 −${TODO_PEN[0]}G</span></div>${L.map(x=>todoRow(x,t)).join('')}</div>`}
@@ -1551,7 +1560,7 @@ function pushStatus(){clearTimeout(stT);stT=setTimeout(()=>{try{const t=today(),
  const order=['med','esp','woop','review','study','train','goodtime','nophone','weekly'],quick=miss.filter(q=>QUICK[q.id]).sort((x,y)=>order.indexOf(x.id)-order.indexOf(y.id)).map(q=>QUICK[q.id]);
  metaPut('status',{d:t,ds:S.dayStart||0,left:[...new Set(miss.map(q=>QSHORT[q.group||q.id]||q.gname||q.name))],quick,total:act.length,done:doneCount(t),need:need(t),cleared:cleared(t),streak:sk,ym:yMissed(),ms:STREAK_MS.find(x=>x>sk)||null,
   pet:hatched?petName():'',weak:hatched&&c.mood===0,egg:S.pet&&!hatched?Math.max(0,PSTAGE[1]-c.b):null,mapLeft:m.left,mapNext:m.nx?m.nx.n:'塔頂',
-  due:(S.todos||[]).filter(x=>!x.done&&x.d&&x.d<=t).map(x=>x.t),warm:diff(S.start,t)<0?diff(t,S.start):0,boss:diff(S.start,t)>=0&&(wd===0||wd===6)&&!S.boss.dead&&!S.boss.fought,bossName:b&&b.name,region:REGIONS[m.r].n,minion:minionOf(dun().floor).n,diary:!!(S.diary&&S.diary[t]&&(S.diary[t].text||'').trim()),at:Date.now()})}catch(e){}},600)}
+  due:(S.todos||[]).filter(x=>!x.done&&x.d&&x.d<=t).map(x=>x.t),todos:(S.todos||[]).filter(x=>!x.done).map(x=>({t:x.t,d:x.d||addDays(x.wk,6)})),warm:diff(S.start,t)<0?diff(t,S.start):0,boss:diff(S.start,t)>=0&&(wd===0||wd===6)&&!S.boss.dead&&!S.boss.fought,bossName:b&&b.name,region:REGIONS[m.r].n,minion:minionOf(dun().floor).n,diary:!!(S.diary&&S.diary[t]&&(S.diary[t].text||'').trim()),at:Date.now()})}catch(e){}},600)}
 const pushOK=()=>'serviceWorker'in navigator&&'PushManager'in window&&'Notification'in window;
 const isApp=()=>{try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}};
 const pushState=()=>!pushOK()?'none':Notification.permission==='denied'?'denied':Notification.permission==='granted'&&S.pushCfg?'on':'off';
@@ -2092,7 +2101,7 @@ function boot(){try{navigator.storage&&navigator.storage.persist&&navigator.stor
  {const h=new Date().getHours();if(h>=1&&h<4&&S.seen){const f=setEgg('owl');setTimeout(()=>{fxSound('alarm');haptic(3);notice('🦉','[系統] 偵測到熬夜',`現在 ${new Date().getHours()} 點了。睡覺也是任務。<br>${f?'（隱藏成就「夜貓子」解鎖……但這不是好事）<br>':''}${S.pet&&S.pet.sp?esc(petName())+'已經睡著了，':''}放下手機，明天再戰。`,'red')},2500);checkAch()}
   const se=season();if(se&&S.seen&&S.seasonSeen!==today()){S.seasonSeen=today();if(setEgg('season'))checkAch();jlog(se[2],`${se[3]}開始！${se[4]}`);setTimeout(()=>notice(se[2],`${se[3]}開始了`,se[4],'gold'),3000);save()}}
 if(S.pendingMsg){const h=S.pendingMsg;S.pendingMsg=null;save();sfx('bad');modal(h,[['可惡','btn red',()=>{if(!checkLogin(askScreen))askScreen()}]]);return}
- if(!checkLogin(()=>{askScreen()}))askScreen();setTimeout(()=>{if(!$('#modal').classList.contains('on'))askBackup()},1500);setTimeout(()=>{petCheck();mapCheck();lgCheck();save();render()},1000);setTimeout(()=>{aiSync().catch(()=>{});aiPull();chainKick()},4000)}
+ if(!checkLogin(()=>{askScreen()}))askScreen();setTimeout(()=>{if(!$('#modal').classList.contains('on'))askBackup()},1500);setTimeout(()=>{petCheck();mapCheck();lgCheck();save();render()},1000);setTimeout(()=>{aiSync().catch(()=>{});aiPull();chainKick();remindSync()},4000)}
 if(!S.seen)modal(`<h2>[系統] 玩家覺醒</h2><div style="text-align:center">${avatarSvg(220)}</div><div class="bigt" style="text-align:center">歡迎來到 RESET</div><p class="muted" style="line-height:1.7">這是 100 天的冒險。第一週是新手村暖身週，下個週一正式開始。<br>每天完成 75% 任務＝通關。錯過一天不會斷，連續兩天才會。狀態差就做迷你版，也算。<br>任務給你 XP 和金幣；專注討伐打小怪；週末用整週累積的蓄力打 Boss。<br>通關 3 天會孵出夥伴，Lv.3 可以轉職。<br>有上班的日子記得切「有班」。</p>`,[['開始','btn pri',()=>{S.seen=1;save();boot()}]]);
 else boot();
 

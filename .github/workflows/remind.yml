@@ -1,0 +1,30 @@
+name: RESET 委託提醒
+run-name: remind
+on:
+  workflow_dispatch:
+    inputs:
+      times:
+        description: 提醒時間（毫秒，逗號分隔）
+        default: ''
+permissions:
+  actions: write
+  contents: read
+concurrency:
+  group: remind
+  cancel-in-progress: true
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    timeout-minutes: 340
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm i web-push@3 --no-save --no-audit --no-fund
+      - run: node .github/remind.mjs
+        env:
+          PUSH: ${{ secrets.PUSH }}
+          TIMES: ${{ inputs.times }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}

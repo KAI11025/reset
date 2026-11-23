@@ -1,5 +1,5 @@
 // 離線快取：每次都先拿網路最新版（不吃瀏覽器快取），沒網路才用快取
-const C='reset-v58';
+const C='reset-v59';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./','index.html','manifest.json','icon.png'])));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||new URL(e.request.url).origin!==location.origin)return;
@@ -11,6 +11,13 @@ function dayKey(ds,off){const d=new Date(Date.now()-(ds||0)*3600e3);d.setDate(d.
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const FCN={study:'讀書',esp:'西文',med:'冥想',body:'體能',tidy:'整理'};
 function compose(type,st,d){d=d||{};
+ if(type==='todo'){const T=((st&&st.todos)||[]).slice().sort((x,y)=>x.d<y.d?-1:1),td=dayKey(st?st.ds:0),hr=new Date().getHours();if(!T.length)return pick([['📜 委託板','這週的委託都清掉了，不錯。'],['📜 公會布告欄','打開看看有沒有新委託。']]);
+  const x=T[0],left=Math.round((Date.parse(x.d)-Date.parse(td))/864e5),more=T.length>1?`（還有 ${T.length-1} 件）`:'',t=x.t;
+  if(left<0)return pick([['⏰ 委託逾期了',`「${t}」已經過期，做完還是有完成獎勵。${more}`]]);
+  if(left===0&&hr>=21)return pick([['🚨 委託今晚截止',`「${t}」再不做，明天就扣 15G。${more}`],['🕯️ 委託人還在等',`「${t}」今天最後期限，剩幾個小時。${more}`]]);
+  if(left===0)return pick([['📜 委託今天截止',`「${t}」今天要搞定，現在做掉最輕鬆。${more}`],['🗡️ 公會提醒',`「${t}」今天到期，還沒完成。${more}`],['📯 委託人來催了',`「${t}」說好今天喔。${more}`]]);
+  if(left===1)return pick([['📜 委託明天截止',`「${t}」明天要交，今天先動一點？${more}`],['🕯️ 公會布告欄',`「${t}」只剩一天。${more}`]]);
+  return pick([[`📜 委託倒數 ${left} 天`,`「${t}」。先拆一小步做掉，之後輕鬆很多。${more}`],['🗺️ 委託進度',`「${t}」還有 ${left} 天，別拖到最後一晚。${more}`]])}
  if(type==='test'||!type){const h=new Date().getHours();return compose(h>=4&&h<12?'morning':h<21&&h>=12?'afternoon':'night',st,d)}
  if(type==='tick')return['⏰ 計時通知接通了','之後專注、休息時間到，鎖著螢幕也會叫你。'];
  if(type==='focus'){const M2=st&&st.minion||'魔物',c=FCN[d.cat]||'專注';return pick([[`⏰ ${c} ${d.min} 分鐘完成`,`斬擊命中「${M2}」！回來領獎勵，然後休息 5 分鐘。`],['⚔️ 專注討伐成功',`${d.min} 分鐘的${c}撐完了。站起來動一動、喝口水。`],[`🔔 時間到，可以休息了`,`${c} ${d.min} 分鐘完成。打開 RESET 收下戰利品。`]])}
