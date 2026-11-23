@@ -449,7 +449,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v57・11/23 11:30';
+const VER='v58・11/23 11:40';
 function TS(){return S.warm0&&S.warm0<S.start?S.warm0:S.start}
 const PROG=100;
 'use strict';
@@ -495,6 +495,7 @@ const QUESTS=[
  {id:'sleep_off',name:'00:30 前上床',stat:'VIT',xp:30,slot:'night',shift:'off',group:'sleep',gname:'準時上床',unit:'天'},
  {id:'sleep_on',name:'下班後 1 小時內上床',stat:'VIT',xp:30,slot:'night',shift:'on',group:'sleep',gname:'準時上床',unit:'天'},
  {id:'review',name:'睡前復盤',stat:'SPI',xp:15,slot:'night',hint:'今天 3 件順利的事＋為什麼；明天改一件事',lv:['寫 1 行','寫 3 件好事','3 件好事＋明天改進'],unit:'篇'},
+ {id:'goodtime',name:'美好時光日誌',stat:'SPI',xp:25,slot:'night',days:[1,3,5],old:{until:'2026-11-23',days:[]},hint:'回想這 2～3 天做過的事，挑 3～5 件記：\n投入度（高／中／低）＋能量（＋／0／－）＋一句為什麼',lv:['記 1 件','記 3 件','記 5 件＋找規律'],unit:'篇'},
  {id:'weekly',name:'每週回顧',stat:'SPI',xp:40,slot:'night',days:[0],hint:'這週最大的進步／最卡的地方／下週只改一件事',unit:'次'}];
 
 /* ---------- 隨機任務池（每天 3 個，28 天不重複） ---------- */
@@ -555,6 +556,10 @@ const GUIDE={
   how:['寫 3 件今天順利的事，小事也算','每件後面寫一句：為什麼會順利？','最後寫 1 件明天想改進的事'],
   when:'睡前，在手機拿出房間之前用備忘錄寫完。',
   ex:'1. 西文課有上完 → 因為一起床就先上了\n2. 練習時打出一個新的組合 → 照教練說的放慢速度\n3. 用西文跟室友聊了天氣 → 剛好用到昨天學的單字\n明天想改：下班回家先把手機拿去充電'},
+ goodtime:{why:'《做自己的生命設計師》的練習：記錄做什麼事讓你最投入、最有能量，幾週後就看得出規律，知道自己適合往哪走。不用有正式工作，上課、專題、酒吧班、練習、寫 code 都算。',
+  how:['回想這 2～3 天做過的事，挑最有感的 3～5 件','每件標投入度：有沒有忘了時間？（高／中／低）','每件標能量：做完是充電還是被抽乾？（＋／0／－）','寫一句為什麼，越具體越好：是那件事本身、跟誰、在哪、用什麼工具？'],
+  when:'週一、三、五晚上，30 分鐘內寫完。',
+  ex:'寫店裡的點單 app｜投入：高｜能量：＋\n→ 寫完馬上能給同事用，有成就感\n\n社團行政（場地、收錢）｜投入：低｜能量：－\n→ 一直在等別人回訊息\n\n訓練時教學弟動作｜投入：高｜能量：＋\n→ 看到他當場學會很爽'},
  weekly:{why:'每天都在做，但每週要退一步看，才知道方向對不對。這也是恆毅力說的「希望」：親眼看到自己在進步，才撐得下去。',
   how:['這週最大的進步是什麼？','最卡的是哪個任務？為什麼？','下週只改一件事，不要一次改太多','打開角色頁，看一下「現實數據」和「完成率」'],
   when:'週日晚上，花 15 分鐘。'}};
@@ -1453,7 +1458,7 @@ function guessBody(tx){const map=[[/道館|練拳|練柔術|MMA|拳擊|柔術|�
 
 /* ---------- v27：週／月追蹤（參考 Quiet Progress 的格子與完成率） ---------- */
 const TODO_XP=10,TODO_CAP=5;
-const ROWS=()=>{const r=[];for(const q of QUESTS){const k=q.group||q.id;if(!r.find(x=>x.k===k))r.push({k,n:({woop:'一件事',study:'讀書',train:'身體',screen:'螢幕',nophone:'睡前不滑',sleep:'準時上床',review:'復盤',weekly:'週回顧'})[k]||q.gname||q.name,ids:QUESTS.filter(z=>(z.group||z.id)===k).map(z=>z.id)})}return r};
+const ROWS=()=>{const r=[];for(const q of QUESTS){const k=q.group||q.id;if(!r.find(x=>x.k===k))r.push({k,n:({woop:'一件事',study:'讀書',train:'身體',screen:'螢幕',nophone:'睡前不滑',sleep:'準時上床',review:'復盤',goodtime:'時光日誌',weekly:'週回顧'})[k]||q.gname||q.name,ids:QUESTS.filter(z=>(z.group||z.id)===k).map(z=>z.id)})}return r};
 function cellOf(row,d){const act=row.ids.map(id=>QUESTS.find(q=>q.id===id)).filter(q=>activeOn(q,d));if(!act.length)return'off';const L=S.log[d],dn=act.map(q=>L&&L.done&&L.done[q.id]).find(Boolean);
  if(dn)return dn.lv!=null?'l'+dn.lv:'ok';return'no'}
 const dayPct=d=>{const a=actives(d).length;return a?doneCount(d)/a:0};
@@ -1535,15 +1540,15 @@ function mindChart(y,m,N){const t=today(),dd=k=>`${y}-${pad(m)}-${pad(k)}`,W=340
 const tSeg=()=>`<div class="seg jtab tseg">${[['day','今天'],['week','本週'],['month','本月']].map(([k,n])=>`<button class="${(S.ttab||'day')===k?'on':''}" data-tt="${k}">${n}</button>`).join('')}</div>`;
 
 /* ---------- 推播通知（GitHub 排程 → Web Push → 主畫面 app） ---------- */
-const QSHORT={woop:'1 件事',study:'讀書',train:'身體修練',screen:'螢幕時間',nophone:'睡前不滑手機',sleep:'準時上床',review:'睡前復盤',weekly:'每週回顧'};
+const QSHORT={woop:'1 件事',study:'讀書',train:'身體修練',screen:'螢幕時間',nophone:'睡前不滑手機',sleep:'準時上床',review:'睡前復盤',goodtime:'美好時光日誌',weekly:'每週回顧'};
 const PUSH_REPO='https://github.com/KAI11025/reset';
 const b64u=buf=>btoa(String.fromCharCode(...new Uint8Array(buf))).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
 const ub64=s=>{s=s.replace(/-/g,'+').replace(/_/g,'/');while(s.length%4)s+='=';return Uint8Array.from(atob(s),c=>c.charCodeAt(0))};
 function metaPut(k,v){try{const r=indexedDB.open('reset_meta',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>{try{r.result.transaction('kv','readwrite').objectStore('kv').put(v,k)}catch(e){}}}catch(e){}}
 var stT=null;
-const QUICK={med:'冥想 1 分鐘',esp:'西文 5 分鐘',study:'讀書 10 分鐘',train:'散步或伸展 30 分鐘',woop:'寫今天的 1 件事',review:'復盤寫 1 行',nophone:'手機拿出房間',weekly:'每週回顧'};
+const QUICK={med:'冥想 1 分鐘',esp:'西文 5 分鐘',study:'讀書 10 分鐘',train:'散步或伸展 30 分鐘',woop:'寫今天的 1 件事',review:'復盤寫 1 行',nophone:'手機拿出房間',goodtime:'時光日誌記 1 件',weekly:'每週回顧'};
 function pushStatus(){clearTimeout(stT);stT=setTimeout(()=>{try{const t=today(),act=actives(t),L=S.log[t],miss=act.filter(q=>!(L&&L.done&&L.done[q.id])),c=S.pet&&petCalc(),hatched=!!(S.pet&&S.pet.sp&&c&&c.stage>=1),m=mapInfo(),sk=streak(),b=bossInfo(),wd=parse(t).getDay();
- const order=['med','esp','woop','review','study','train','nophone','weekly'],quick=miss.filter(q=>QUICK[q.id]).sort((x,y)=>order.indexOf(x.id)-order.indexOf(y.id)).map(q=>QUICK[q.id]);
+ const order=['med','esp','woop','review','study','train','goodtime','nophone','weekly'],quick=miss.filter(q=>QUICK[q.id]).sort((x,y)=>order.indexOf(x.id)-order.indexOf(y.id)).map(q=>QUICK[q.id]);
  metaPut('status',{d:t,ds:S.dayStart||0,left:[...new Set(miss.map(q=>QSHORT[q.group||q.id]||q.gname||q.name))],quick,total:act.length,done:doneCount(t),need:need(t),cleared:cleared(t),streak:sk,ym:yMissed(),ms:STREAK_MS.find(x=>x>sk)||null,
   pet:hatched?petName():'',weak:hatched&&c.mood===0,egg:S.pet&&!hatched?Math.max(0,PSTAGE[1]-c.b):null,mapLeft:m.left,mapNext:m.nx?m.nx.n:'塔頂',
   due:(S.todos||[]).filter(x=>!x.done&&x.d&&x.d<=t).map(x=>x.t),warm:diff(S.start,t)<0?diff(t,S.start):0,boss:diff(S.start,t)>=0&&(wd===0||wd===6)&&!S.boss.dead&&!S.boss.fought,bossName:b&&b.name,region:REGIONS[m.r].n,minion:minionOf(dun().floor).n,diary:!!(S.diary&&S.diary[t]&&(S.diary[t].text||'').trim()),at:Date.now()})}catch(e){}},600)}
