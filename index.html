@@ -449,7 +449,7 @@ body.snow::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:
 <script>
 
 
-const VER='v62・11/24 13:50';
+const VER='v63・11/24 14:30';
 function TS(){return S.warm0&&S.warm0<S.start?S.warm0:S.start}
 const PROG=100;
 'use strict';
@@ -1116,9 +1116,9 @@ const minionOf=f=>{const rare=f>2&&srand('rare'+f)<.12;return{...MINIONS[(f*7+3)
 function hitMinion(x,src,stat){const D=dun(),hm={a:0,g:0,m:{},r:0,s:[]};if(x<=0)return hm;let left=x,drops=[],weakHit=false;
  for(let k=0;k<6&&left>0;k++){const m=minionOf(D.floor),mul=stat&&stat===m.w?2:1;if(mul>1)weakHit=true;const need=m.hp-D.dmg,eff=left*mul;
   if(eff<need){D.dmg+=Math.round(eff);hm.a+=Math.round(eff);left=0;break}
-  left-=need/mul;hm.a+=need;D.dmg=0;D.kills++;D.floor++;const rm=m.rare?2:1,g=(5+Math.floor(Math.random()*8))*rm,keys=Object.keys(MATS),mk=keys[Math.floor(Math.random()*3)],n=(Math.random()<.15?2:1)*rm;
+  left-=need/mul;hm.a+=need;D.dmg=0;D.kills++;const kf=D.floor;D.floor++;const kr=k2=>hrand('kill'+kf+k2),rm=m.rare?2:1,g=(5+Math.floor(kr('g')*8))*rm,keys=Object.keys(MATS),mk=keys[Math.floor(kr('m')*3)],n=(kr('n')<.15?2:1)*rm;
   S.gold+=g;hm.g+=g;S.mats[mk]+=n;hm.m[mk]=(hm.m[mk]||0)+n;drops.push(`${MATS[mk][0]}×${n}`);
-  if(Math.random()<(m.rare?.35:.06)){const sd='mk'+Date.now()+Math.random();hm.s.push(sd);const tx0=TX;setTimeout(()=>{if(KD[sd]===0)return;withTx(tx0,()=>{KD[sd]=dropLoot(sd,false,m.rare?'金色小怪':'小怪')});save();render()},600)}if(m.rare){S.rareKills=(S.rareKills||0)+1;hm.r++;drops.unshift('✨稀有');jlog('🌟',`擊倒稀有怪「金色${m.n}」`)}
+  if(kr('d')<(m.rare?.35:.06)){const sd='mkf'+kf;hm.s.push(sd);const tx0=TX;setTimeout(()=>{if(KD[sd]===0)return;withTx(tx0,()=>{KD[sd]=dropLoot(sd,false,m.rare?'金色小怪':'小怪')});save();render()},600)}if(m.rare){S.rareKills=(S.rareKills||0)+1;hm.r++;drops.unshift('✨稀有');jlog('🌟',`擊倒稀有怪「金色${m.n}」`)}
   if(D.kills%10===0)jlog('🗝️',`地城突破第 ${D.floor} 層，累計擊倒 ${D.kills} 隻小怪`)}
  if(drops.length)setTimeout(()=>toast(`<b>擊倒小怪！</b>　${drops.join(' ')}`,'crit'),350);
  else if(weakHit)setTimeout(()=>toast('<b>打中弱點！</b>　傷害 ×2'),350);return hm}
