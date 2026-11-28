@@ -1,5 +1,5 @@
 // 離線快取：每次都先拿網路最新版（不吃瀏覽器快取），沒網路才用快取
-const C='reset-v63';
+const C='reset-v64';
 self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(['./','index.html','manifest.json','icon.png'])));self.skipWaiting()});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim()});
 self.addEventListener('fetch',e=>{if(e.request.method!=='GET'||new URL(e.request.url).origin!==location.origin)return;
@@ -25,6 +25,12 @@ function compose(type,st,d){d=d||{};
  const fresh=st&&st.d===dayKey(st.ds),yest=st&&st.d===dayKey(st.ds,-1);
  if(type==='evening')type='afternoon';
  const R=st&&st.region||'晨曦之村',M=st&&st.minion||'魔物',B=st&&st.bossName||'Boss',pet=st&&st.pet||'',n=st?Math.max(0,st.need-st.done):0,q=(st&&st.quick)||[],qs=q.slice(0,Math.max(1,Math.min(n,3))),sk=st&&st.streak||0,q0=q[0]||'冥想 1 分鐘',hr=new Date().getHours();
+ // 週末休息日：不催任務
+ if(st&&st.rest&&fresh&&type!=='todo'){
+  if(type==='morning')return pick([['🏖️ 週末，好好休息','今天沒有任務。想做什麼就做，晚上回報一下就好。'],['☀️ 休息日','連續不會斷。去充電吧。'],pet?[`🐾 ${pet}也在放假`,'今天一起耍廢。']:['🌿 放假日','慢慢來，今天不用趕。']]);
+  if(type==='afternoon')return st.boss?pick([[`⚔️ ${B}在等你`,'週末限定的決戰，打完再繼續放假。'],['🐉 Boss 戰開放中','這週的努力會變成蓄力一擊。']]):pick([['🏖️ 週末進行中','有做什麼值得記的？運動、讀書、陪家人都算，回報主線就前進一步。'],['🗺️ 主線小提醒','週末回報一件事，地圖也會往前走。']]);
+  if(type==='night')return st.reported?pick([['🌙 週末辛苦了','回報收到了。早點睡，週一見。'],['💤 收工','手機放房間外面，好好睡。']]):pick([['📝 今天做了什麼？','寫一句週末回報，公會長週一會看，有機會加分。'],['🌙 睡前回報','一件就好：今天做了什麼讓你覺得充實？']]);
+ }
  // 新手村暖身週：不提 Boss、不提連續
  if(st&&st.warm&&(fresh||yest)){const left=st.warm;
   if(type==='morning')return pick([['🏕️ 新手村的早晨',`暖身週，再 ${left} 天正式出發。今天先熟悉任務：${q0}。`],['📜 村長的叮嚀','「出發前，先把基本功練熟。」今天試著做完一半任務。'],['☀️ 早安，見習勇者',`先拿下第一個：${q0}。暖身週做多少都算經驗。`],pet?[`🥚 ${pet||'蛋'}動了一下`,'通關 3 天就會孵化。']:['🥚 蛋在晃','通關 3 天就會孵化，暖身週也算。']]);
